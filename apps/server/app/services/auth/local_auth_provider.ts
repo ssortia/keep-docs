@@ -8,8 +8,6 @@ import {
   RegistrationData,
 } from '#contracts/auth'
 import { TokenService } from '#services/token_service'
-import { EmailService } from '#services/email_service'
-import VerificationEmailNotification from '#mails/verification_email_notification'
 import {
   UserBlockedException,
   EmailNotVerifiedException,
@@ -22,7 +20,6 @@ import {
 export class LocalAuthProvider implements AuthProvider {
   constructor(
     private tokenService: TokenService,
-    private emailService: EmailService
   ) {}
 
   async authenticate(credentials: AuthenticationCredentials): Promise<AuthenticationResult> {
@@ -56,11 +53,9 @@ export class LocalAuthProvider implements AuthProvider {
       password: data.password,
       roleId: defaultRole.id,
       blocked: false,
-      isEmailVerified: false,
+      isEmailVerified: true,
       emailVerificationToken,
     })
-
-    await this.emailService.send(new VerificationEmailNotification(user, emailVerificationToken))
 
     await user.load('role')
     return user

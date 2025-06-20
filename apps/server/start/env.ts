@@ -29,16 +29,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_PASSWORD: Env.schema.string.optional(),
   DB_DATABASE: Env.schema.string(),
 
-  /*
-  |----------------------------------------------------------
-  | Variables for configuring the mail package
-  |----------------------------------------------------------
-  */
-  SMTP_USERNAME: Env.schema.string(),
-  SMTP_PASSWORD: Env.schema.string(),
-  SMTP_HOST: Env.schema.string(),
-  SMTP_PORT: Env.schema.number(),
-
   CLIENT_URL: Env.schema.string(),
 
   /*
@@ -46,6 +36,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   | Variables for configuring GitHub OAuth
   |----------------------------------------------------------
   */
-  GITHUB_CLIENT_ID: Env.schema.string(),
-  GITHUB_CLIENT_SECRET: Env.schema.string(),
+  // GITHUB_CLIENT_ID: Env.schema.string(),
+  // GITHUB_CLIENT_SECRET: Env.schema.string(),
 })

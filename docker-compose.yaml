@@ -4,20 +4,15 @@ services:
   postgres:
     image: postgres:15
     restart: always
-    container_name: postgres_adonis
+    container_name: keep_docs_db
     environment:
-      - POSTGRES_USER=adonis
-      - POSTGRES_PASSWORD=adonis
-      - POSTGRES_DB=adonis
+      - POSTGRES_USER=keep_docs
+      - POSTGRES_PASSWORD=keep_docs
+      - POSTGRES_DB=keep_docs
     ports:
       - "5440:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U adonis -d adonis" ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
     networks:
       - app-network
   client:
@@ -57,16 +52,11 @@ services:
       - PORT=3333
       - HOST=0.0.0.0
       - DB_CONNECTION=pg
-      - PG_HOST=postgres_adonis
+      - PG_HOST=keep_docs_db
       - PG_PORT=5432
-      - PG_USER=adonis
-      - PG_PASSWORD=adonis
-      - PG_DB_NAME=adonis
-    healthcheck:
-      test: ["CMD", "node", "apps/server/healthcheck.js"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - PG_USER=keep_docs
+      - PG_PASSWORD=keep_docs
+      - PG_DB_NAME=keep_docs
     networks:
       - app-network
 
