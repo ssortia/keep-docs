@@ -2,17 +2,17 @@ import app from '@adonisjs/core/services/app'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
-import { mkdir, writeFile, stat, unlink, readFile } from 'node:fs/promises'
+import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
 import { PDFDocument } from 'pdf-lib'
 import sharp from 'sharp'
 import { fromPath } from 'pdf2pic'
 import {
-  FileSystemException,
-  FileSizeLimitException,
-  InvalidFileTypeException,
   DocumentProcessingException,
+  FileSizeLimitException,
+  FileSystemException,
+  InvalidFileTypeException,
 } from '#exceptions/document_exceptions'
 
 export interface ProcessedFile {
@@ -45,13 +45,16 @@ export class FileProcessingService {
   ): Promise<ProcessedFile[]> {
     const processedFiles: ProcessedFile[] = []
     const config = this.getProcessingConfig(options)
+    let currentPageNumber = 1
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
+    for (const file of files) {
       this.validateFile(file, config.allowedExtensions, config.maxFileSize)
 
-      const fileResults = await this.processFileByType(file, i + 1)
+      const fileResults = await this.processFileByType(file, currentPageNumber)
       processedFiles.push(...fileResults)
+
+      // Обновляем номер страницы для следующего файла
+      currentPageNumber += fileResults.length
     }
 
     return processedFiles
@@ -256,7 +259,7 @@ export class FileProcessingService {
   }
 
   /**
-   * Обрабатывает PDF файл (разделяет на страницы)
+   * Обрабатывает PDF файл (всегда разделяет на JPG страницы)
    */
   private async processPdfFile(
     file: MultipartFile,
@@ -266,12 +269,7 @@ export class FileProcessingService {
 
     try {
       const pageCount = await this.getPdfPageCount(tempFilePath)
-
-      if (pageCount === 1) {
-        return [await this.saveProcessedFile(file, tempFilePath, startPageNumber, 'pdf')]
-      } else {
-        return await this.convertPdfToImages(file, tempFilePath, startPageNumber, pageCount)
-      }
+      return await this.convertPdfToImages(file, tempFilePath, startPageNumber, pageCount)
     } finally {
       await unlink(tempFilePath)
     }
@@ -287,7 +285,7 @@ export class FileProcessingService {
   }
 
   /**
-   * Конвертирует PDF в изображения
+   * Конвертирует PDF в JPG изображения
    */
   private async convertPdfToImages(
     file: MultipartFile,
@@ -299,7 +297,7 @@ export class FileProcessingService {
       density: 200,
       saveFilename: 'page',
       savePath: this.getUploadDirectory(),
-      format: 'png',
+      format: 'jpeg',
       width: 2480,
       height: 3508,
     })
@@ -340,7 +338,7 @@ export class FileProcessingService {
   }
 
   /**
-   * Сохраняет конвертированную страницу
+   * Сохраняет конвертированную страницу как JPG
    */
   private async saveConvertedPage(
     tempPagePath: string,
@@ -349,19 +347,21 @@ export class FileProcessingService {
     startPageNumber: number
   ): Promise<ProcessedFile> {
     const uuid = randomUUID()
-    const filename = `${uuid}.png`
+    const filename = `${uuid}.jpg`
     const finalPath = join(this.getUploadDirectory(), filename)
 
-    await pipeline(createReadStream(tempPagePath), createWriteStream(finalPath))
+    // Конвертируем в JPG с оптимизацией
+    await sharp(tempPagePath).jpeg({ quality: 85 }).toFile(finalPath)
+
     await unlink(tempPagePath)
 
     const fileStats = await stat(finalPath)
 
     return {
       uuid,
-      originalName: `${file.clientName}_page_${pageIndex}.png`,
-      extension: 'png',
-      mimeType: 'image/png',
+      originalName: `${file.clientName}_page_${pageIndex}.jpg`,
+      extension: 'jpg',
+      mimeType: 'image/jpeg',
       size: fileStats.size,
       path: filename,
       pageNumber: startPageNumber + pageIndex - 1,
@@ -425,40 +425,11 @@ export class FileProcessingService {
 
     if (file.tmpPath) {
       await pipeline(createReadStream(file.tmpPath), createWriteStream(tempFilePath))
-    } else if (file.data) {
-      await writeFile(tempFilePath, file.data)
     } else {
       throw new Error('Нет данных файла')
     }
 
     return tempFilePath
-  }
-
-  /**
-   * Сохраняет обработанный файл
-   */
-  private async saveProcessedFile(
-    originalFile: MultipartFile,
-    sourcePath: string,
-    pageNumber: number,
-    extension: string
-  ): Promise<ProcessedFile> {
-    const uuid = randomUUID()
-    const filename = `${uuid}.${extension}`
-    const finalPath = join(this.getUploadDirectory(), filename)
-
-    await pipeline(createReadStream(sourcePath), createWriteStream(finalPath))
-    const fileStats = await stat(finalPath)
-
-    return {
-      uuid,
-      originalName: this.sanitizeFilename(originalFile.clientName || 'unknown'),
-      extension,
-      mimeType: originalFile.type || this.getMimeType(extension),
-      size: fileStats.size,
-      path: filename,
-      pageNumber,
-    }
   }
 
   /**

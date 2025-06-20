@@ -198,7 +198,7 @@ export class DocumentService {
     trx?: Transaction
   ): Promise<Version> {
     // Если документ новый или нужна новая версия
-    if (!document.currentVersionId || isNewVersion) {
+      if (isNewVersion) {
       return await this.createNewVersion(versionName, trx)
     }
 

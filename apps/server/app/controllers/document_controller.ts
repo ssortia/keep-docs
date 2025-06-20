@@ -53,7 +53,6 @@ export default class DocumentController {
    * Скачать полный документ как объединенный файл
    */
   async getDocument({ params, response }: HttpContext) {
-    console.log('test')
     try {
       const { uuid } = await dossierUuidValidator.validate(params)
       const { type } = await documentTypeValidator.validate(params)
@@ -69,6 +68,7 @@ export default class DocumentController {
       if (error instanceof DocumentNotFoundException) {
         throw error
       }
+      console.log(error)
       throw new DocumentProcessingException('Ошибка получения документа')
     }
   }

@@ -3,6 +3,9 @@ FROM node:22-alpine AS development
 
 WORKDIR /app
 
+# Устанавливаем GraphicsMagick и Ghostscript для обработки PDF
+RUN apk add --no-cache graphicsmagick ghostscript
+
 # Копируем package.json и lock файлы
 COPY package.json package-lock.json ./
 COPY apps/server/package.json ./apps/server/
@@ -20,7 +23,7 @@ FROM node:22-alpine AS production
 
 WORKDIR /app
 
-RUN apk add --no-cache postgresql-client
+RUN apk add --no-cache postgresql-client graphicsmagick ghostscript
 
 COPY --from=development /app .
 
