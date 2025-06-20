@@ -1,0 +1,39 @@
+# Build outputs
+build/
+dist/
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Coverage directory
+coverage/
+
+# Cache
+.eslintcache
+
+# Generated files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Misc
+.DS_Store
+.idea/
+.vscode/
+tmp/
+
+# Next.js
+next-env.d.ts
+
+# AdonisJS
+ace.js
