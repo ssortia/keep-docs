@@ -1,0 +1,203 @@
+### Dossier-Lite Document API Examples
+### Примеры запросов к API для работы с документами
+
+### Переменные
+@baseUrl = http://localhost:3333
+@dossierUuid = 550e8400-e29b-41d4-a716-446655440000
+@documentType = passport
+@pageNumber = 1
+@pageUuid = 123e4567-e89b-12d3-a456-426614174000
+
+### 1. Получить все документы досье
+### GET /:uuid/documents
+GET {{baseUrl}}/api/{{dossierUuid}}/documents
+Accept: application/json
+
+### 2. Загрузить страницы документа (новая версия)
+### PUT /:uuid/documents/:type
+PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+Content-Type: multipart/form-data; boundary=boundary123
+
+--boundary123
+Content-Disposition: form-data; name="documents"; filename="passport_page1.pdf"
+Content-Type: application/pdf
+
+< ./test-files/passport_page1.pdf
+--boundary123
+Content-Disposition: form-data; name="documents"; filename="passport_page2.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/passport_page2.jpg
+--boundary123
+Content-Disposition: form-data; name="name"
+
+Версия 2.1
+--boundary123
+Content-Disposition: form-data; name="isNewVersion"
+
+true
+--boundary123--
+
+### 3. Загрузить страницы к существующей версии
+### PUT /:uuid/documents/:type
+PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+Content-Type: multipart/form-data; boundary=boundary456
+
+--boundary456
+Content-Disposition: form-data; name="documents"; filename="additional_page.png"
+Content-Type: image/png
+
+< ./test-files/additional_page.png
+--boundary456
+Content-Disposition: form-data; name="isNewVersion"
+
+false
+--boundary456--
+
+### 4. Скачать полный документ (объединенный PDF)
+### GET /:uuid/documents/:type
+GET {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+Accept: application/pdf
+
+### 5. Скачать конкретную страницу
+### GET /:uuid/documents/:type/:number
+GET {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}/{{pageNumber}}
+Accept: image/jpeg,image/png,application/pdf
+
+### 6. Удалить страницу (мягкое удаление)
+### DELETE /:uuid/documents/:type/:pageUuid
+DELETE {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}/{{pageUuid}}
+Accept: application/json
+
+### 7. Пример ошибки - несуществующее досье
+### GET /:uuid/documents
+GET {{baseUrl}}/api/00000000-0000-0000-0000-000000000000/documents
+Accept: application/json
+
+### 8. Пример ошибки - неправильный тип документа
+### PUT /:uuid/documents/:type
+PUT {{baseUrl}}/api/{{dossierUuid}}/documents/invalid-type!@#
+Content-Type: multipart/form-data; boundary=boundary789
+
+--boundary789
+Content-Disposition: form-data; name="documents"; filename="passport_page1.pdf"
+Content-Type: application/pdf
+
+< ./test-files/test.pdf
+--boundary789--
+
+### 9. Пример ошибки - файл слишком большой (>50MB)
+### PUT /:uuid/documents/:type
+PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+Content-Type: multipart/form-data; boundary=boundary999
+
+--boundary999
+Content-Disposition: form-data; name="documents"; filename="huge_file.pdf"
+Content-Type: application/pdf
+
+< ./test-files/huge_file.pdf
+--boundary999--
+
+### 10. Пример ошибки - неподдерживаемый формат файла
+### PUT /:uuid/documents/:type
+PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+Content-Type: multipart/form-data; boundary=boundary111
+
+--boundary111
+Content-Disposition: form-data; name="documents"; filename="document.docx"
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+
+< ./test-files/document.docx
+--boundary111--
+
+### 11. Загрузка множественных файлов разных типов
+### PUT /:uuid/documents/:type
+PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+Content-Type: multipart/form-data; boundary=boundary222
+
+--boundary222
+Content-Disposition: form-data; name="documents"; filename="page1.pdf"
+Content-Type: application/pdf
+
+< ./test-files/page1.pdf
+--boundary222
+Content-Disposition: form-data; name="documents"; filename="page2.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/page2.jpg
+--boundary222
+Content-Disposition: form-data; name="documents"; filename="page3.png"
+Content-Type: image/png
+
+< ./test-files/page3.png
+--boundary222
+Content-Disposition: form-data; name="documents"; filename="page4.tiff"
+Content-Type: image/tiff
+
+< ./test-files/page4.tiff
+--boundary222
+Content-Disposition: form-data; name="name"
+
+Полная версия документа
+--boundary222--
+
+### Примеры ответов API:
+
+### Успешный ответ на получение документов:
+# {
+#   "uuid": "550e8400-e29b-41d4-a716-446655440000",
+#   "schema": "personal_documents",
+#   "documents": [
+#     {
+#       "code": "passport",
+#       "currentVersion": "v2023.12.15.1430",
+#       "pageCount": 3,
+#       "files": [
+#         {
+#           "uuid": "123e4567-e89b-12d3-a456-426614174001",
+#           "originalName": "passport_page1.pdf",
+#           "extension": "pdf",
+#           "mimeType": "application/pdf",
+#           "pageNumber": 1,
+#           "createdAt": "2023-12-15T14:30:00.000Z"
+#         }
+#       ],
+#       "createdAt": "2023-12-15T14:30:00.000Z",
+#       "updatedAt": "2023-12-15T14:30:00.000Z"
+#     }
+#   ],
+#   "createdAt": "2023-12-15T14:00:00.000Z",
+#   "updatedAt": "2023-12-15T14:30:00.000Z"
+# }
+
+### Успешный ответ на загрузку:
+# {
+#   "document": {
+#     "code": "passport", 
+#     "version": "v2023.12.15.1430",
+#     "filesProcessed": 2,
+#     "pagesAdded": 3
+#   },
+#   "message": "Document pages uploaded successfully"
+# }
+
+### Пример ошибки - досье не найдено:
+# {
+#   "message": "Dossier with uuid 00000000-0000-0000-0000-000000000000 not found",
+#   "code": "E_DOSSIER_NOT_FOUND",
+#   "status": 404
+# }
+
+### Пример ошибки - валидация:
+# {
+#   "message": "File 'huge_file.pdf' exceeds the maximum size limit of 50MB",
+#   "code": "E_FILE_SIZE_LIMIT", 
+#   "status": 413
+# }
+
+### Пример ошибки - неверный тип документа:
+# {
+#   "message": "Document type 'invalid-type!@#' is not valid for schema 'personal_documents'",
+#   "code": "E_INVALID_DOCUMENT_TYPE",
+#   "status": 400
+# }

@@ -18,9 +18,7 @@ import {
 
 @inject()
 export class LocalAuthProvider implements AuthProvider {
-  constructor(
-    private tokenService: TokenService,
-  ) {}
+  constructor(private tokenService: TokenService) {}
 
   async authenticate(credentials: AuthenticationCredentials): Promise<AuthenticationResult> {
     let user
