@@ -20,6 +20,6 @@ router
     router.put('/:uuid/documents/:type', '#controllers/document_controller.addPages')
     router.delete('/:uuid/documents/:type/:pageUuid', '#controllers/document_controller.deletePage')
   })
-  .prefix('/api')
+  .prefix('/api/docs')
 
 export default router

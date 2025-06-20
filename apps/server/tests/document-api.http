@@ -10,12 +10,12 @@
 
 ### 1. Получить все документы досье
 ### GET /:uuid/documents
-GET {{baseUrl}}/api/{{dossierUuid}}/documents
+GET {{baseUrl}}/api/docs/{{dossierUuid}}/documents
 Accept: application/json
 
 ### 2. Загрузить страницы документа (новая версия)
 ### PUT /:uuid/documents/:type
-PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+PUT {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}
 Content-Type: multipart/form-data; boundary=boundary123
 
 --boundary123
@@ -23,11 +23,6 @@ Content-Disposition: form-data; name="documents"; filename="passport_page1.pdf"
 Content-Type: application/pdf
 
 < ./test-files/passport_page1.pdf
---boundary123
-Content-Disposition: form-data; name="documents"; filename="passport_page2.jpg"
-Content-Type: image/jpeg
-
-< ./test-files/passport_page2.jpg
 --boundary123
 Content-Disposition: form-data; name="name"
 
@@ -37,10 +32,14 @@ Content-Disposition: form-data; name="isNewVersion"
 
 true
 --boundary123--
-
+# curl -X PUT http://localhost:3333/api/docs/550e8400-e29b-41d4-a716-446655440000/documents/passport
+#  -F "documents=apps/server/test-files/passport_page1.pdf"
+#  -F "documents=apps/server/test-files/passport_page2.jpg"
+#  -F "name=Версия 2.1"
+#  -F "isNewVersion=true"
 ### 3. Загрузить страницы к существующей версии
 ### PUT /:uuid/documents/:type
-PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+PUT {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}
 Content-Type: multipart/form-data; boundary=boundary456
 
 --boundary456
@@ -56,27 +55,27 @@ false
 
 ### 4. Скачать полный документ (объединенный PDF)
 ### GET /:uuid/documents/:type
-GET {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+GET {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}
 Accept: application/pdf
 
 ### 5. Скачать конкретную страницу
 ### GET /:uuid/documents/:type/:number
-GET {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}/{{pageNumber}}
+GET {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}/{{pageNumber}}
 Accept: image/jpeg,image/png,application/pdf
 
 ### 6. Удалить страницу (мягкое удаление)
 ### DELETE /:uuid/documents/:type/:pageUuid
-DELETE {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}/{{pageUuid}}
+DELETE {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}/{{pageUuid}}
 Accept: application/json
 
 ### 7. Пример ошибки - несуществующее досье
 ### GET /:uuid/documents
-GET {{baseUrl}}/api/00000000-0000-0000-0000-000000000000/documents
+GET {{baseUrl}}/api/docs/00000000-0000-0000-0000-000000000000/documents
 Accept: application/json
 
 ### 8. Пример ошибки - неправильный тип документа
 ### PUT /:uuid/documents/:type
-PUT {{baseUrl}}/api/{{dossierUuid}}/documents/invalid-type!@#
+PUT {{baseUrl}}/api/docs/{{dossierUuid}}/documents/invalid-type!@#
 Content-Type: multipart/form-data; boundary=boundary789
 
 --boundary789
@@ -88,7 +87,7 @@ Content-Type: application/pdf
 
 ### 9. Пример ошибки - файл слишком большой (>50MB)
 ### PUT /:uuid/documents/:type
-PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+PUT {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}
 Content-Type: multipart/form-data; boundary=boundary999
 
 --boundary999
@@ -100,7 +99,7 @@ Content-Type: application/pdf
 
 ### 10. Пример ошибки - неподдерживаемый формат файла
 ### PUT /:uuid/documents/:type
-PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+PUT {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}
 Content-Type: multipart/form-data; boundary=boundary111
 
 --boundary111
@@ -112,7 +111,7 @@ Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.doc
 
 ### 11. Загрузка множественных файлов разных типов
 ### PUT /:uuid/documents/:type
-PUT {{baseUrl}}/api/{{dossierUuid}}/documents/{{documentType}}
+PUT {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}
 Content-Type: multipart/form-data; boundary=boundary222
 
 --boundary222
@@ -201,3 +200,5 @@ Content-Disposition: form-data; name="name"
 #   "code": "E_INVALID_DOCUMENT_TYPE",
 #   "status": 400
 # }
+
+# ###

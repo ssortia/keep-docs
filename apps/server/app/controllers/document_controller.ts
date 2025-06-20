@@ -5,18 +5,18 @@ import { DocumentService } from '#services/document_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import { FileProcessingService } from '#services/file_processing_service'
 import {
-  uploadDocumentValidator,
-  dossierUuidValidator,
   documentTypeValidator,
+  dossierUuidValidator,
   pageNumberValidator,
   pageUuidValidator,
+  uploadDocumentValidator,
 } from '#validators/document_validator'
 import {
-  DossierNotFoundException,
   DocumentNotFoundException,
-  PageNotFoundException,
-  InvalidDocumentTypeException,
   DocumentProcessingException,
+  DossierNotFoundException,
+  InvalidDocumentTypeException,
+  PageNotFoundException,
 } from '#exceptions/document_exceptions'
 
 @inject()
@@ -32,6 +32,7 @@ export default class DocumentController {
    * Получить все документы досье
    */
   async getDocuments({ params, response }: HttpContext) {
+    console.log(312)
     try {
       const { uuid } = await dossierUuidValidator.validate(params)
 
@@ -52,6 +53,7 @@ export default class DocumentController {
    * Скачать полный документ как объединенный файл
    */
   async getDocument({ params, response }: HttpContext) {
+    console.log('test')
     try {
       const { uuid } = await dossierUuidValidator.validate(params)
       const { type } = await documentTypeValidator.validate(params)
@@ -79,8 +81,8 @@ export default class DocumentController {
     try {
       const { uuid } = await dossierUuidValidator.validate(params)
       const { type } = await documentTypeValidator.validate(params)
-
-      const dossier = await Dossier.findByOrFail('uuid', uuid)
+      // Находим или создаем досье
+      const dossier = await this.documentService.findOrCreateDossier(uuid)
 
       // Валидация типа документа
       if (!this.documentService.validateDocumentType(dossier.schema, type)) {
