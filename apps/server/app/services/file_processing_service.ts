@@ -83,7 +83,7 @@ export class FileProcessingService {
     size: number
     mimeType: string
   }> {
-    const fullPath = this.getFullPath(filePath)
+    const fullPath = filePath.startsWith('/') ? filePath : this.getFullPath(filePath)
 
     try {
       const fileStats = await stat(fullPath)
@@ -96,7 +96,7 @@ export class FileProcessingService {
         mimeType: this.getMimeType(extension || ''),
       }
     } catch (error) {
-      throw new FileSystemException(`Ошибка чтения файла: ${filePath}`)
+      throw new FileSystemException(`Ошибка чтения файла: ${fullPath}`)
     }
   }
 
@@ -212,12 +212,29 @@ export class FileProcessingService {
       ? await mergedPdf.embedPng(imageBytes)
       : await mergedPdf.embedJpg(imageBytes)
 
-    const page = mergedPdf.addPage([image.width, image.height])
+    // Стандартный размер страницы A4 (595.28 x 841.89 точек)
+    const pageWidth = 595.28
+    const pageHeight = 841.89
+    
+    const page = mergedPdf.addPage([pageWidth, pageHeight])
+    
+    // Вычисляем масштаб для вписывания изображения в страницу
+    const scaleX = pageWidth / image.width
+    const scaleY = pageHeight / image.height
+    const scale = Math.min(scaleX, scaleY)
+    
+    const scaledWidth = image.width * scale
+    const scaledHeight = image.height * scale
+    
+    // Центрируем изображение на странице
+    const x = (pageWidth - scaledWidth) / 2
+    const y = (pageHeight - scaledHeight) / 2
+
     page.drawImage(image, {
-      x: 0,
-      y: 0,
-      width: image.width,
-      height: image.height,
+      x,
+      y,
+      width: scaledWidth,
+      height: scaledHeight,
     })
   }
 
@@ -285,7 +302,7 @@ export class FileProcessingService {
   }
 
   /**
-   * Конвертирует PDF в JPG изображения
+   * Конвертирует PDF в JPG изображения с высоким качеством
    */
   private async convertPdfToImages(
     file: MultipartFile,
@@ -294,12 +311,11 @@ export class FileProcessingService {
     pageCount: number
   ): Promise<ProcessedFile[]> {
     const convert = fromPath(tempFilePath, {
-      density: 200,
+      density: 300, // Увеличили DPI для лучшего качества
       saveFilename: 'page',
       savePath: this.getUploadDirectory(),
       format: 'jpeg',
-      width: 2480,
-      height: 3508,
+      quality: 95, // Высокое качество JPEG
     })
 
     const processedFiles: ProcessedFile[] = []
@@ -350,8 +366,8 @@ export class FileProcessingService {
     const filename = `${uuid}.jpg`
     const finalPath = join(this.getUploadDirectory(), filename)
 
-    // Конвертируем в JPG с оптимизацией
-    await sharp(tempPagePath).jpeg({ quality: 85 }).toFile(finalPath)
+    // Конвертируем в JPG с высоким качеством
+    await sharp(tempPagePath).jpeg({ quality: 95 }).toFile(finalPath)
 
     await unlink(tempPagePath)
 
@@ -394,7 +410,7 @@ export class FileProcessingService {
     const finalPath = join(this.getUploadDirectory(), filename)
 
     await sharp(tempFilePath)
-      .jpeg({ quality: 85 })
+      .jpeg({ quality: 95 })
       .resize(2480, 3508, {
         fit: 'inside',
         withoutEnlargement: true,

@@ -1,3 +1,7 @@
 export { UserFactory } from './user_factory.js'
 export { RoleFactory } from './role_factory.js'
 export { PermissionFactory } from './permission_factory.js'
+export { DossierFactory } from './dossier_factory.js'
+export { DocumentFactory } from './document_factory.js'
+export { FileFactory } from './file_factory.js'
+export { VersionFactory } from './version_factory.js'

@@ -50,7 +50,7 @@ Content-Type: image/png
 --boundary456
 Content-Disposition: form-data; name="isNewVersion"
 
-false
+true
 --boundary456--
 
 ### 4. Скачать полный документ (объединенный PDF)

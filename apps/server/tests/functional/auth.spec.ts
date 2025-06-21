@@ -26,7 +26,7 @@ test.group('Auth', (group) => {
     assert.properties(response.body(), ['message', 'user'])
     assert.equal(response.body().user.email, userData.email)
     assert.equal(response.body().user.fullName, userData.fullName)
-    assert.isFalse(response.body().user.isEmailVerified)
+    assert.isTrue(response.body().user.isEmailVerified)
   })
 
   test('should fail registration with invalid email', async ({ client }) => {

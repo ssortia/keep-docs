@@ -13,7 +13,6 @@ import {
 } from '#validators/document_validator'
 import {
   DocumentNotFoundException,
-  DocumentProcessingException,
   DossierNotFoundException,
   InvalidDocumentTypeException,
   PageNotFoundException,
@@ -32,20 +31,12 @@ export default class DocumentController {
    * Получить все документы досье
    */
   async getDocuments({ params, response }: HttpContext) {
-    console.log(312)
-    try {
-      const { uuid } = await dossierUuidValidator.validate(params)
+    const { uuid } = await dossierUuidValidator.validate(params)
 
-      const dossier = await this.findDossierWithDocuments(uuid)
-      const formattedResponse = this.documentAdapter.formatDossierResponse(dossier)
+    const dossier = await this.findDossierWithDocuments(uuid)
+    const formattedResponse = this.documentAdapter.formatDossierResponse(dossier)
 
-      return response.ok(formattedResponse)
-    } catch (error) {
-      if (error instanceof DossierNotFoundException) {
-        throw error
-      }
-      throw new DocumentProcessingException('Ошибка получения документов')
-    }
+    return response.ok(formattedResponse)
   }
 
   /**
@@ -53,24 +44,16 @@ export default class DocumentController {
    * Скачать полный документ как объединенный файл
    */
   async getDocument({ params, response }: HttpContext) {
-    try {
-      const { uuid } = await dossierUuidValidator.validate(params)
-      const { type } = await documentTypeValidator.validate(params)
+    const { uuid } = await dossierUuidValidator.validate(params)
+    const { type } = await documentTypeValidator.validate(params)
 
-      const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
+    const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
 
-      if (!document || !document.files || document.files.length === 0) {
-        throw new DocumentNotFoundException()
-      }
-
-      return await this.streamDocumentFiles(document.files, type, response)
-    } catch (error) {
-      if (error instanceof DocumentNotFoundException) {
-        throw error
-      }
-      console.log(error)
-      throw new DocumentProcessingException('Ошибка получения документа')
+    if (!document || !document.files || document.files.length === 0) {
+      throw new DocumentNotFoundException()
     }
+
+    return await this.streamDocumentFiles(document.files, type, response)
   }
 
   /**
@@ -78,48 +61,38 @@ export default class DocumentController {
    * Загрузить страницы документа
    */
   async addPages({ params, request, response }: HttpContext) {
-    try {
-      const { uuid } = await dossierUuidValidator.validate(params)
-      const { type } = await documentTypeValidator.validate(params)
-      // Находим или создаем досье
-      const dossier = await this.documentService.findOrCreateDossier(uuid)
+    const { uuid } = await dossierUuidValidator.validate(params)
+    const { type } = await documentTypeValidator.validate(params)
+    // Находим или создаем досье
+    const dossier = await this.documentService.findOrCreateDossier(uuid)
 
-      // Валидация типа документа
-      if (!this.documentService.validateDocumentType(dossier.schema, type)) {
-        throw new InvalidDocumentTypeException(type, dossier.schema)
-      }
-
-      const payload = await uploadDocumentValidator.validate({
-        documents: request.files('documents'),
-        name: request.input('name'),
-        isNewVersion: request.input('isNewVersion', false),
-      })
-
-      const result = await this.documentService.processDocumentUpload({
-        dossier,
-        documentType: type,
-        files: payload.documents,
-        versionName: payload.name,
-        isNewVersion: payload.isNewVersion,
-      })
-
-      const formattedResponse = this.documentAdapter.formatDocumentUploadResponse(
-        result.document,
-        result.version,
-        result.filesProcessed,
-        result.pagesAdded
-      )
-
-      return response.created(formattedResponse)
-    } catch (error) {
-      if (
-        error instanceof InvalidDocumentTypeException ||
-        error instanceof DossierNotFoundException
-      ) {
-        throw error
-      }
-      throw new DocumentProcessingException(`Ошибка загрузки документа: ${error.message}`)
+    // Валидация типа документа
+    if (!this.documentService.validateDocumentType(dossier.schema, type)) {
+      throw new InvalidDocumentTypeException(type, dossier.schema)
     }
+
+    const payload = await uploadDocumentValidator.validate({
+      documents: request.files('documents'),
+      name: request.input('name'),
+      isNewVersion: request.input('isNewVersion', false),
+    })
+
+    const result = await this.documentService.processDocumentUpload({
+      dossier,
+      documentType: type,
+      files: payload.documents,
+      versionName: payload.name,
+      isNewVersion: payload.isNewVersion,
+    })
+
+    const formattedResponse = this.documentAdapter.formatDocumentUploadResponse(
+      result.document,
+      result.version,
+      result.filesProcessed,
+      result.pagesAdded
+    )
+
+    return response.created(formattedResponse)
   }
 
   /**
@@ -127,30 +100,23 @@ export default class DocumentController {
    * Скачать конкретную страницу
    */
   async getPage({ params, response }: HttpContext) {
-    try {
-      const { uuid } = await dossierUuidValidator.validate(params)
-      const { type } = await documentTypeValidator.validate(params)
-      const { number } = await pageNumberValidator.validate(params)
+    const { uuid } = await dossierUuidValidator.validate(params)
+    const { type } = await documentTypeValidator.validate(params)
+    const { number } = await pageNumberValidator.validate(params)
 
-      const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
+    const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
 
-      if (!document) {
-        throw new DocumentNotFoundException()
-      }
-
-      const file = document.files?.find((f) => f.pageNumber === number)
-
-      if (!file) {
-        throw new PageNotFoundException(number)
-      }
-
-      return await this.streamSingleFile(file, response)
-    } catch (error) {
-      if (error instanceof DocumentNotFoundException || error instanceof PageNotFoundException) {
-        throw error
-      }
-      throw new DocumentProcessingException('Ошибка получения страницы')
+    if (!document) {
+      throw new DocumentNotFoundException()
     }
+
+    const file = document.files?.find((f) => f.pageNumber === number)
+
+    if (!file) {
+      throw new PageNotFoundException(number)
+    }
+
+    return await this.streamSingleFile(file, response)
   }
 
   /**
@@ -158,32 +124,25 @@ export default class DocumentController {
    * Мягкое удаление страницы
    */
   async deletePage({ params, response }: HttpContext) {
-    try {
-      const { uuid } = await dossierUuidValidator.validate(params)
-      const { type } = await documentTypeValidator.validate(params)
-      const { pageUuid } = await pageUuidValidator.validate(params)
+    const { uuid } = await dossierUuidValidator.validate(params)
+    const { type } = await documentTypeValidator.validate(params)
+    const { pageUuid } = await pageUuidValidator.validate(params)
 
-      const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
+    const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
 
-      if (!document) {
-        throw new DocumentNotFoundException()
-      }
-
-      const file = await this.documentService.findFileByUuid(pageUuid, document)
-
-      if (!file) {
-        throw new PageNotFoundException(pageUuid)
-      }
-
-      await this.documentService.softDeleteFile(file)
-
-      return response.ok({ message: 'Страница успешно удалена' })
-    } catch (error) {
-      if (error instanceof DocumentNotFoundException || error instanceof PageNotFoundException) {
-        throw error
-      }
-      throw new DocumentProcessingException('Ошибка удаления страницы')
+    if (!document) {
+      throw new DocumentNotFoundException()
     }
+
+    const file = await this.documentService.findFileByUuid(pageUuid, document)
+
+    if (!file) {
+      throw new PageNotFoundException(pageUuid)
+    }
+
+    await this.documentService.softDeleteFile(file)
+
+    return response.ok({ message: 'Страница успешно удалена' })
   }
 
   /**

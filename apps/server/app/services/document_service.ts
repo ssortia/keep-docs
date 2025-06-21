@@ -8,8 +8,8 @@ import Version from '#models/version'
 import File from '#models/file'
 import { FileProcessingService, ProcessedFile } from '#services/file_processing_service'
 import {
-  DossierNotFoundException,
   DocumentProcessingException,
+  DossierNotFoundException,
 } from '#exceptions/document_exceptions'
 
 export interface DocumentUploadData {
@@ -52,13 +52,9 @@ export class DocumentService {
     const trx = await db.transaction()
 
     try {
-      // Обрабатываем файлы
+      // console.log(data)
       const processedFiles = await this.fileProcessingService.processUploadedFiles(data.files)
-
-      // Находим или создаем документ
       const document = await this.findOrCreateDocument(data.dossier, data.documentType, trx)
-
-      // Создаем или находим версию
       const version = await this.createOrFindVersion(
         document,
         data.versionName,
@@ -66,10 +62,8 @@ export class DocumentService {
         trx
       )
 
-      // Сохраняем файлы в базу
       const savedFiles = await this.saveFilesToDatabase(processedFiles, document, version, trx)
 
-      // Обновляем текущую версию документа, если она еще не установлена
       if (!document.currentVersionId) {
         await this.updateCurrentVersion(document, version, trx)
       }
@@ -106,7 +100,7 @@ export class DocumentService {
   }
 
   /**
-   * Находит документ по досье UUID и типу
+   * Находит документ по досье UUID и типу с файлами текущей версии
    */
   async findDocumentByDossierAndType(
     dossierUuid: string,
@@ -117,14 +111,24 @@ export class DocumentService {
       throw new DossierNotFoundException(dossierUuid)
     }
 
-    return await Document.query()
+    const document = await Document.query()
       .where('dossierId', dossier.id)
       .where('code', documentType)
-      .preload('files', (query) => {
-        query.whereNull('deletedAt').orderBy('pageNumber', 'asc')
-      })
       .preload('currentVersion')
       .first()
+
+    if (!document || !document.currentVersionId) {
+      return document
+    }
+
+    await document.load('files', (query) => {
+      query
+        .where('versionId', document.currentVersionId)
+        .whereNull('deletedAt')
+        .orderBy('pageNumber', 'asc')
+    })
+
+    return document
   }
 
   /**
@@ -197,13 +201,11 @@ export class DocumentService {
     isNewVersion?: boolean,
     trx?: Transaction
   ): Promise<Version> {
-    // Если документ новый или нужна новая версия
-      if (isNewVersion) {
+    if (isNewVersion) {
       return await this.createNewVersion(versionName, trx)
     }
+    const currentVersion = await Version.find(document.currentVersionId || 0, { client: trx })
 
-    // Возвращаем текущую версию
-    const currentVersion = await Version.find(document.currentVersionId, { client: trx })
     if (!currentVersion) {
       return await this.createNewVersion(versionName, trx)
     }
