@@ -64,6 +64,7 @@
     "@adonisjs/mail": "^9.2.2",
     "@vinejs/vine": "^3.0.0",
     "adonis-autoswagger": "^3.73.0",
+    "adonis-lucid-soft-deletes": "^2.1.0",
     "edge.js": "^6.2.1",
     "luxon": "^3.6.1",
     "pdf-lib": "^1.17.1",

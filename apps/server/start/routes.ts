@@ -22,8 +22,8 @@ router
     router.post('/login', '#controllers/auth_controller.login')
     router.get('/github', '#controllers/oauth_controller.githubRedirect')
     router.get('/github/callback', '#controllers/oauth_controller.githubCallback')
-    router.get('/verify-email/:token', '#controllers/email_verification_controller.verify')
-    router.post('/resend-verification', '#controllers/email_verification_controller.resend')
+    router.get('/verify-email/:token', '#controllers/email_verifications_controller.verify')
+    router.post('/resend-verification', '#controllers/email_verifications_controller.resend')
 
     router
       .group(() => {

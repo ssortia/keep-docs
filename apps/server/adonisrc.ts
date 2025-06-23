@@ -38,6 +38,7 @@ export default defineConfig({
     () => import('@adonisjs/auth/auth_provider'),
     () => import('@adonisjs/mail/mail_provider'),
     () => import('@adonisjs/ally/ally_provider'),
+    () => import('adonis-lucid-soft-deletes/provider'),
   ],
 
   /*

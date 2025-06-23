@@ -5,11 +5,11 @@ import { DocumentService } from '#services/document_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import { FileProcessingService } from '#services/file_processing_service'
 import {
-  documentTypeValidator,
-  dossierUuidValidator,
-  pageNumberValidator,
-  pageUuidValidator,
-  uploadDocumentValidator,
+  getDocumentsValidator,
+  getDocumentValidator,
+  addPagesValidator,
+  getPageValidator,
+  deletePageValidator,
 } from '#validators/document_validator'
 import {
   DocumentNotFoundException,
@@ -31,7 +31,7 @@ export default class DocumentController {
    * Получить все документы досье
    */
   async getDocuments({ params, response }: HttpContext) {
-    const { uuid } = await dossierUuidValidator.validate(params)
+    const { uuid } = await getDocumentsValidator.validate(params)
 
     const dossier = await this.findDossierWithDocuments(uuid)
     const formattedResponse = this.documentAdapter.formatDossierResponse(dossier)
@@ -44,8 +44,7 @@ export default class DocumentController {
    * Скачать полный документ как объединенный файл
    */
   async getDocument({ params, response }: HttpContext) {
-    const { uuid } = await dossierUuidValidator.validate(params)
-    const { type } = await documentTypeValidator.validate(params)
+    const { uuid, type } = await getDocumentValidator.validate(params)
 
     const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
 
@@ -53,7 +52,7 @@ export default class DocumentController {
       throw new DocumentNotFoundException()
     }
 
-    return await this.streamDocumentFiles(document.files, type, response)
+    return this.streamDocumentFiles(document.files, type, response)
   }
 
   /**
@@ -61,28 +60,25 @@ export default class DocumentController {
    * Загрузить страницы документа
    */
   async addPages({ params, request, response }: HttpContext) {
-    const { uuid } = await dossierUuidValidator.validate(params)
-    const { type } = await documentTypeValidator.validate(params)
-    // Находим или создаем досье
-    const dossier = await this.documentService.findOrCreateDossier(uuid)
-
-    // Валидация типа документа
-    if (!this.documentService.validateDocumentType(dossier.schema, type)) {
-      throw new InvalidDocumentTypeException(type, dossier.schema)
-    }
-
-    const payload = await uploadDocumentValidator.validate({
+    const { uuid, type, documents, name, isNewVersion } = await addPagesValidator.validate({
+      ...params,
       documents: request.files('documents'),
       name: request.input('name'),
       isNewVersion: request.input('isNewVersion', false),
     })
 
+    const dossier = await this.documentService.findOrCreateDossier(uuid)
+
+    if (!this.documentService.validateDocumentType(dossier.schema, type)) {
+      throw new InvalidDocumentTypeException(type, dossier.schema)
+    }
+
     const result = await this.documentService.processDocumentUpload({
       dossier,
       documentType: type,
-      files: payload.documents,
-      versionName: payload.name,
-      isNewVersion: payload.isNewVersion,
+      files: documents,
+      versionName: name,
+      isNewVersion: isNewVersion,
     })
 
     const formattedResponse = this.documentAdapter.formatDocumentUploadResponse(
@@ -100,9 +96,7 @@ export default class DocumentController {
    * Скачать конкретную страницу
    */
   async getPage({ params, response }: HttpContext) {
-    const { uuid } = await dossierUuidValidator.validate(params)
-    const { type } = await documentTypeValidator.validate(params)
-    const { number } = await pageNumberValidator.validate(params)
+    const { uuid, type, number } = await getPageValidator.validate(params)
 
     const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
 
@@ -116,7 +110,7 @@ export default class DocumentController {
       throw new PageNotFoundException(number)
     }
 
-    return await this.streamSingleFile(file, response)
+    return this.streamSingleFile(file, response)
   }
 
   /**
@@ -124,9 +118,7 @@ export default class DocumentController {
    * Мягкое удаление страницы
    */
   async deletePage({ params, response }: HttpContext) {
-    const { uuid } = await dossierUuidValidator.validate(params)
-    const { type } = await documentTypeValidator.validate(params)
-    const { pageUuid } = await pageUuidValidator.validate(params)
+    const { uuid, type, pageUuid } = await deletePageValidator.validate(params)
 
     const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
 
@@ -140,7 +132,7 @@ export default class DocumentController {
       throw new PageNotFoundException(pageUuid)
     }
 
-    await this.documentService.softDeleteFile(file)
+    await this.documentService.deleteFile(file)
 
     return response.ok({ message: 'Страница успешно удалена' })
   }
@@ -172,7 +164,7 @@ export default class DocumentController {
    */
   private async streamDocumentFiles(files: any[], documentType: string, response: any) {
     if (files.length === 1) {
-      return await this.streamSingleFile(files[0], response)
+      return this.streamSingleFile(files[0], response)
     }
 
     // Объединяем несколько файлов

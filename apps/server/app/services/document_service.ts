@@ -145,9 +145,8 @@ export class DocumentService {
   /**
    * Выполняет мягкое удаление файла
    */
-  async softDeleteFile(file: File): Promise<void> {
-    file.deletedAt = new Date()
-    await file.save()
+  async deleteFile(file: File): Promise<void> {
+    await file.delete()
   }
 
   /**

@@ -1,46 +1,54 @@
 import vine from '@vinejs/vine'
 
-export const uploadDocumentValidator = vine.compile(
+const typeRule = vine
+  .string()
+  .trim()
+  .minLength(1)
+  .maxLength(50)
+  .regex(/^[a-zA-Z0-9_-]+$/)
+
+const uuidRule = vine.string().uuid()
+const pageRule = vine.number().positive().min(1).max(9999)
+const documentRule = vine.file({
+  size: '50mb',
+  extnames: ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif'],
+})
+
+export const getDocumentsValidator = vine.compile(
   vine.object({
-    documents: vine
-      .array(
-        vine.file({
-          size: '50mb',
-          extnames: ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif'],
-        })
-      )
-      .minLength(1)
-      .maxLength(50),
+    uuid: uuidRule,
+  })
+)
+
+export const getDocumentValidator = vine.compile(
+  vine.object({
+    uuid: uuidRule,
+    type: typeRule,
+  })
+)
+
+export const addPagesValidator = vine.compile(
+  vine.object({
+    uuid: uuidRule,
+    type: typeRule,
+    documents: vine.array(documentRule).minLength(1).maxLength(50),
     name: vine.string().trim().minLength(1).maxLength(100).optional(),
     isNewVersion: vine.boolean().optional(),
   })
 )
 
-export const dossierUuidValidator = vine.compile(
+export const getPageValidator = vine.compile(
   vine.object({
-    uuid: vine.string().uuid(),
+    uuid: uuidRule,
+    type: typeRule,
+    number: pageRule,
   })
 )
 
-export const documentTypeValidator = vine.compile(
+export const deletePageValidator = vine.compile(
   vine.object({
-    type: vine
-      .string()
-      .trim()
-      .minLength(1)
-      .maxLength(50)
-      .regex(/^[a-zA-Z0-9_-]+$/),
-  })
-)
-
-export const pageNumberValidator = vine.compile(
-  vine.object({
-    number: vine.number().positive().min(1).max(9999),
-  })
-)
-
-export const pageUuidValidator = vine.compile(
-  vine.object({
-    pageUuid: vine.string().uuid(),
+    uuid: uuidRule,
+    type: typeRule,
+    pageUuid: uuidRule,
   })
 )

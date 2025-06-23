@@ -1,10 +1,12 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Document from '#models/document'
 import Version from '#models/version'
+import { SoftDeletes } from 'adonis-lucid-soft-deletes'
+import { compose } from '@adonisjs/core/helpers'
 
-export default class File extends BaseModel {
+export default class File extends compose(BaseModel, SoftDeletes) {
   @column({ isPrimary: true })
   declare id: number
 
