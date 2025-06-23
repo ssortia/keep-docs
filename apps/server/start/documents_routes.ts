@@ -8,6 +8,7 @@
 */
 
 import router from '@adonisjs/core/services/router'
+import { middleware } from '#start/kernel'
 
 /**
  * API маршруты для документов
@@ -21,5 +22,6 @@ router
     router.delete('/:uuid/documents/:type/:pageUuid', '#controllers/document_controller.deletePage')
   })
   .prefix('/api/docs')
+  .middleware([middleware.auth({ guards: ['api'] }), middleware.schemaAccess()])
 
 export default router

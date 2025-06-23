@@ -48,4 +48,5 @@ export const middleware = router.named({
   role: () => import('#middleware/role_middleware'),
   permission: () => import('#middleware/permission_middleware'),
   resource: () => import('#middleware/resource_middleware'),
+  schemaAccess: () => import('#middleware/schema_access_middleware'),
 })
