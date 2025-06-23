@@ -65,7 +65,7 @@ Accept: image/jpeg,image/png,application/pdf
 
 ### 6. Удалить страницу (мягкое удаление)
 ### DELETE /:uuid/documents/:type/:pageUuid
-DELETE {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}/{{pageUuid}}
+DELETE {{baseUrl}}/api/docs/550e8400-e29b-41d4-a716-446655440000/documents/passport/0fdb0f41-c92f-456f-8617-aecae311da83
 Accept: application/json
 
 ### 7. Пример ошибки - несуществующее досье

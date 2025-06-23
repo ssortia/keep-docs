@@ -51,28 +51,36 @@ export interface PageResponse {
   version: string
 }
 
+export interface CreateDossierResponse {
+  data: {
+    uuid: string
+    schema: string
+    createdAt: string
+  }
+  message: string
+}
+
 export class DocumentAdapter {
   formatFileResponse(file: File): FileResponse {
     return {
       uuid: file.uuid,
-      originalName: file.originalName,
-      extension: file.extension,
-      mimeType: file.mimeType,
-      pageNumber: file.pageNumber,
-      createdAt: file.createdAt.toISO(),
+      originalName: file.originalName || '',
+      extension: file.extension || '',
+      mimeType: file.mimeType || '',
+      pageNumber: file.pageNumber || 0,
+      createdAt: file.createdAt.toISO() || '',
     }
   }
 
   formatFileResponseWithDetails(file: File): FileResponse {
     return {
       uuid: file.uuid,
-      originalName: file.originalName,
-      extension: file.extension,
-      mimeType: file.mimeType,
-      pageNumber: file.pageNumber,
-      path: file.path,
-      size: file.size,
-      createdAt: file.createdAt.toISO(),
+      originalName: file.originalName || '',
+      extension: file.extension || '',
+      mimeType: file.mimeType || '',
+      pageNumber: file.pageNumber || 0,
+      path: file.path || undefined,
+      createdAt: file.createdAt.toISO() || '',
     }
   }
 
@@ -84,8 +92,8 @@ export class DocumentAdapter {
       files: (document.files?.filter((f) => !f.deletedAt) || [])
         .map((file) => this.formatFileResponse(file))
         .sort((a, b) => a.pageNumber - b.pageNumber),
-      createdAt: document.createdAt.toISO(),
-      updatedAt: document.updatedAt.toISO(),
+      createdAt: document.createdAt.toISO() || '',
+      updatedAt: document.updatedAt.toISO() || '',
     }
   }
 
@@ -94,8 +102,8 @@ export class DocumentAdapter {
       uuid: dossier.uuid,
       schema: dossier.schema,
       documents: (dossier.documents || []).map((doc) => this.formatDocumentResponse(doc)),
-      createdAt: dossier.createdAt.toISO(),
-      updatedAt: dossier.updatedAt.toISO(),
+      createdAt: dossier.createdAt.toISO() || '',
+      updatedAt: dossier.updatedAt.toISO() || '',
     }
   }
 
@@ -116,20 +124,15 @@ export class DocumentAdapter {
     }
   }
 
-  formatPageResponse(file: File, document: Document): PageResponse {
+  formatCreateDossierResponse(dossier: Dossier): CreateDossierResponse {
     return {
-      uuid: file.uuid,
-      originalName: file.originalName,
-      extension: file.extension,
-      mimeType: file.mimeType,
-      pageNumber: file.pageNumber,
-      documentCode: document.code,
-      version: document.currentVersion?.name || 'unknown',
+      data: {
+        uuid: dossier.uuid,
+        schema: dossier.schema,
+        createdAt: dossier.createdAt.toISO()!,
+      },
+      message: 'Досье успешно создано',
     }
-  }
-
-  formatDocumentListResponse(documents: Document[]): DocumentResponse[] {
-    return documents.map((doc) => this.formatDocumentResponse(doc))
   }
 
   formatErrorResponse(message: string, code?: string, details?: any) {

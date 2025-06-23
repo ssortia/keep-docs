@@ -52,3 +52,10 @@ export const deletePageValidator = vine.compile(
     pageUuid: uuidRule,
   })
 )
+
+export const createDossierValidator = vine.compile(
+  vine.object({
+    schema: vine.string().trim().minLength(1).maxLength(100),
+    uuid: uuidRule.optional(),
+  })
+)

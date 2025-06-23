@@ -1,30 +1,47 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
-import Dossier from '#models/dossier'
 import { DocumentService } from '#services/document_service'
+import { DossierService } from '#services/dossier_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
-import { FileProcessingService } from '#services/file_processing_service'
 import {
   getDocumentsValidator,
   getDocumentValidator,
   addPagesValidator,
   getPageValidator,
   deletePageValidator,
+  createDossierValidator,
 } from '#validators/document_validator'
 import {
   DocumentNotFoundException,
-  DossierNotFoundException,
   InvalidDocumentTypeException,
   PageNotFoundException,
 } from '#exceptions/document_exceptions'
+import { SchemaValidator } from '#validators/schema_validator'
 
 @inject()
 export default class DocumentController {
   constructor(
     private documentService: DocumentService,
+    private dossierService: DossierService,
     private documentAdapter: DocumentAdapter,
-    private fileProcessingService: FileProcessingService
   ) {}
+
+  /**
+   * POST /documents
+   * Создать новое досье
+   */
+  async createDossier({ request, response }: HttpContext) {
+    const { schema, uuid } = await createDossierValidator.validate(request.all())
+
+    const dossier = await this.dossierService.createDossier({
+      uuid: uuid || crypto.randomUUID(),
+      schema,
+    })
+
+    const formattedResponse = this.documentAdapter.formatCreateDossierResponse(dossier)
+
+    return response.created(formattedResponse)
+  }
 
   /**
    * GET /:uuid/documents
@@ -33,7 +50,7 @@ export default class DocumentController {
   async getDocuments({ params, response }: HttpContext) {
     const { uuid } = await getDocumentsValidator.validate(params)
 
-    const dossier = await this.findDossierWithDocuments(uuid)
+    const dossier = await this.dossierService.findDossierWithDocuments(uuid)
     const formattedResponse = this.documentAdapter.formatDossierResponse(dossier)
 
     return response.ok(formattedResponse)
@@ -46,13 +63,14 @@ export default class DocumentController {
   async getDocument({ params, response }: HttpContext) {
     const { uuid, type } = await getDocumentValidator.validate(params)
 
-    const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
+    const dossier = await this.dossierService.findDossierByUuid(uuid)
+    const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
 
     if (!document || !document.files || document.files.length === 0) {
       throw new DocumentNotFoundException()
     }
 
-    return this.streamDocumentFiles(document.files, type, response)
+    return this.documentService.streamDocumentFiles(document.files, type, response)
   }
 
   /**
@@ -67,9 +85,9 @@ export default class DocumentController {
       isNewVersion: request.input('isNewVersion', false),
     })
 
-    const dossier = await this.documentService.findOrCreateDossier(uuid)
+    const dossier = await this.dossierService.findOrCreateDossier(uuid)
 
-    if (!this.documentService.validateDocumentType(dossier.schema, type)) {
+    if (!SchemaValidator.validateDocumentType(dossier.schema, type)) {
       throw new InvalidDocumentTypeException(type, dossier.schema)
     }
 
@@ -98,7 +116,8 @@ export default class DocumentController {
   async getPage({ params, response }: HttpContext) {
     const { uuid, type, number } = await getPageValidator.validate(params)
 
-    const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
+    const dossier = await this.dossierService.findDossierByUuid(uuid)
+    const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
 
     if (!document) {
       throw new DocumentNotFoundException()
@@ -110,7 +129,7 @@ export default class DocumentController {
       throw new PageNotFoundException(number)
     }
 
-    return this.streamSingleFile(file, response)
+    return this.documentService.streamSingleFile(file, response)
   }
 
   /**
@@ -120,7 +139,8 @@ export default class DocumentController {
   async deletePage({ params, response }: HttpContext) {
     const { uuid, type, pageUuid } = await deletePageValidator.validate(params)
 
-    const document = await this.documentService.findDocumentByDossierAndType(uuid, type)
+    const dossier = await this.dossierService.findDossierByUuid(uuid)
+    const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
 
     if (!document) {
       throw new DocumentNotFoundException()
@@ -135,59 +155,5 @@ export default class DocumentController {
     await this.documentService.deleteFile(file)
 
     return response.ok({ message: 'Страница успешно удалена' })
-  }
-
-  /**
-   * Находит досье с документами
-   */
-  private async findDossierWithDocuments(uuid: string) {
-    const dossier = await Dossier.query()
-      .where('uuid', uuid)
-      .preload('documents', (query) => {
-        query.preload('currentVersion')
-        query.preload('files', (fileQuery) => {
-          fileQuery.whereNull('deletedAt')
-          fileQuery.orderBy('pageNumber', 'asc')
-        })
-      })
-      .first()
-
-    if (!dossier) {
-      throw new DossierNotFoundException(uuid)
-    }
-
-    return dossier
-  }
-
-  /**
-   * Стримит файлы документа
-   */
-  private async streamDocumentFiles(files: any[], documentType: string, response: any) {
-    if (files.length === 1) {
-      return this.streamSingleFile(files[0], response)
-    }
-
-    // Объединяем несколько файлов
-    const mergedFilePath = await this.documentService.mergeDocumentFiles(files)
-    const { stream, size } = await this.fileProcessingService.getFileStream(mergedFilePath)
-
-    response.header('Content-Type', 'application/pdf')
-    response.header('Content-Length', size.toString())
-    response.header('Content-Disposition', `attachment; filename="${documentType}.pdf"`)
-
-    return response.stream(stream)
-  }
-
-  /**
-   * Стримит один файл
-   */
-  private async streamSingleFile(file: any, response: any) {
-    const { stream, size, mimeType } = await this.fileProcessingService.getFileStream(file.path)
-
-    response.header('Content-Type', mimeType)
-    response.header('Content-Length', size.toString())
-    response.header('Content-Disposition', `attachment; filename="${file.originalName}"`)
-
-    return response.stream(stream)
   }
 }

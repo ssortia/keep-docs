@@ -1,16 +1,13 @@
 import { inject } from '@adonisjs/core'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
-import { Transaction } from '@adonisjs/lucid/types/database'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import db from '@adonisjs/lucid/services/db'
 import Dossier from '#models/dossier'
 import Document from '#models/document'
 import Version from '#models/version'
 import File from '#models/file'
 import { FileProcessingService, ProcessedFile } from '#services/file_processing_service'
-import {
-  DocumentProcessingException,
-  DossierNotFoundException,
-} from '#exceptions/document_exceptions'
+import { DocumentProcessingException } from '#exceptions/document_exceptions'
 
 export interface DocumentUploadData {
   dossier: Dossier
@@ -27,23 +24,10 @@ export interface DocumentUploadResult {
   pagesAdded: number
 }
 
+
 @inject()
 export class DocumentService {
   constructor(private fileProcessingService: FileProcessingService) {}
-
-  /**
-   * Валидирует тип документа согласно схеме досье
-   */
-  validateDocumentType(schema: string, documentType: string): boolean {
-    try {
-      const schemaData = JSON.parse(schema)
-      const allowedTypes = schemaData.documentTypes || []
-      return allowedTypes.includes(documentType)
-    } catch {
-      // Если схема невалидна, разрешаем любые типы
-      return true
-    }
-  }
 
   /**
    * Обрабатывает загрузку документа с файлами
@@ -100,17 +84,12 @@ export class DocumentService {
   }
 
   /**
-   * Находит документ по досье UUID и типу с файлами текущей версии
+   * Находит документ по досье и типу с файлами текущей версии
    */
   async findDocumentByDossierAndType(
-    dossierUuid: string,
+    dossier: Dossier,
     documentType: string
   ): Promise<Document | null> {
-    const dossier = await Dossier.findBy('uuid', dossierUuid)
-    if (!dossier) {
-      throw new DossierNotFoundException(dossierUuid)
-    }
-
     const document = await Document.query()
       .where('dossierId', dossier.id)
       .where('code', documentType)
@@ -150,19 +129,35 @@ export class DocumentService {
   }
 
   /**
-   * Находит или создает досье по UUID
+   * Стримит файлы документа
    */
-  async findOrCreateDossier(uuid: string, schema: string = 'default'): Promise<Dossier> {
-    let dossier = await Dossier.findBy('uuid', uuid)
-
-    if (!dossier) {
-      dossier = await Dossier.create({
-        uuid,
-        schema,
-      })
+  async streamDocumentFiles(files: any[], documentType: string, response: any): Promise<any> {
+    if (files.length === 1) {
+      return await this.streamSingleFile(files[0], response)
     }
 
-    return dossier
+    // Объединяем несколько файлов
+    const mergedFilePath = await this.mergeDocumentFiles(files)
+    const { stream, size } = await this.fileProcessingService.getFileStream(mergedFilePath)
+
+    response.header('Content-Type', 'application/pdf')
+    response.header('Content-Length', size.toString())
+    response.header('Content-Disposition', `attachment; filename="${documentType}.pdf"`)
+
+    return response.stream(stream)
+  }
+
+  /**
+   * Стримит один файл
+   */
+  async streamSingleFile(file: any, response: any): Promise<any> {
+    const { stream, size, mimeType } = await this.fileProcessingService.getFileStream(file.path)
+
+    response.header('Content-Type', mimeType)
+    response.header('Content-Length', size.toString())
+    response.header('Content-Disposition', `attachment; filename="${file.originalName}"`)
+
+    return response.stream(stream)
   }
 
   /**
@@ -171,7 +166,7 @@ export class DocumentService {
   private async findOrCreateDocument(
     dossier: Dossier,
     documentType: string,
-    trx: Transaction
+    trx: TransactionClientContract
   ): Promise<Document> {
     let document = await Document.query({ client: trx })
       .where('dossierId', dossier.id)
@@ -198,7 +193,7 @@ export class DocumentService {
     document: Document,
     versionName?: string,
     isNewVersion?: boolean,
-    trx?: Transaction
+    trx?: TransactionClientContract
   ): Promise<Version> {
     if (isNewVersion) {
       return await this.createNewVersion(versionName, trx)
@@ -215,7 +210,10 @@ export class DocumentService {
   /**
    * Создает новую версию
    */
-  private async createNewVersion(versionName?: string, trx?: Transaction): Promise<Version> {
+  private async createNewVersion(
+    versionName?: string,
+    trx?: TransactionClientContract
+  ): Promise<Version> {
     const name = versionName || this.generateVersionName()
 
     return await Version.create({ name }, { client: trx })
@@ -236,7 +234,7 @@ export class DocumentService {
     processedFiles: ProcessedFile[],
     document: Document,
     version: Version,
-    trx: Transaction
+    trx: TransactionClientContract
   ): Promise<File[]> {
     const savedFiles: File[] = []
 
@@ -268,7 +266,7 @@ export class DocumentService {
   private async updateCurrentVersion(
     document: Document,
     version: Version,
-    trx: Transaction
+    trx: TransactionClientContract
   ): Promise<void> {
     document.currentVersionId = version.id
     await document.useTransaction(trx).save()
