@@ -41,12 +41,12 @@ export const DocumentTabs: React.FC<DocumentTabsProps> = ({
               {document.name}
               {isRequired && <span className="required-indicator">*</span>}
             </span>
-            {filesCount > 0 && (
-              <span className="files-count">({filesCount})</span>
-            )}
+            {/* {filesCount > 0 && ( */}
+            {/*   <span className="files-count">{filesCount}</span> */}
+            {/* )} */}
           </button>
         );
-      })}
+      })}юю
     </div>
   );
 };

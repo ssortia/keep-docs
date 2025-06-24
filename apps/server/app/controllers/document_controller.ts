@@ -67,7 +67,23 @@ export default class DocumentController {
     })
 
     const dossier = await this.dossierService.findOrCreateDossier(uuid, schema)
-    const formattedResponse = this.documentAdapter.formatDossierResponse(dossier)
+
+    // Загружаем версии для каждого документа
+    const documentsWithVersions = await Promise.all(
+      dossier.documents.map(async (document) => {
+        const versions = await this.dossierService.getDocumentVersions(document.id)
+        return this.documentAdapter.formatDocumentResponse(document, versions)
+      })
+    )
+
+    const formattedResponse = {
+      id: dossier.id,
+      uuid: dossier.uuid,
+      schema: dossier.schema,
+      documents: documentsWithVersions,
+      createdAt: dossier.createdAt.toISO() || '',
+      updatedAt: dossier.updatedAt.toISO() || '',
+    }
 
     return response.ok(formattedResponse)
   }

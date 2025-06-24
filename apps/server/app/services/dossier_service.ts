@@ -1,5 +1,6 @@
 import { inject } from '@adonisjs/core'
 import Dossier from '#models/dossier'
+import Version from '#models/version'
 import {
   DocumentProcessingException,
   DossierNotFoundException,
@@ -78,6 +79,20 @@ export class DossierService {
     }
 
     return dossier
+  }
+
+  /**
+   * Получает все версии для документа
+   */
+  async getDocumentVersions(documentId: number): Promise<Version[]> {
+    return Version.query()
+      .whereExists((query) => {
+        query
+          .from('files')
+          .whereColumn('files.version_id', 'versions.id')
+          .where('files.document_id', documentId)
+      })
+      .orderBy('created_at', 'desc')
   }
 
   /**

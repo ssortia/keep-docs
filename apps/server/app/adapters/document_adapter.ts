@@ -14,10 +14,18 @@ export interface FileResponse {
   createdAt: string
 }
 
+export interface VersionResponse {
+  id: number
+  name: string
+  createdAt: string
+}
+
 export interface DocumentResponse {
+  id: number
   code: string
-  currentVersion?: string
-  pageCount: number
+  currentVersion?: VersionResponse
+  versions: VersionResponse[]
+  filesCount: number
   files: FileResponse[]
   createdAt: string
   updatedAt: string
@@ -84,12 +92,29 @@ export class DocumentAdapter {
     }
   }
 
-  formatDocumentResponse(document: Document): DocumentResponse {
+  formatVersionResponse(version: Version): VersionResponse {
     return {
+      id: version.id,
+      name: version.name,
+      createdAt: version.createdAt.toISO() || '',
+    }
+  }
+
+  formatDocumentResponse(document: Document, versions: Version[] = []): DocumentResponse {
+    // Фильтруем файлы только текущей версии
+    const currentVersionFiles = document.files?.filter(
+      (f) => !f.deletedAt && f.versionId === document.currentVersionId
+    ) || []
+
+    return {
+      id: document.id,
       code: document.code,
-      currentVersion: document.currentVersion?.name,
-      pageCount: document.files?.filter((f) => !f.deletedAt).length || 0,
-      files: (document.files?.filter((f) => !f.deletedAt) || [])
+      currentVersion: document.currentVersion 
+        ? this.formatVersionResponse(document.currentVersion)
+        : undefined,
+      versions: versions.map((version) => this.formatVersionResponse(version)),
+      filesCount: currentVersionFiles.length,
+      files: currentVersionFiles
         .map((file) => this.formatFileResponse(file))
         .sort((a, b) => a.pageNumber - b.pageNumber),
       createdAt: document.createdAt.toISO() || '',

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDocumentManager } from '../hooks/useDocumentManager';
 import { getVisibleDocuments, isDocumentEditable } from '../utils/schemaUtils';
 import type { UISchema } from '../exampleSchema';
@@ -168,7 +168,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
   if (visibleDocuments.length === 0) {
     return <div className="keep-docs-empty">Нет доступных документов для отображения</div>;
   }
-  console.log(dossier, activeTab);
+
   return (
     <div className="keep-docs">
       <div className="keep-docs-layout">
@@ -185,12 +185,13 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
         <div className="keep-docs-content">
           {activeTab && (
             <>
-              <DocumentUploadArea
-                onFilesSelected={handleFilesSelected}
-                disabled={!isEditable || loading}
-                accept={activeSchemaDocument?.accept}
-              />
-
+              {isEditable && (
+                <DocumentUploadArea
+                  onFilesSelected={handleFilesSelected}
+                  disabled={loading}
+                  accept={activeSchemaDocument?.accept}
+                />
+              )}
               {currentDocument && (
                 <DocumentPreview
                   uuid={dossier?.uuid}
