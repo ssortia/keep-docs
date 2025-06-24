@@ -183,7 +183,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
         </div>
 
         <div className="keep-docs-content">
-          {activeTab && (
+          {activeTab && dossier && (
             <>
               {isEditable && (
                 <DocumentUploadArea
@@ -194,7 +194,8 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
               )}
               {currentDocument && (
                 <DocumentPreview
-                  uuid={dossier?.uuid}
+                  uuid={dossier.uuid}
+                  name={activeSchemaDocument.name}
                   document={currentDocument}
                   onPageDelete={handlePageDelete}
                   onPageEnlarge={setEnlargedPage}

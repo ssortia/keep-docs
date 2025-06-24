@@ -46,7 +46,7 @@ export const DocumentTabs: React.FC<DocumentTabsProps> = ({
             {/* )} */}
           </button>
         );
-      })}юю
+      })}
     </div>
   );
 };

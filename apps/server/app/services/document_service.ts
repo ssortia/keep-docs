@@ -68,7 +68,8 @@ export class DocumentService {
         trx
       )
 
-      if (!document.currentVersionId) {
+      // Устанавливаем текущую версию если это первая версия или создается новая версия
+      if (!document.currentVersionId || data.isNewVersion) {
         await this.updateCurrentVersion(document, version, trx)
       }
 
