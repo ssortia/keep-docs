@@ -17,6 +17,7 @@ const documentRule = vine.file({
 export const getDocumentsValidator = vine.compile(
   vine.object({
     uuid: uuidRule,
+    schema: vine.string().optional(),
   })
 )
 

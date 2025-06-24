@@ -8,7 +8,7 @@ import {
 
 export default class SchemaAccessMiddleware {
   async handle(ctx: HttpContext, next: NextFn, options: { schema?: string } = {}) {
-    const { auth, params } = ctx
+    const { auth, params, request } = ctx
 
     if (!auth.user) {
       throw new InvalidSchemaTokenException('Пользователь не аутентифицирован')
@@ -20,8 +20,11 @@ export default class SchemaAccessMiddleware {
     }
 
     let schemaName: string
+    const querySchema = request.input('schema')
 
-    if (options.schema) {
+    if (querySchema) {
+      schemaName = querySchema
+    } else if (options.schema) {
       schemaName = options.schema
     } else if (params.uuid) {
       schemaName = await this.getSchemaFromDossier(params.uuid)

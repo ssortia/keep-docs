@@ -15,16 +15,18 @@ export interface CreateDossierData {
 @inject()
 export class DossierService {
   /**
-   * Находит или создает досье по UUID
+   * Находит или создает досье по UUID с документами
    */
   async findOrCreateDossier(uuid: string, schema: string = 'default'): Promise<Dossier> {
-    let dossier = await Dossier.findBy('uuid', uuid)
-
-    if (!dossier) {
-      dossier = await Dossier.create({ uuid, schema })
+    try {
+      return await this.findDossierWithDocuments(uuid)
+    } catch (error) {
+      if (error instanceof DossierNotFoundException) {
+        await Dossier.create({ uuid, schema })
+        return await this.findDossierWithDocuments(uuid)
+      }
+      throw error
     }
-
-    return dossier
   }
 
   /**
@@ -76,5 +78,17 @@ export class DossierService {
     }
 
     return dossier
+  }
+
+  /**
+   * Генерирует иерархический путь для досье в формате uploads/2025/06/23/[uuid]
+   */
+  generateDossierPath(dossier: Dossier): string {
+    const createdAt = dossier.createdAt
+    const year = createdAt.year.toString()
+    const month = createdAt.month.toString().padStart(2, '0')
+    const day = createdAt.day.toString().padStart(2, '0')
+
+    return `${year}/${month}/${day}/${dossier.uuid}`
   }
 }

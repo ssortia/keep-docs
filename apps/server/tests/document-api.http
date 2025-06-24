@@ -10,13 +10,15 @@
 
 ### 1. Получить все документы досье
 ### GET /:uuid/documents
-GET {{baseUrl}}/api/docs/{{dossierUuid}}/documents
+GET {{baseUrl}}/api/docs/{{dossierUuid}}/documents?schema=strizh_offer
 Accept: application/json
+Authorization: Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE
 
 ### 2. Загрузить страницы документа (новая версия)
 ### PUT /:uuid/documents/:type
 PUT {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}
 Content-Type: multipart/form-data; boundary=boundary123
+Authorization: Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE
 
 --boundary123
 Content-Disposition: form-data; name="documents"; filename="passport_page1.pdf"
@@ -41,6 +43,7 @@ true
 ### PUT /:uuid/documents/:type
 PUT {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}
 Content-Type: multipart/form-data; boundary=boundary456
+Authorization: Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE
 
 --boundary456
 Content-Disposition: form-data; name="documents"; filename="additional_page.png"

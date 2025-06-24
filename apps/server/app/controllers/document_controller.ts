@@ -4,12 +4,12 @@ import { DocumentService } from '#services/document_service'
 import { DossierService } from '#services/dossier_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import {
+  addPagesValidator,
+  createDossierValidator,
+  deletePageValidator,
   getDocumentsValidator,
   getDocumentValidator,
-  addPagesValidator,
   getPageValidator,
-  deletePageValidator,
-  createDossierValidator,
 } from '#validators/document_validator'
 import {
   DocumentNotFoundException,
@@ -23,7 +23,7 @@ export default class DocumentController {
   constructor(
     private documentService: DocumentService,
     private dossierService: DossierService,
-    private documentAdapter: DocumentAdapter,
+    private documentAdapter: DocumentAdapter
   ) {}
 
   /**
@@ -47,10 +47,13 @@ export default class DocumentController {
    * GET /:uuid/documents
    * Получить все документы досье
    */
-  async getDocuments({ params, response }: HttpContext) {
-    const { uuid } = await getDocumentsValidator.validate(params)
+  async getDocuments({ params, request, response }: HttpContext) {
+    const { uuid, schema } = await getDocumentsValidator.validate({
+      uuid: params.uuid,
+      schema: request.input('schema'),
+    })
 
-    const dossier = await this.dossierService.findDossierWithDocuments(uuid)
+    const dossier = await this.dossierService.findOrCreateDossier(uuid, schema)
     const formattedResponse = this.documentAdapter.formatDossierResponse(dossier)
 
     return response.ok(formattedResponse)
@@ -86,8 +89,9 @@ export default class DocumentController {
     })
 
     const dossier = await this.dossierService.findOrCreateDossier(uuid)
+    const isValid = await SchemaValidator.validateDocumentType(dossier.schema, type)
 
-    if (!SchemaValidator.validateDocumentType(dossier.schema, type)) {
+    if (!isValid) {
       throw new InvalidDocumentTypeException(type, dossier.schema)
     }
 

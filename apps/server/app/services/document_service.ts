@@ -7,6 +7,7 @@ import Document from '#models/document'
 import Version from '#models/version'
 import File from '#models/file'
 import { FileProcessingService, ProcessedFile } from '#services/file_processing_service'
+import { DossierService } from '#services/dossier_service'
 import { DocumentProcessingException } from '#exceptions/document_exceptions'
 
 export interface DocumentUploadData {
@@ -24,10 +25,12 @@ export interface DocumentUploadResult {
   pagesAdded: number
 }
 
-
 @inject()
 export class DocumentService {
-  constructor(private fileProcessingService: FileProcessingService) {}
+  constructor(
+    private fileProcessingService: FileProcessingService,
+    private dossierService: DossierService
+  ) {}
 
   /**
    * Обрабатывает загрузку документа с файлами
@@ -36,8 +39,12 @@ export class DocumentService {
     const trx = await db.transaction()
 
     try {
-      // console.log(data)
-      const processedFiles = await this.fileProcessingService.processUploadedFiles(data.files)
+      const dossierPath = this.dossierService.generateDossierPath(data.dossier)
+      const processedFiles = await this.fileProcessingService.processUploadedFiles(
+        data.files,
+        {},
+        dossierPath
+      )
       const document = await this.findOrCreateDocument(data.dossier, data.documentType, trx)
       const version = await this.createOrFindVersion(
         document,

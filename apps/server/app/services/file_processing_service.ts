@@ -41,16 +41,17 @@ export class FileProcessingService {
    */
   async processUploadedFiles(
     files: MultipartFile[],
-    options: FileProcessingOptions = {}
+    options: FileProcessingOptions = {},
+    customUploadPath: string
   ): Promise<ProcessedFile[]> {
     const processedFiles: ProcessedFile[] = []
     const config = this.getProcessingConfig(options)
-    let currentPageNumber = 1
+    let currentPageNumber = 1 // todo какие-то файлы уже могут быть загружены
 
     for (const file of files) {
       this.validateFile(file, config.allowedExtensions, config.maxFileSize)
 
-      const fileResults = await this.processFileByType(file, currentPageNumber)
+      const fileResults = await this.processFileByType(file, currentPageNumber, customUploadPath)
       processedFiles.push(...fileResults)
 
       // Обновляем номер страницы для следующего файла
@@ -147,12 +148,13 @@ export class FileProcessingService {
    */
   private async processFileByType(
     file: MultipartFile,
-    startPageNumber: number
+    startPageNumber: number,
+    uploadPath: string
   ): Promise<ProcessedFile[]> {
     if (file.extname === 'pdf') {
-      return await this.processPdfFile(file, startPageNumber)
+      return await this.processPdfFile(file, startPageNumber, uploadPath)
     } else {
-      const processedFile = await this.processImageFile(file, startPageNumber)
+      const processedFile = await this.processImageFile(file, startPageNumber, uploadPath)
       return [processedFile]
     }
   }
@@ -215,17 +217,17 @@ export class FileProcessingService {
     // Стандартный размер страницы A4 (595.28 x 841.89 точек)
     const pageWidth = 595.28
     const pageHeight = 841.89
-    
+
     const page = mergedPdf.addPage([pageWidth, pageHeight])
-    
+
     // Вычисляем масштаб для вписывания изображения в страницу
     const scaleX = pageWidth / image.width
     const scaleY = pageHeight / image.height
     const scale = Math.min(scaleX, scaleY)
-    
+
     const scaledWidth = image.width * scale
     const scaledHeight = image.height * scale
-    
+
     // Центрируем изображение на странице
     const x = (pageWidth - scaledWidth) / 2
     const y = (pageHeight - scaledHeight) / 2
@@ -280,13 +282,20 @@ export class FileProcessingService {
    */
   private async processPdfFile(
     file: MultipartFile,
-    startPageNumber: number
+    startPageNumber: number,
+    customUploadPath: string
   ): Promise<ProcessedFile[]> {
     const tempFilePath = await this.saveTempFile(file)
 
     try {
       const pageCount = await this.getPdfPageCount(tempFilePath)
-      return await this.convertPdfToImages(file, tempFilePath, startPageNumber, pageCount)
+      return await this.convertPdfToImages(
+        file,
+        tempFilePath,
+        startPageNumber,
+        pageCount,
+        customUploadPath
+      )
     } finally {
       await unlink(tempFilePath)
     }
@@ -308,20 +317,30 @@ export class FileProcessingService {
     file: MultipartFile,
     tempFilePath: string,
     startPageNumber: number,
-    pageCount: number
+    pageCount: number,
+    customUploadPath: string
   ): Promise<ProcessedFile[]> {
+    const uploadDir = app.makePath(this.baseUploadPath, customUploadPath)
+    await mkdir(uploadDir, { recursive: true })
+
     const convert = fromPath(tempFilePath, {
-      density: 300, // Увеличили DPI для лучшего качества
+      density: 300,
       saveFilename: 'page',
-      savePath: this.getUploadDirectory(),
+      savePath: uploadDir,
       format: 'jpeg',
-      quality: 95, // Высокое качество JPEG
+      quality: 95,
     })
 
     const processedFiles: ProcessedFile[] = []
 
     for (let pageIndex = 1; pageIndex <= pageCount; pageIndex++) {
-      const processedFile = await this.convertSinglePage(convert, file, pageIndex, startPageNumber)
+      const processedFile = await this.convertSinglePage(
+        convert,
+        file,
+        pageIndex,
+        startPageNumber,
+        customUploadPath
+      )
       if (processedFile) {
         processedFiles.push(processedFile)
       }
@@ -337,13 +356,20 @@ export class FileProcessingService {
     convert: any,
     file: MultipartFile,
     pageIndex: number,
-    startPageNumber: number
+    startPageNumber: number,
+    uploadPath: string
   ): Promise<ProcessedFile | null> {
     try {
       const convertResult = await convert(pageIndex, { responseType: 'image' })
 
       if (convertResult && 'path' in convertResult) {
-        return await this.saveConvertedPage(convertResult.path, file, pageIndex, startPageNumber)
+        return await this.saveConvertedPage(
+          convertResult.path,
+          file,
+          pageIndex,
+          startPageNumber,
+          uploadPath
+        )
       }
 
       return null
@@ -360,15 +386,16 @@ export class FileProcessingService {
     tempPagePath: string,
     file: MultipartFile,
     pageIndex: number,
-    startPageNumber: number
+    startPageNumber: number,
+    uploadPath: string
   ): Promise<ProcessedFile> {
     const uuid = randomUUID()
     const filename = `${uuid}.jpg`
-    const finalPath = join(this.getUploadDirectory(), filename)
+    const uploadDir = app.makePath(this.baseUploadPath, uploadPath)
+    const finalPath = join(uploadDir, filename)
 
     // Конвертируем в JPG с высоким качеством
     await sharp(tempPagePath).jpeg({ quality: 95 }).toFile(finalPath)
-
     await unlink(tempPagePath)
 
     const fileStats = await stat(finalPath)
@@ -379,7 +406,7 @@ export class FileProcessingService {
       extension: 'jpg',
       mimeType: 'image/jpeg',
       size: fileStats.size,
-      path: filename,
+      path: join(this.baseUploadPath, uploadPath, filename),
       pageNumber: startPageNumber + pageIndex - 1,
     }
   }
@@ -387,11 +414,14 @@ export class FileProcessingService {
   /**
    * Обрабатывает файл изображения
    */
-  private async processImageFile(file: MultipartFile, pageNumber: number): Promise<ProcessedFile> {
+  private async processImageFile(
+    file: MultipartFile,
+    pageNumber: number,
+    uploadPath: string
+  ): Promise<ProcessedFile> {
     const tempFilePath = await this.saveTempFile(file)
-
     try {
-      return await this.optimizeAndSaveImage(file, tempFilePath, pageNumber)
+      return await this.optimizeAndSaveImage(file, tempFilePath, pageNumber, uploadPath)
     } finally {
       await unlink(tempFilePath)
     }
@@ -403,11 +433,14 @@ export class FileProcessingService {
   private async optimizeAndSaveImage(
     file: MultipartFile,
     tempFilePath: string,
-    pageNumber: number
+    pageNumber: number,
+    uploadPath: string
   ): Promise<ProcessedFile> {
     const uuid = randomUUID()
     const filename = `${uuid}.jpg`
-    const finalPath = join(this.getUploadDirectory(), filename)
+    const uploadDir = app.makePath(this.baseUploadPath, uploadPath)
+    await mkdir(uploadDir, { recursive: true })
+    const finalPath = join(uploadDir, filename)
 
     await sharp(tempFilePath)
       .jpeg({ quality: 95 })
@@ -425,7 +458,7 @@ export class FileProcessingService {
       extension: 'jpg',
       mimeType: 'image/jpeg',
       size: fileStats.size,
-      path: filename,
+      path: join(this.baseUploadPath, uploadPath, filename),
       pageNumber,
     }
   }
