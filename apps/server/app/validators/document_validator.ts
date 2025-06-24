@@ -9,6 +9,13 @@ const typeRule = vine
 
 const uuidRule = vine.string().uuid()
 const pageRule = vine.number().positive().min(1).max(9999)
+const schemaNameRule = vine
+  .string()
+  .trim()
+  .minLength(1)
+  .maxLength(100)
+  .regex(/^[a-zA-Z0-9_-]+$/)
+  .optional()
 const documentRule = vine.file({
   size: '50mb',
   extnames: ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif'],
@@ -17,7 +24,7 @@ const documentRule = vine.file({
 export const getDocumentsValidator = vine.compile(
   vine.object({
     uuid: uuidRule,
-    schema: vine.string().optional(),
+    schema: schemaNameRule,
   })
 )
 
@@ -56,7 +63,7 @@ export const deletePageValidator = vine.compile(
 
 export const createDossierValidator = vine.compile(
   vine.object({
-    schema: vine.string().trim().minLength(1).maxLength(100),
+    schema: schemaNameRule,
     uuid: uuidRule.optional(),
   })
 )
@@ -66,5 +73,11 @@ export const changeCurrentVersionValidator = vine.compile(
     uuid: uuidRule,
     type: typeRule,
     versionId: vine.number().positive(),
+  })
+)
+
+export const getSchemaValidator = vine.compile(
+  vine.object({
+    schema: schemaNameRule,
   })
 )

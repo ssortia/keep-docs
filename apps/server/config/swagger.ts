@@ -75,6 +75,10 @@ export default {
       name: 'Permissions',
       description: 'Управление разрешениями системы',
     },
+    {
+      name: 'Documents',
+      description: 'Управление документами и досье клиентов',
+    },
   ],
   authMiddlewares: ['auth'],
   defaultSecurityScheme: 'BearerAuth',

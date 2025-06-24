@@ -11,6 +11,7 @@ import {
   getDocumentsValidator,
   getDocumentValidator,
   getPageValidator,
+  getSchemaValidator,
 } from '#validators/document_validator'
 import {
   DocumentNotFoundException,
@@ -28,8 +29,13 @@ export default class DocumentController {
   ) {}
 
   /**
-   * POST /documents
-   * Создать новое досье
+   * @createDossier
+   * @tag Documents
+   * @summary Создать новое досье
+   * @description Создает новое досье клиента с уникальным UUID
+   * @requestBody {"schema": "client_dossier", "uuid": "550e8400-e29b-41d4-a716-446655440000"}
+   * @responseBody 201 - {"data": {"id": 1, "uuid": "550e8400-e29b-41d4-a716-446655440000", "schema": "client_dossier", "createdAt": "2024-01-01T00:00:00.000Z", "updatedAt": "2024-01-01T00:00:00.000Z"}}
+   * @responseBody 422 - {"message": "Validation failed", "errors": [{"message": "The schema field is required", "rule": "required", "field": "schema"}]}
    */
   async createDossier({ request, response }: HttpContext) {
     const { schema, uuid } = await createDossierValidator.validate(request.all())
@@ -45,8 +51,14 @@ export default class DocumentController {
   }
 
   /**
-   * GET /:uuid/documents
-   * Получить все документы досье
+   * @getDocuments
+   * @tag Documents
+   * @summary Получить все документы досье
+   * @description Возвращает список всех документов в досье клиента
+   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramQuery schema - Схема досье - eg: client_dossier
+   * @responseBody 200 - {"data": {"id": 1, "uuid": "550e8400-e29b-41d4-a716-446655440000", "schema": "client_dossier", "documents": [{"id": 1, "code": "passport", "currentVersion": {"id": 1, "name": "v2024.01.01.1200", "createdAt": "2024-01-01T12:00:00.000Z"}, "filesCount": 2}]}}
+   * @responseBody 404 - {"message": "Досье не найдено"}
    */
   async getDocuments({ params, request, response }: HttpContext) {
     const { uuid, schema } = await getDocumentsValidator.validate({
@@ -61,8 +73,14 @@ export default class DocumentController {
   }
 
   /**
-   * GET /:uuid/documents/:type
-   * Скачать полный документ как объединенный файл
+   * @getDocument
+   * @tag Documents
+   * @summary Скачать полный документ
+   * @description Скачивает документ как объединенный файл
+   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath type - Тип документа - eg: passport
+   * @responseBody 200 - Файл документа в формате PDF или Excel
+   * @responseBody 404 - {"message": "Документ не найден"}
    */
   async getDocument({ params, response }: HttpContext) {
     const { uuid, type } = await getDocumentValidator.validate(params)
@@ -78,8 +96,17 @@ export default class DocumentController {
   }
 
   /**
-   * PUT /:uuid/documents/:type
-   * Загрузить страницы документа
+   * @addPages
+   * @tag Documents
+   * @summary Загрузить страницы документа
+   * @description Загружает файлы документа в досье
+   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath type - Тип документа - eg: passport
+   * @paramForm documents - Файлы документа (multipart/form-data)
+   * @paramForm name - Название версии документа - eg: Паспорт 01.01.2024
+   * @paramForm isNewVersion - Создать новую версию (true/false) - eg: false
+   * @responseBody 201 - {"data": {"document": {"id": 1, "code": "passport"}, "version": {"id": 1, "name": "Паспорт 01.01.2024"}, "filesProcessed": 2, "pagesAdded": 2}}
+   * @responseBody 422 - {"message": "Validation failed", "errors": [{"message": "Documents are required", "rule": "required", "field": "documents"}]}
    */
   async addPages({ params, request, response }: HttpContext) {
     const { uuid, type, documents, name, isNewVersion } = await addPagesValidator.validate({
@@ -115,8 +142,15 @@ export default class DocumentController {
   }
 
   /**
-   * GET /:uuid/documents/:type/:number
-   * Скачать конкретную страницу
+   * @getPage
+   * @tag Documents
+   * @summary Скачать конкретную страницу
+   * @description Скачивает отдельную страницу документа
+   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath type - Тип документа - eg: passport
+   * @paramPath number - Номер страницы - eg: 1
+   * @responseBody 200 - Файл страницы документа
+   * @responseBody 404 - {"message": "Страница не найдена"}
    */
   async getPage({ params, response }: HttpContext) {
     const { uuid, type, number } = await getPageValidator.validate(params)
@@ -138,8 +172,15 @@ export default class DocumentController {
   }
 
   /**
-   * DELETE /:uuid/documents/:type/:pageUuid
-   * Мягкое удаление страницы
+   * @deletePage
+   * @tag Documents
+   * @summary Удалить страницу
+   * @description Выполняет мягкое удаление страницы документа
+   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath type - Тип документа - eg: passport
+   * @paramPath pageUuid - UUID страницы - eg: 660e8400-e29b-41d4-a716-446655440001
+   * @responseBody 200 - {"message": "Страница успешно удалена"}
+   * @responseBody 404 - {"message": "Страница не найдена"}
    */
   async deletePage({ params, response }: HttpContext) {
     const { uuid, type, pageUuid } = await deletePageValidator.validate(params)
@@ -163,8 +204,15 @@ export default class DocumentController {
   }
 
   /**
-   * PATCH /:uuid/documents/:type/current-version
-   * Изменить текущую версию документа
+   * @changeCurrentVersion
+   * @tag Documents
+   * @summary Изменить текущую версию
+   * @description Изменяет текущую активную версию документа
+   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath type - Тип документа - eg: passport
+   * @requestBody {"versionId": 2}
+   * @responseBody 200 - {"message": "Текущая версия документа успешно изменена"}
+   * @responseBody 404 - {"message": "Версия не найдена или не принадлежит документу"}
    */
   async changeCurrentVersion({ params, request, response }: HttpContext) {
     const { uuid, type, versionId } = await changeCurrentVersionValidator.validate({
@@ -182,5 +230,26 @@ export default class DocumentController {
     await this.documentService.changeCurrentVersion(document, versionId)
 
     return response.ok({ message: 'Текущая версия документа успешно изменена' })
+  }
+
+  /**
+   * @getSchema
+   * @tag Documents
+   * @summary Получить объект схемы
+   * @description Возвращает полный объект схемы с настройками, блоками и типами документов
+   * @paramPath schemaName - Название схемы - eg: example
+   * @responseBody 200 - {"schema": {"documents": [{"type": "passport", "block": "offerCreateBlock", "name": "Паспорт", "required": ["CREATION"], "access": {"show": "*", "editable": ["CREATION"]}}]}}
+   * @responseBody 403 - {"message": "Нет доступа к схеме: nonexistent_schema", "code": "E_SCHEMA_ACCESS_DENIED"}
+   */
+  async getSchema({ params, response }: HttpContext) {
+    const { schema: schemaName } = await getSchemaValidator.validate(params)
+
+    try {
+      const schemaModule = await import(`#scheme/${schemaName}`)
+      const schema = schemaModule.default
+      return response.ok({ schema })
+    } catch (error) {
+      return response.notFound({ message: 'Схема не найдена' })
+    }
   }
 }

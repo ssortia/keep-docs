@@ -16,6 +16,7 @@ import { middleware } from '#start/kernel'
 router
   .group(() => {
     router.post('/documents', '#controllers/document_controller.createDossier')
+    router.get('/schema/:schema', '#controllers/document_controller.getSchema')
     router.get('/:uuid/documents', '#controllers/document_controller.getDocuments')
     router.get('/:uuid/documents/:type/:number', '#controllers/document_controller.getPage')
     router.get('/:uuid/documents/:type', '#controllers/document_controller.getDocument')

@@ -7,6 +7,7 @@
 @documentType = passport
 @pageNumber = 1
 @pageUuid = 123e4567-e89b-12d3-a456-426614174000
+@schemaName = strizh_offer
 
 ### 1. Получить все документы досье
 ### GET /:uuid/documents
@@ -143,6 +144,18 @@ Content-Disposition: form-data; name="name"
 Полная версия документа
 --boundary222--
 
+### 12. Получить объект схемы
+### GET /schema/:schemaName
+GET {{baseUrl}}/api/docs/schema/{{schemaName}}
+Accept: application/json
+Authorization: Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE
+
+### 13. Пример ошибки - схема не найдена
+### GET /schema/:schemaName
+GET {{baseUrl}}/api/docs/schema/nonexistent_schema
+Accept: application/json
+Authorization: Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE
+
 ### Примеры ответов API:
 
 ### Успешный ответ на получение документов:
@@ -202,6 +215,41 @@ Content-Disposition: form-data; name="name"
 #   "message": "Document type 'invalid-type!@#' is not valid for schema 'personal_documents'",
 #   "code": "E_INVALID_DOCUMENT_TYPE",
 #   "status": 400
+# }
+
+### Успешный ответ на получение схемы:
+# {
+#   "data": {
+#     "documents": [
+#       {
+#         "type": "passport",
+#         "block": "offerCreateBlock",
+#         "name": "Паспорт",
+#         "required": ["CREATION", "CREATED"],
+#         "access": {
+#           "show": "*",
+#           "editable": ["CREATION", "CREATED"]
+#         }
+#       },
+#       {
+#         "type": "buyerQuestionnaire",
+#         "block": "offerCreateBlock", 
+#         "name": "Анкета",
+#         "accept": ["image/*", "application/pdf", "application/vnd.ms-excel"],
+#         "access": {
+#           "show": "*",
+#           "editable": ["CREATION", "CREATED"]
+#         }
+#       }
+#     ]
+#   }
+# }
+
+### Пример ошибки - нет доступа к схеме:
+# {
+#   "message": "Нет доступа к схеме: nonexistent_schema",
+#   "code": "E_SCHEMA_ACCESS_DENIED",
+#   "status": 403
 # }
 
 # ###

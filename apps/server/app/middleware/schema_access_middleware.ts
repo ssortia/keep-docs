@@ -20,12 +20,10 @@ export default class SchemaAccessMiddleware {
     }
 
     let schemaName: string
-    const querySchema = request.input('schema')
+    const querySchema = request.input('schema') || options.schema || params.schema
 
     if (querySchema) {
       schemaName = querySchema
-    } else if (options.schema) {
-      schemaName = options.schema
     } else if (params.uuid) {
       schemaName = await this.getSchemaFromDossier(params.uuid)
     } else {
