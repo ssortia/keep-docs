@@ -11,7 +11,6 @@ export class DocumentApiClient {
       baseURL: `${config.baseUrl}`,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE',
       },
     });
   }

@@ -8,10 +8,12 @@ export default class ProxyController {
   private readonly TARGET_BASE_URL = 'http://localhost:3333/api/docs'
 
   async proxy({ request, response }: HttpContext) {
-    console.log('test')
     try {
       const targetPath = request.param('*')
       const targetUrl = `${this.TARGET_BASE_URL}/${targetPath.join('/')}`
+
+      console.log('Proxy request:', request.method(), targetUrl)
+      console.log('Accept header:', request.header('accept'))
 
       const headers: Record<string, string> = {
         Authorization: `Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE`,
@@ -24,24 +26,63 @@ export default class ProxyController {
         // Добавляем query параметры для GET запросов
         const queryParams = request.qs()
 
+        // Всегда используем arraybuffer, чтобы не портить бинарные данные
+        const acceptHeader = request.header('accept')
+        
+        console.log('Accept header:', acceptHeader)
+
         const axiosResponse = await axios.get(targetUrl, {
           headers,
           params: queryParams,
-          responseType: request.header('accept')?.includes('application/json')
-            ? 'json'
-            : 'arraybuffer',
+          responseType: 'arraybuffer',
         })
 
-        // Если это бинарные данные (blob)
+        const contentType = axiosResponse.headers['content-type']
+        console.log('Response content-type:', contentType)
+        console.log('Response data type:', typeof axiosResponse.data)
+        console.log('Response data constructor:', axiosResponse.data?.constructor?.name)
+
+        // Если это бинарные данные (файлы) - проверяем по content-type ответа
         if (
-          axiosResponse.headers['content-type']?.includes('application/') &&
-          !axiosResponse.headers['content-type']?.includes('json')
+          contentType &&
+          (contentType.includes('image/') ||
+            contentType.includes('application/pdf') ||
+            contentType.includes('application/octet-stream') ||
+            (contentType.includes('application/') && !contentType.includes('json')))
         ) {
-          response.header('content-type', axiosResponse.headers['content-type'])
-          return response.send(axiosResponse.data)
+          console.log('Returning binary file, content-type:', contentType)
+          console.log('Original Content-Length:', axiosResponse.headers['content-length'])
+
+          // Устанавливаем все необходимые заголовки
+          response.header('content-type', contentType)
+          if (axiosResponse.headers['content-length']) {
+            response.header('content-length', axiosResponse.headers['content-length'])
+          }
+          if (axiosResponse.headers['content-disposition']) {
+            response.header('content-disposition', axiosResponse.headers['content-disposition'])
+          }
+
+          // Преобразуем данные в Buffer
+          let buffer: Buffer
+          if (axiosResponse.data instanceof ArrayBuffer) {
+            buffer = Buffer.from(axiosResponse.data)
+          } else if (Buffer.isBuffer(axiosResponse.data)) {
+            buffer = axiosResponse.data
+          } else {
+            buffer = Buffer.from(axiosResponse.data)
+          }
+
+          console.log('Final buffer length:', buffer.length)
+          return response.send(buffer)
         }
 
-        responseData = axiosResponse.data
+        // Если это JSON данные, конвертируем ArrayBuffer в объект
+        if (contentType && contentType.includes('application/json')) {
+          const jsonString = Buffer.from(axiosResponse.data).toString('utf8')
+          responseData = JSON.parse(jsonString)
+        } else {
+          responseData = axiosResponse.data
+        }
       } else if (
         request.method() === 'PUT' &&
         request.header('content-type')?.includes('multipart/form-data')
@@ -95,7 +136,10 @@ export default class ProxyController {
         responseData = axiosResponse.data
       }
 
-      return response.json(responseData)
+      // Возвращаем JSON только если есть responseData
+      if (responseData !== undefined) {
+        return response.json(responseData)
+      }
     } catch (error) {
       console.error('Proxy error:', error)
 

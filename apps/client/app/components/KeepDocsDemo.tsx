@@ -4,7 +4,7 @@ import { KeepDocs, exampleUISchema } from '@keep-docs/ui';
 
 export default function KeepDocsDemo() {
   const config = {
-    baseUrl: 'http://localhost:3333/api/docs',
+    baseUrl: 'http://localhost:3333/api/proxy',
     schema: 'strizh_offer'
   };
 
