@@ -49,6 +49,15 @@ router
   .prefix('/api')
 
 /**
+ * Прокси маршруты для KeepDocs
+ */
+router
+  .group(() => {
+    router.any('/proxy/*', '#controllers/proxy_controller.proxy')
+  })
+  .prefix('/api')
+
+/**
  * Admin routes (admin only)
  */
 router

@@ -9,7 +9,7 @@ import {
 export default class SchemaAccessMiddleware {
   async handle(ctx: HttpContext, next: NextFn, options: { schema?: string } = {}) {
     const { auth, params, request } = ctx
-
+    console.log(request.headers())
     if (!auth.user) {
       throw new InvalidSchemaTokenException('Пользователь не аутентифицирован')
     }

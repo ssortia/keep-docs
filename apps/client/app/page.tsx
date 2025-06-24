@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Typography, Space, Button, Card } from 'antd';
 import { UserAddOutlined, LoginOutlined } from '@ant-design/icons';
 import UserProfile from './components/UserProfile';
+import KeepDocsDemo from './components/KeepDocsDemo';
 import { useAuth } from './hooks/useAuth';
 
 const { Title, Paragraph } = Typography;
@@ -107,6 +108,10 @@ export default function Home() {
               </Space>
             </Card>
           </div>
+
+          <Card title="Keep Docs UI Demo" style={{ marginTop: '20px' }}>
+            <KeepDocsDemo />
+          </Card>
           
         </Space>
       </div>

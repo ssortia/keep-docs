@@ -64,7 +64,8 @@ Accept: application/pdf
 
 ### 5. Скачать конкретную страницу
 ### GET /:uuid/documents/:type/:number
-GET {{baseUrl}}/api/docs/{{dossierUuid}}/documents/{{documentType}}/{{pageNumber}}
+GET {{baseUrl}}/api/docs/550e8400-e29b-41d4-a716-446655440000/documents/passport/4
+Authorization: Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE
 Accept: image/jpeg,image/png,application/pdf
 
 ### 6. Удалить страницу (мягкое удаление)

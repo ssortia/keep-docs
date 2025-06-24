@@ -25,9 +25,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if ((pathname === '/login' || pathname === '/register') && isAuthenticated) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
+  // Удаляем принудительный редирект с auth страниц
+  // Позволяем AuthLayout самому решать, что делать с авторизованными пользователями
 
   return NextResponse.next()
 }

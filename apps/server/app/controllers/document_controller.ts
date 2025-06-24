@@ -109,6 +109,7 @@ export default class DocumentController {
    * @responseBody 422 - {"message": "Validation failed", "errors": [{"message": "Documents are required", "rule": "required", "field": "documents"}]}
    */
   async addPages({ params, request, response }: HttpContext) {
+    console.log(params, request.files('documents'))
     const { uuid, type, documents, name, isNewVersion } = await addPagesValidator.validate({
       ...params,
       documents: request.files('documents'),

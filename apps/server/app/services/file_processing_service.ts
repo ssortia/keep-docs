@@ -377,7 +377,7 @@ export class FileProcessingService {
       extension: 'jpg',
       mimeType: 'image/jpeg',
       size: fileStats.size,
-      path: join(this.baseUploadPath, uploadPath, filename),
+      path: join(uploadPath, filename),
     }
   }
 
@@ -423,7 +423,7 @@ export class FileProcessingService {
       extension: 'jpg',
       mimeType: 'image/jpeg',
       size: fileStats.size,
-      path: join(this.baseUploadPath, uploadPath, filename),
+      path: join(uploadPath, filename),
     }
   }
 

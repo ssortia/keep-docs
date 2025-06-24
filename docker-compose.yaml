@@ -24,6 +24,7 @@ services:
       - "3030:3000"
     volumes:
       - ./apps/client:/app/apps/client
+      - ./apps/keep-docs-ui:/app/apps/keep-docs-ui
       - ./apps/client/node_modules:/app/apps/client/node_modules
       - /app/apps/client/node_modules
     working_dir: /app/apps/client
