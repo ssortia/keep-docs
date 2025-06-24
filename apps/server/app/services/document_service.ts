@@ -151,6 +151,34 @@ export class DocumentService {
   }
 
   /**
+   * Изменяет текущую версию документа
+   */
+  async changeCurrentVersion(document: Document, versionId: number): Promise<void> {
+    const trx = await db.transaction()
+
+    try {
+      // Проверяем, что версия принадлежит этому документу
+      const version = await Version.query({ client: trx })
+        .whereHas('files', (query) => {
+          query.where('documentId', document.id)
+        })
+        .where('id', versionId)
+        .first()
+
+      if (!version) {
+        throw new DocumentProcessingException('Версия не найдена или не принадлежит документу')
+      }
+
+      // Обновляем текущую версию
+      await this.updateCurrentVersion(document, version, trx)
+      await trx.commit()
+    } catch (error) {
+      await trx.rollback()
+      throw error
+    }
+  }
+
+  /**
    * Стримит файлы документа
    */
   async streamDocumentFiles(files: any[], documentType: string, response: any): Promise<any> {

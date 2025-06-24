@@ -3,14 +3,14 @@ import url from 'node:url'
 
 export default {
   path: path.dirname(url.fileURLToPath(import.meta.url)) + '/../',
-  title: 'AdonisJS Next.js Template API',
+  title: 'Keep Docs System',
   version: '1.0.0',
-  description: 'API documentation for AdonisJS Next.js Template',
+  description: 'API documentation for Keep Docs',
   tagIndex: 1,
   info: {
-    title: 'AdonisJS Next.js Template API',
+    title: 'Keep Docs API',
     version: '1.0.0',
-    description: 'Полнофункциональное API для управления пользователями, ролями и разрешениями',
+    description: 'API для хранения документов',
     contact: {
       name: 'API Support',
       email: 'support@example.com',

@@ -5,6 +5,7 @@ import { DossierService } from '#services/dossier_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import {
   addPagesValidator,
+  changeCurrentVersionValidator,
   createDossierValidator,
   deletePageValidator,
   getDocumentsValidator,
@@ -159,5 +160,27 @@ export default class DocumentController {
     await this.documentService.deleteFile(file)
 
     return response.ok({ message: 'Страница успешно удалена' })
+  }
+
+  /**
+   * PATCH /:uuid/documents/:type/current-version
+   * Изменить текущую версию документа
+   */
+  async changeCurrentVersion({ params, request, response }: HttpContext) {
+    const { uuid, type, versionId } = await changeCurrentVersionValidator.validate({
+      ...params,
+      versionId: request.input('versionId'),
+    })
+
+    const dossier = await this.dossierService.findDossierByUuid(uuid)
+    const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
+
+    if (!document) {
+      throw new DocumentNotFoundException()
+    }
+
+    await this.documentService.changeCurrentVersion(document, versionId)
+
+    return response.ok({ message: 'Текущая версия документа успешно изменена' })
   }
 }

@@ -20,6 +20,10 @@ router
     router.get('/:uuid/documents/:type/:number', '#controllers/document_controller.getPage')
     router.get('/:uuid/documents/:type', '#controllers/document_controller.getDocument')
     router.put('/:uuid/documents/:type', '#controllers/document_controller.addPages')
+    router.patch(
+      '/:uuid/documents/:type/current-version',
+      '#controllers/document_controller.changeCurrentVersion'
+    )
     router.delete('/:uuid/documents/:type/:pageUuid', '#controllers/document_controller.deletePage')
   })
   .prefix('/api/docs')

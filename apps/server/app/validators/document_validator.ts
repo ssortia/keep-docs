@@ -60,3 +60,11 @@ export const createDossierValidator = vine.compile(
     uuid: uuidRule.optional(),
   })
 )
+
+export const changeCurrentVersionValidator = vine.compile(
+  vine.object({
+    uuid: uuidRule,
+    type: typeRule,
+    versionId: vine.number().positive(),
+  })
+)
