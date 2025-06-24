@@ -22,7 +22,6 @@ export interface ProcessedFile {
   mimeType: string
   size: number
   path: string
-  pageNumber: number
 }
 
 export interface FileProcessingOptions {
@@ -46,16 +45,12 @@ export class FileProcessingService {
   ): Promise<ProcessedFile[]> {
     const processedFiles: ProcessedFile[] = []
     const config = this.getProcessingConfig(options)
-    let currentPageNumber = 1 // todo какие-то файлы уже могут быть загружены
 
     for (const file of files) {
       this.validateFile(file, config.allowedExtensions, config.maxFileSize)
 
-      const fileResults = await this.processFileByType(file, currentPageNumber, customUploadPath)
+      const fileResults = await this.processFileByType(file, customUploadPath)
       processedFiles.push(...fileResults)
-
-      // Обновляем номер страницы для следующего файла
-      currentPageNumber += fileResults.length
     }
 
     return processedFiles
@@ -148,13 +143,12 @@ export class FileProcessingService {
    */
   private async processFileByType(
     file: MultipartFile,
-    startPageNumber: number,
     uploadPath: string
   ): Promise<ProcessedFile[]> {
     if (file.extname === 'pdf') {
-      return await this.processPdfFile(file, startPageNumber, uploadPath)
+      return await this.processPdfFile(file, uploadPath)
     } else {
-      const processedFile = await this.processImageFile(file, startPageNumber, uploadPath)
+      const processedFile = await this.processImageFile(file, uploadPath)
       return [processedFile]
     }
   }
@@ -165,9 +159,8 @@ export class FileProcessingService {
   private async createMergedPdf(files: ProcessedFile[]): Promise<string> {
     try {
       const mergedPdf = await PDFDocument.create()
-      const sortedFiles = [...files].sort((a, b) => a.pageNumber - b.pageNumber)
 
-      for (const file of sortedFiles) {
+      for (const file of files) {
         await this.addFileToMergedPdf(mergedPdf, file)
       }
 
@@ -282,20 +275,13 @@ export class FileProcessingService {
    */
   private async processPdfFile(
     file: MultipartFile,
-    startPageNumber: number,
     customUploadPath: string
   ): Promise<ProcessedFile[]> {
     const tempFilePath = await this.saveTempFile(file)
 
     try {
       const pageCount = await this.getPdfPageCount(tempFilePath)
-      return await this.convertPdfToImages(
-        file,
-        tempFilePath,
-        startPageNumber,
-        pageCount,
-        customUploadPath
-      )
+      return await this.convertPdfToImages(file, tempFilePath, pageCount, customUploadPath)
     } finally {
       await unlink(tempFilePath)
     }
@@ -316,7 +302,6 @@ export class FileProcessingService {
   private async convertPdfToImages(
     file: MultipartFile,
     tempFilePath: string,
-    startPageNumber: number,
     pageCount: number,
     customUploadPath: string
   ): Promise<ProcessedFile[]> {
@@ -334,13 +319,7 @@ export class FileProcessingService {
     const processedFiles: ProcessedFile[] = []
 
     for (let pageIndex = 1; pageIndex <= pageCount; pageIndex++) {
-      const processedFile = await this.convertSinglePage(
-        convert,
-        file,
-        pageIndex,
-        startPageNumber,
-        customUploadPath
-      )
+      const processedFile = await this.convertSinglePage(convert, file, pageIndex, customUploadPath)
       if (processedFile) {
         processedFiles.push(processedFile)
       }
@@ -356,20 +335,13 @@ export class FileProcessingService {
     convert: any,
     file: MultipartFile,
     pageIndex: number,
-    startPageNumber: number,
     uploadPath: string
   ): Promise<ProcessedFile | null> {
     try {
       const convertResult = await convert(pageIndex, { responseType: 'image' })
 
       if (convertResult && 'path' in convertResult) {
-        return await this.saveConvertedPage(
-          convertResult.path,
-          file,
-          pageIndex,
-          startPageNumber,
-          uploadPath
-        )
+        return await this.saveConvertedPage(convertResult.path, file, pageIndex, uploadPath)
       }
 
       return null
@@ -386,7 +358,6 @@ export class FileProcessingService {
     tempPagePath: string,
     file: MultipartFile,
     pageIndex: number,
-    startPageNumber: number,
     uploadPath: string
   ): Promise<ProcessedFile> {
     const uuid = randomUUID()
@@ -407,21 +378,16 @@ export class FileProcessingService {
       mimeType: 'image/jpeg',
       size: fileStats.size,
       path: join(this.baseUploadPath, uploadPath, filename),
-      pageNumber: startPageNumber + pageIndex - 1,
     }
   }
 
   /**
    * Обрабатывает файл изображения
    */
-  private async processImageFile(
-    file: MultipartFile,
-    pageNumber: number,
-    uploadPath: string
-  ): Promise<ProcessedFile> {
+  private async processImageFile(file: MultipartFile, uploadPath: string): Promise<ProcessedFile> {
     const tempFilePath = await this.saveTempFile(file)
     try {
-      return await this.optimizeAndSaveImage(file, tempFilePath, pageNumber, uploadPath)
+      return await this.optimizeAndSaveImage(file, tempFilePath, uploadPath)
     } finally {
       await unlink(tempFilePath)
     }
@@ -433,7 +399,6 @@ export class FileProcessingService {
   private async optimizeAndSaveImage(
     file: MultipartFile,
     tempFilePath: string,
-    pageNumber: number,
     uploadPath: string
   ): Promise<ProcessedFile> {
     const uuid = randomUUID()
@@ -459,7 +424,6 @@ export class FileProcessingService {
       mimeType: 'image/jpeg',
       size: fileStats.size,
       path: join(this.baseUploadPath, uploadPath, filename),
-      pageNumber,
     }
   }
 

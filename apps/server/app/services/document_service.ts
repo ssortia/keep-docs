@@ -25,6 +25,10 @@ export interface DocumentUploadResult {
   pagesAdded: number
 }
 
+interface ProcessedFileWithPageNumber extends ProcessedFile {
+  pageNumber: number
+}
+
 @inject()
 export class DocumentService {
   constructor(
@@ -40,11 +44,6 @@ export class DocumentService {
 
     try {
       const dossierPath = this.dossierService.generateDossierPath(data.dossier)
-      const processedFiles = await this.fileProcessingService.processUploadedFiles(
-        data.files,
-        {},
-        dossierPath
-      )
       const document = await this.findOrCreateDocument(data.dossier, data.documentType, trx)
       const version = await this.createOrFindVersion(
         document,
@@ -53,7 +52,21 @@ export class DocumentService {
         trx
       )
 
-      const savedFiles = await this.saveFilesToDatabase(processedFiles, document, version, trx)
+      const processedFiles = await this.fileProcessingService.processUploadedFiles(
+        data.files,
+        {},
+        dossierPath
+      )
+
+      const startPageNumber = await this.getNextPageNumber(version.id, trx)
+      const filesWithPageNumbers = this.assignPageNumbers(processedFiles, startPageNumber)
+
+      const savedFiles = await this.saveFilesToDatabase(
+        filesWithPageNumbers,
+        document,
+        version,
+        trx
+      )
 
       if (!document.currentVersionId) {
         await this.updateCurrentVersion(document, version, trx)
@@ -77,14 +90,16 @@ export class DocumentService {
    * Объединяет файлы документа в один PDF
    */
   async mergeDocumentFiles(files: File[]): Promise<string> {
-    const processedFiles: ProcessedFile[] = files.map((file) => ({
+    // Сортируем файлы по номерам страниц перед объединением
+    const sortedFiles = [...files].sort((a, b) => (a.pageNumber || 0) - (b.pageNumber || 0))
+
+    const processedFiles: ProcessedFile[] = sortedFiles.map((file) => ({
       uuid: file.uuid,
       originalName: file.originalName || 'unknown',
       extension: file.extension || 'pdf',
       mimeType: file.mimeType || 'application/pdf',
       size: 0, // Не используется при мердже
       path: file.path,
-      pageNumber: file.pageNumber || 0,
     }))
 
     return await this.fileProcessingService.mergeFiles(processedFiles)
@@ -238,7 +253,7 @@ export class DocumentService {
    * Сохраняет обработанные файлы в базу данных
    */
   private async saveFilesToDatabase(
-    processedFiles: ProcessedFile[],
+    processedFiles: ProcessedFileWithPageNumber[],
     document: Document,
     version: Version,
     trx: TransactionClientContract
@@ -265,6 +280,37 @@ export class DocumentService {
     }
 
     return savedFiles
+  }
+
+  /**
+   * Присваивает номера страниц файлам
+   */
+  private assignPageNumbers(
+    processedFiles: ProcessedFile[],
+    startPageNumber: number
+  ): ProcessedFileWithPageNumber[] {
+    let currentPageNumber = startPageNumber
+
+    return processedFiles.map((file) => ({
+      ...file,
+      pageNumber: currentPageNumber++,
+    }))
+  }
+
+  /**
+   * Получает следующий номер страницы для версии документа
+   */
+  private async getNextPageNumber(
+    versionId: number,
+    trx: TransactionClientContract
+  ): Promise<number> {
+    const maxPageFile = await File.query({ client: trx })
+      .where('versionId', versionId)
+      .whereNull('deletedAt')
+      .orderBy('pageNumber', 'desc')
+      .first()
+
+    return maxPageFile && maxPageFile.pageNumber ? maxPageFile.pageNumber + 1 : 1
   }
 
   /**
