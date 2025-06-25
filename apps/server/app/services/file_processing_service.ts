@@ -8,12 +8,7 @@ import { pipeline } from 'node:stream/promises'
 import { PDFDocument } from 'pdf-lib'
 import sharp from 'sharp'
 import { fromPath } from 'pdf2pic'
-import {
-  DocumentProcessingException,
-  FileSizeLimitException,
-  FileSystemException,
-  InvalidFileTypeException,
-} from '#exceptions/document_exceptions'
+import { DocumentProcessingException, FileSystemException } from '#exceptions/document_exceptions'
 
 export interface ProcessedFile {
   uuid: string
@@ -24,15 +19,7 @@ export interface ProcessedFile {
   path: string
 }
 
-export interface FileProcessingOptions {
-  allowedExtensions?: string[]
-  maxFileSize?: number
-  baseUploadPath?: string
-}
-
 export class FileProcessingService {
-  private readonly allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif']
-  private readonly maxFileSize = 50 * 1024 * 1024 // 50MB
   private readonly baseUploadPath = 'storage/uploads'
 
   /**
@@ -132,7 +119,7 @@ export class FileProcessingService {
     uploadPath: string
   ): Promise<ProcessedFile[]> {
     const extension = file.extname?.toLowerCase()
-    
+
     if (extension === 'pdf') {
       return await this.processPdfFile(file, uploadPath)
     } else if (this.isImageFile(extension)) {
@@ -281,6 +268,7 @@ export class FileProcessingService {
       savePath: uploadDir,
       format: 'jpeg',
       quality: 95,
+      preserveAspectRatio: true,
     })
 
     const processedFiles: ProcessedFile[] = []
@@ -359,7 +347,10 @@ export class FileProcessingService {
   /**
    * Обрабатывает документ (Excel, Word и т.д.) - сохраняет как есть без конвертации
    */
-  private async processDocumentFile(file: MultipartFile, uploadPath: string): Promise<ProcessedFile> {
+  private async processDocumentFile(
+    file: MultipartFile,
+    uploadPath: string
+  ): Promise<ProcessedFile> {
     const uuid = randomUUID()
     const originalExtension = file.extname?.toLowerCase() || ''
     const filename = `${uuid}.${originalExtension}`

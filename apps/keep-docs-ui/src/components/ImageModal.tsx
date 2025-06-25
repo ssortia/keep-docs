@@ -13,7 +13,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
   totalImages,
   onClose,
 }) => {
-  const [scale, setScale] = useState(1.5); // Стандартный масштаб 150%
+  const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -33,7 +33,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
   }, []);
 
   const handleReset = useCallback(() => {
-    setScale(1.5); // Сброс к стандартному масштабу 150%
+    setScale(1); // Сброс к стандартному масштабу 150%
     setRotation(0);
     setPosition({ x: 0, y: 0 });
   }, []);
