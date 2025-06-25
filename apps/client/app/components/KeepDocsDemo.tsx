@@ -1,6 +1,6 @@
 'use client';
 
-import { KeepDocs, exampleUISchema } from '@keep-docs/ui';
+import { KeepDocs } from '@keep-docs/ui';
 
 export default function KeepDocsDemo() {
   const config = {
@@ -18,7 +18,7 @@ export default function KeepDocsDemo() {
       <h2 style={{ marginBottom: '20px' }}>Демо Keep Docs UI</h2>
       <KeepDocs
         config={config}
-        schema={exampleUISchema}
+        schemaName='strizh_offer'
         uuid="550e8400-e29b-41d4-a716-446655440000"
         defaultTab="passport"
         params={params}

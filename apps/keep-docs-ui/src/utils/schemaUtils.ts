@@ -1,4 +1,4 @@
-import type { UISchemaDocument } from '../exampleSchema';
+import type { UISchemaDocument } from '../types';
 
 export interface SchemaParams {
   [key: string]: string | string[] | number | boolean;

@@ -62,3 +62,20 @@ export interface DocumentManagerConfig {
   baseUrl: string;
   schema: string;
 }
+
+// Типы для схемы документов
+export interface UISchemaDocument {
+  type: string;
+  name: string;
+  block?: string;
+  accept?: string;
+  required?: string[] | '*' | { [key: string]: string[] };
+  access: {
+    show: string[] | '*' | { [key: string]: string[] };
+    editable: string[] | '*' | { [key: string]: string[] };
+  };
+}
+
+export interface UISchema {
+  documents: UISchemaDocument[];
+}

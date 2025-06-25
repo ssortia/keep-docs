@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import type { DocumentManagerConfig, DocumentUploadResponse, Dossier } from '../types';
+import type { DocumentManagerConfig, DocumentUploadResponse, Dossier, UISchema } from '../types';
 
 export class DocumentApiClient {
   private api: AxiosInstance;
@@ -15,9 +15,10 @@ export class DocumentApiClient {
     });
   }
 
-  async getDossier(uuid: string): Promise<Dossier> {
+  async getDossier(uuid: string, schemaName?: string): Promise<Dossier> {
+    const schema = schemaName || this.config.schema;
     const response: AxiosResponse<Dossier> = await this.api.get(
-      `/${uuid}/documents?schema=${this.config.schema}`,
+      `/${uuid}/documents?schema=${schema}`,
     );
 
     return response.data;
@@ -79,7 +80,7 @@ export class DocumentApiClient {
     });
   }
 
-  async getSchema(schemaName: string): Promise<any> {
+  async getSchema(schemaName: string): Promise<UISchema> {
     const response = await this.api.get(`/schema/${schemaName}`);
     return response.data.schema;
   }

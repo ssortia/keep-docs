@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDocumentManager } from '../hooks/useDocumentManager';
 import { getVisibleDocuments, isDocumentEditable } from '../utils/schemaUtils';
-import type { UISchema } from '../exampleSchema';
-import type { Document, DocumentManagerConfig, Dossier } from '../types';
+import type { Document, DocumentManagerConfig, Dossier, UISchema } from '../types';
 import { DocumentTabs } from './DocumentTabs';
 import { DocumentUploadArea } from './DocumentUploadArea';
 import { DocumentPreview } from './DocumentPreview';
@@ -12,7 +11,7 @@ import '../styles/KeepDocs.css';
 
 export interface KeepDocsProps {
   config: DocumentManagerConfig;
-  schema: UISchema;
+  schemaName: string;
   uuid: string;
   defaultTab?: string;
   params?: { [key: string]: any };
@@ -24,7 +23,7 @@ export interface KeepDocsProps {
 
 export const KeepDocs: React.FC<KeepDocsProps> = ({
   config,
-  schema,
+  schemaName,
   uuid,
   defaultTab,
   params = {},
@@ -33,42 +32,67 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
   onUpdate,
   onRemove,
 }) => {
-  const { getDossier, uploadDocument, deletePage, changeCurrentVersion, loading, error } =
-    useDocumentManager(config);
+  const {
+    getDossier,
+    uploadDocument,
+    deletePage,
+    changeCurrentVersion,
+    getSchema,
+    loading,
+    error,
+  } = useDocumentManager(config);
 
   const [dossier, setDossier] = useState<Dossier | null>(null);
+  const [schema, setSchema] = useState<UISchema | null>(null);
   const [activeTab, setActiveTab] = useState<string>('');
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const [enlargedPage, setEnlargedPage] = useState<{src: string, pageNumber: number, total: number} | null>(null);
+  const [enlargedPage, setEnlargedPage] = useState<{
+    src: string;
+    pageNumber: number;
+    total: number;
+  } | null>(null);
 
   // Мемоизируем visibleDocuments чтобы избежать ререндеров
   const visibleDocuments = useMemo(() => {
+    if (!schema) return [];
     return getVisibleDocuments(schema.documents, params);
-  }, [schema.documents, params]);
+  }, [schema, params]);
 
   // Используем ref для отслеживания инициализации
   const isInitialized = useRef(false);
 
-  // Инициализация компонента
+  // Инициализация компонента - параллельные запросы схемы и досье
   useEffect(() => {
-    if (isInitialized.current || !uuid || visibleDocuments.length === 0) {
+    if (isInitialized.current || !uuid || !schemaName) {
       return;
     }
 
     const initComponent = async () => {
       try {
         isInitialized.current = true;
-        const dossierData = await getDossier(uuid);
+        // Параллельные запросы схемы и досье
+        const [schemaData, dossierData] = await Promise.all([
+          getSchema(schemaName),
+          getDossier(uuid, schemaName),
+        ]);
+
+        if (schemaData) {
+          setSchema(schemaData);
+        }
+
         if (dossierData) {
           setDossier(dossierData);
           onInit?.(dossierData);
+        }
 
-          // Установка активной вкладки
-          if (defaultTab && visibleDocuments.find((doc) => doc.type === defaultTab)) {
+        // Установка активной вкладки после получения схемы
+        if (schemaData && schemaData.documents) {
+          const visibleDocs = getVisibleDocuments(schemaData.documents, params);
+          if (defaultTab && visibleDocs.find((doc) => doc.type === defaultTab)) {
             setActiveTab(defaultTab);
-          } else if (visibleDocuments.length > 0) {
-            setActiveTab(visibleDocuments[0].type);
+          } else if (visibleDocs.length > 0) {
+            setActiveTab(visibleDocs[0].type);
           }
         }
       } catch (err) {
@@ -77,9 +101,8 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
         onError?.(errorMessage);
       }
     };
-
     initComponent();
-  }, [uuid, defaultTab, visibleDocuments, getDossier, onInit, onError]);
+  }, [uuid, schemaName, defaultTab, params, getDossier, getSchema, onInit, onError]);
 
   // Обработка ошибок от хука
   useEffect(() => {
@@ -96,7 +119,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
   // Функция для обновления данных досье
   const refreshDossier = useCallback(async () => {
     try {
-      const updatedDossier = await getDossier(uuid);
+      const updatedDossier = await getDossier(uuid, schemaName);
       if (updatedDossier) {
         setDossier(updatedDossier);
         return updatedDossier;
@@ -105,7 +128,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
       console.error('Ошибка обновления досье:', err);
     }
     return null;
-  }, [getDossier, uuid]);
+  }, [getDossier, uuid, schemaName]);
 
   const handleVersionSubmit = useCallback(
     async (versionName: string, isNewVersion: boolean) => {
@@ -191,6 +214,10 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
     ? isDocumentEditable(activeSchemaDocument, params)
     : false;
 
+  if (loading || !schema) {
+    return <div className="keep-docs-empty">Загрузка...</div>;
+  }
+
   if (visibleDocuments.length === 0) {
     return <div className="keep-docs-empty">Нет доступных документов для отображения</div>;
   }
@@ -224,7 +251,9 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
                   name={activeSchemaDocument.name}
                   document={currentDocument}
                   onPageDelete={handlePageDelete}
-                  onPageEnlarge={(src, pageNumber, total) => setEnlargedPage({src, pageNumber, total})}
+                  onPageEnlarge={(src, pageNumber, total) =>
+                    setEnlargedPage({ src, pageNumber, total })
+                  }
                   onVersionChange={handleVersionChange}
                   canDelete={isEditable}
                   config={config}

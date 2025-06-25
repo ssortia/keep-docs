@@ -2,7 +2,6 @@ export * from './types';
 export * from './utils/api';
 export * from './hooks/useDocumentManager';
 export * from './utils/schemaUtils';
-export * from './exampleSchema';
 
 // Компоненты
 export { KeepDocs } from './components/KeepDocs';

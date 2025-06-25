@@ -2,8 +2,35 @@ export default {
   documents: [
     {
       type: 'passport',
-      name: 'Паспорт',
-      required: ['CREATION', 'CREATED', 'ON_CHECK', 'CONTINUE_QUESTIONNAIRE'],
+      name: 'Паспорт гражданина РФ',
+      required: ['CREATION'],
+      access: {
+        show: '*',
+        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
+      },
+    },
+    {
+      type: 'inn',
+      name: 'ИНН',
+      required: ['CREATION'],
+      access: {
+        show: '*',
+        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
+      },
+    },
+    {
+      type: 'fns_screenshot',
+      name: 'Скриншот данных из ФНС',
+      required: ['CREATION'],
+      access: {
+        show: '*',
+        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
+      },
+    },
+    {
+      type: 'snils',
+      name: 'СНИЛС',
+      required: ['CREATION'],
       access: {
         show: '*',
         editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
@@ -11,7 +38,7 @@ export default {
     },
     {
       type: 'buyerQuestionnaire',
-      name: 'Анкета',
+      name: 'Анкеты',
       accept: [
         'image/*',
         'application/pdf',
@@ -25,6 +52,32 @@ export default {
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.oasis.opendocument.spreadsheet',
       ],
+      access: {
+        show: '*',
+        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
+      },
+    },
+    {
+      type: 'qual_statement',
+      name: 'Заявление о признании квалифицированным инвестором',
+      required: ['CREATION'],
+      access: {
+        show: '*',
+        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
+      },
+    },
+    {
+      type: 'qual_exclude_statement',
+      name: 'Заявление об исключении из реестра квалифицированных инвесторов',
+      required: ['CREATION'],
+      access: {
+        show: '*',
+        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
+      },
+    },
+    {
+      type: 'other',
+      name: 'Прочее',
       access: {
         show: '*',
         editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
