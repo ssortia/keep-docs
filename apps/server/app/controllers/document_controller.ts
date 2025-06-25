@@ -4,9 +4,9 @@ import { DocumentService } from '#services/document_service'
 import { DossierService } from '#services/dossier_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import {
-  addPagesValidator,
   changeCurrentVersionValidator,
   createDossierValidator,
+  createAddPagesValidator,
   deletePageValidator,
   getDocumentsValidator,
   getDocumentValidator,
@@ -125,20 +125,14 @@ export default class DocumentController {
    * @responseBody 422 - {"message": "Validation failed", "errors": [{"message": "Documents are required", "rule": "required", "field": "documents"}]}
    */
   async addPages({ params, request, response }: HttpContext) {
-    console.log(params, request.files('documents'))
-    const { uuid, type, documents, name, isNewVersion } = await addPagesValidator.validate({
+    const dossier = await this.dossierService.findOrCreateDossier(params.uuid)
+    const validator = await createAddPagesValidator(dossier.schema, params.type)
+    const { type, documents, name, isNewVersion } = await validator.validate({
       ...params,
       documents: request.files('documents'),
       name: request.input('name'),
       isNewVersion: request.input('isNewVersion', false),
     })
-
-    const dossier = await this.dossierService.findOrCreateDossier(uuid)
-    const isValid = await SchemaValidator.validateDocumentType(dossier.schema, type)
-
-    if (!isValid) {
-      throw new InvalidDocumentTypeException(type, dossier.schema)
-    }
 
     const result = await this.documentService.processDocumentUpload({
       dossier,

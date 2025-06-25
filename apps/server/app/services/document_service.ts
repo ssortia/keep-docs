@@ -54,7 +54,6 @@ export class DocumentService {
 
       const processedFiles = await this.fileProcessingService.processUploadedFiles(
         data.files,
-        {},
         dossierPath
       )
 

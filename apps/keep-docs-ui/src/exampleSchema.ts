@@ -49,7 +49,6 @@ export const exampleUISchema: UISchema = {
         show: '*',
         editable: {
           statusCode: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
-          anotherVar: ['any_value'],
         },
       },
     },

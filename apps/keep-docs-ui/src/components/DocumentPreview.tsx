@@ -34,8 +34,18 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       return getPageUrl(file.pageNumber);
     }
 
-    // Для PDF и других форматов возвращаем заглушку
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDIwMCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjUwIiBmaWxsPSIjRjVGNUY1Ii8+CjxyZWN0IHg9IjIwIiB5PSI0MCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI4IiBmaWxsPSIjRERERERGIi8+CjxyZWN0IHg9IjIwIiB5PSI2MCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSI4IiBmaWxsPSIjRERERERGIi8+CjxyZWN0IHg9IjIwIiB5PSI4MCIgd2lkdGg9IjE0MCIgaGVpZ2h0PSI4IiBmaWxsPSIjRERERERGIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5OTk5IiBmb250LXNpemU9IjE0Ij5QREYgZmlsZTwvdGV4dD4KPC9zdmc+';
+    // Для других форматов возвращаем заглушку с расширением файла
+    const extension = file.extension.toUpperCase();
+    const svgPlaceholder = `
+      <svg width="200" height="250" viewBox="0 0 200 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="200" height="250" fill="#F5F5F5"/>
+        <rect x="20" y="40" width="160" height="8" fill="#DDDDDF"/>
+        <rect x="20" y="60" width="120" height="8" fill="#DDDDDF"/>
+        <rect x="20" y="80" width="140" height="8" fill="#DDDDDF"/>
+        <text x="100" y="140" text-anchor="middle" fill="#999999" font-size="14">${extension} file</text>
+      </svg>
+    `;
+    return 'data:image/svg+xml;base64,' + btoa(svgPlaceholder);
   };
 
   if (!document.files || document.files.length === 0) {
@@ -68,8 +78,8 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               <img
                 src={getPageThumbnail(file)}
                 alt={`Страница ${file.pageNumber}`}
-                className="preview-image"
-                onClick={() => onPageEnlarge(getPageThumbnail(file), file.pageNumber, document.files.length)}
+                className={`preview-image ${file.mimeType.startsWith('image/') ? 'clickable' : 'non-clickable'}`}
+                onClick={file.mimeType.startsWith('image/') ? () => onPageEnlarge(getPageThumbnail(file), file.pageNumber, document.files.length) : undefined}
               />
 
               {canDelete && (

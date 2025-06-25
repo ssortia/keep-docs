@@ -1,4 +1,5 @@
 import vine from '@vinejs/vine'
+import { SchemaValidator } from './schema_validator.js'
 
 const typeRule = vine
   .string()
@@ -16,10 +17,6 @@ const schemaNameRule = vine
   .maxLength(100)
   .regex(/^[a-zA-Z0-9_-]+$/)
   .optional()
-const documentRule = vine.file({
-  size: '50mb',
-  extnames: ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif'],
-})
 
 export const getDocumentsValidator = vine.compile(
   vine.object({
@@ -32,16 +29,6 @@ export const getDocumentValidator = vine.compile(
   vine.object({
     uuid: uuidRule,
     type: typeRule,
-  })
-)
-
-export const addPagesValidator = vine.compile(
-  vine.object({
-    uuid: uuidRule,
-    type: typeRule,
-    documents: vine.array(documentRule).minLength(1).maxLength(50),
-    name: vine.string().trim().minLength(1).maxLength(100).optional(),
-    isNewVersion: vine.boolean().optional(),
   })
 )
 
@@ -81,3 +68,26 @@ export const getSchemaValidator = vine.compile(
     schema: schemaNameRule,
   })
 )
+
+/**
+ * Создает валидатор для addPages с учетом разрешенных типов файлов из схемы
+ */
+export async function createAddPagesValidator(schemaName: string, documentType: string) {
+  const allowedExtensions = await SchemaValidator.getAllowedExtensions(schemaName, documentType)
+  console.log('Разрешенные расширения для', schemaName, documentType, ':', allowedExtensions)
+
+  const schemaBasedDocumentRule = vine.file({
+    size: '50mb',
+    extnames: allowedExtensions,
+  })
+
+  return vine.compile(
+    vine.object({
+      uuid: uuidRule,
+      type: typeRule,
+      documents: vine.array(schemaBasedDocumentRule).minLength(1).maxLength(50),
+      name: vine.string().trim().minLength(1).maxLength(100).optional(),
+      isNewVersion: vine.boolean().optional(),
+    })
+  )
+}

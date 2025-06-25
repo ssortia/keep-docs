@@ -40,15 +40,11 @@ export class FileProcessingService {
    */
   async processUploadedFiles(
     files: MultipartFile[],
-    options: FileProcessingOptions = {},
     customUploadPath: string
   ): Promise<ProcessedFile[]> {
     const processedFiles: ProcessedFile[] = []
-    const config = this.getProcessingConfig(options)
 
     for (const file of files) {
-      this.validateFile(file, config.allowedExtensions, config.maxFileSize)
-
       const fileResults = await this.processFileByType(file, customUploadPath)
       processedFiles.push(...fileResults)
     }
@@ -129,26 +125,22 @@ export class FileProcessingService {
   }
 
   /**
-   * Получает конфигурацию обработки
-   */
-  private getProcessingConfig(options: FileProcessingOptions) {
-    return {
-      allowedExtensions: options.allowedExtensions || this.allowedExtensions,
-      maxFileSize: options.maxFileSize || this.maxFileSize,
-    }
-  }
-
-  /**
    * Обрабатывает файл в зависимости от типа
    */
   private async processFileByType(
     file: MultipartFile,
     uploadPath: string
   ): Promise<ProcessedFile[]> {
-    if (file.extname === 'pdf') {
+    const extension = file.extname?.toLowerCase()
+    
+    if (extension === 'pdf') {
       return await this.processPdfFile(file, uploadPath)
-    } else {
+    } else if (this.isImageFile(extension)) {
       const processedFile = await this.processImageFile(file, uploadPath)
+      return [processedFile]
+    } else {
+      // Для офисных документов и других файлов - сохраняем как есть
+      const processedFile = await this.processDocumentFile(file, uploadPath)
       return [processedFile]
     }
   }
@@ -243,31 +235,6 @@ export class FileProcessingService {
 
     await writeFile(mergedFilePath, mergedPdfBytes)
     return mergedFilePath
-  }
-
-  /**
-   * Валидирует загруженный файл
-   */
-  private validateFile(
-    file: MultipartFile,
-    allowedExtensions: string[],
-    maxFileSize: number
-  ): void {
-    if (file.size > maxFileSize) {
-      throw new FileSizeLimitException(
-        file.clientName || 'неизвестно',
-        `${Math.round(maxFileSize / 1024 / 1024)}MB`
-      )
-    }
-
-    const extension = file.extname?.toLowerCase().replace('.', '')
-    if (!extension || !allowedExtensions.includes(extension)) {
-      throw new InvalidFileTypeException(file.clientName || 'неизвестно', allowedExtensions)
-    }
-
-    if (!file.clientName) {
-      throw new DocumentProcessingException('Имя файла обязательно')
-    }
   }
 
   /**
@@ -382,6 +349,44 @@ export class FileProcessingService {
   }
 
   /**
+   * Проверяет, является ли файл изображением
+   */
+  private isImageFile(extension: string | undefined): boolean {
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'tiff', 'tif', 'gif', 'bmp', 'webp']
+    return extension ? imageExtensions.includes(extension.toLowerCase()) : false
+  }
+
+  /**
+   * Обрабатывает документ (Excel, Word и т.д.) - сохраняет как есть без конвертации
+   */
+  private async processDocumentFile(file: MultipartFile, uploadPath: string): Promise<ProcessedFile> {
+    const uuid = randomUUID()
+    const originalExtension = file.extname?.toLowerCase() || ''
+    const filename = `${uuid}.${originalExtension}`
+    const uploadDir = app.makePath(this.baseUploadPath, uploadPath)
+    await mkdir(uploadDir, { recursive: true })
+    const finalPath = join(uploadDir, filename)
+
+    // Копируем файл как есть без обработки
+    if (file.tmpPath) {
+      await pipeline(createReadStream(file.tmpPath), createWriteStream(finalPath))
+    } else {
+      throw new Error('Нет данных файла')
+    }
+
+    const fileStats = await stat(finalPath)
+
+    return {
+      uuid,
+      originalName: this.sanitizeFilename(file.clientName || 'unknown'),
+      extension: originalExtension,
+      mimeType: file.type || this.getMimeType(originalExtension),
+      size: fileStats.size,
+      path: join(uploadPath, filename),
+    }
+  }
+
+  /**
    * Обрабатывает файл изображения
    */
   private async processImageFile(file: MultipartFile, uploadPath: string): Promise<ProcessedFile> {
@@ -470,6 +475,18 @@ export class FileProcessingService {
       png: 'image/png',
       tiff: 'image/tiff',
       tif: 'image/tiff',
+      gif: 'image/gif',
+      bmp: 'image/bmp',
+      webp: 'image/webp',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ppt: 'application/vnd.ms-powerpoint',
+      pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      odt: 'application/vnd.oasis.opendocument.text',
+      ods: 'application/vnd.oasis.opendocument.spreadsheet',
+      zip: 'application/zip',
     }
 
     return mimeTypes[extension.toLowerCase()] || 'application/octet-stream'

@@ -12,9 +12,6 @@ export default class ProxyController {
       const targetPath = request.param('*')
       const targetUrl = `${this.TARGET_BASE_URL}/${targetPath.join('/')}`
 
-      console.log('Proxy request:', request.method(), targetUrl)
-      console.log('Accept header:', request.header('accept'))
-
       const headers: Record<string, string> = {
         Authorization: `Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE`,
       }
@@ -28,8 +25,6 @@ export default class ProxyController {
 
         // Всегда используем arraybuffer, чтобы не портить бинарные данные
         const acceptHeader = request.header('accept')
-        
-        console.log('Accept header:', acceptHeader)
 
         const axiosResponse = await axios.get(targetUrl, {
           headers,
@@ -38,9 +33,6 @@ export default class ProxyController {
         })
 
         const contentType = axiosResponse.headers['content-type']
-        console.log('Response content-type:', contentType)
-        console.log('Response data type:', typeof axiosResponse.data)
-        console.log('Response data constructor:', axiosResponse.data?.constructor?.name)
 
         // Если это бинарные данные (файлы) - проверяем по content-type ответа
         if (
@@ -50,9 +42,6 @@ export default class ProxyController {
             contentType.includes('application/octet-stream') ||
             (contentType.includes('application/') && !contentType.includes('json')))
         ) {
-          console.log('Returning binary file, content-type:', contentType)
-          console.log('Original Content-Length:', axiosResponse.headers['content-length'])
-
           // Устанавливаем все необходимые заголовки
           response.header('content-type', contentType)
           if (axiosResponse.headers['content-length']) {
@@ -72,7 +61,6 @@ export default class ProxyController {
             buffer = Buffer.from(axiosResponse.data)
           }
 
-          console.log('Final buffer length:', buffer.length)
           return response.send(buffer)
         }
 
