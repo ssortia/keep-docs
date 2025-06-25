@@ -97,7 +97,6 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           >
             ⬇ Скачать документ
           </button>
-          <span className="files-count">Страниц: {document.files.length}</span>
         </div>
       </div>
 

@@ -4,10 +4,12 @@
   font-size: 14px;
   line-height: 1.5;
   color: #333;
+  min-width: 260px;
 }
 
 .keep-docs-layout {
   display: flex;
+  flex-direction: column;
   border: 1px solid #e1e5e9;
   border-radius: 8px;
   overflow: hidden;
@@ -15,11 +17,52 @@
 }
 
 .keep-docs-sidebar {
-  width: 240px;
+  width: 100%;
   background: #f1f2f4;
-  border-right: 1px solid #e9ecef;
-  box-shadow: inset -1px 0 0 #e9ecef;
-  position: relative;
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+/* Accordion Header - только на мобильных */
+.accordion-header {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #e9ecef;
+  border-bottom: 1px solid #dee2e6;
+  cursor: pointer;
+  font-weight: 600;
+  color: #495057;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.accordion-header:hover {
+  background: #dee2e6;
+}
+
+.accordion-arrow {
+  font-size: 12px;
+  transition: transform 0.5s ease;
+  color: #6c757d;
+}
+
+.accordion-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Контейнер для вкладок с анимацией */
+.document-tabs-container {
+  overflow: hidden;
+  transition: all 0.5s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* На больших экранах контейнер всегда открыт */
+.document-tabs-container {
+  max-height: none;
 }
 
 .keep-docs-content {
@@ -45,7 +88,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 14px 10px;
   margin: 2px 12px;
   border: none;
   background: transparent;
@@ -84,7 +127,7 @@
 .document-tab.active {
   background: #fff;
   color: #0056b3;
-  font-weight: 600;
+  font-weight: 500;
   border-left-color: #0056b3;
   box-shadow: 0 2px 4px rgba(0, 86, 179, 0.1);
 }
@@ -96,6 +139,13 @@
 .tab-name {
   font-weight: inherit;
   letter-spacing: 0.3px;
+  line-height: 1.4;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.document-tab.active .tab-name {
+  text-shadow: 0 0 1px rgba(0, 86, 179, 0.4);
 }
 
 .required-indicator {
@@ -107,28 +157,6 @@
 
 .document-tab.active .required-indicator {
   color: #c82333;
-}
-
-.files-count {
-  font-size: 11px;
-  font-weight: 600;
-  color: #6c757d;
-  background: #dee2e6;
-  padding: 3px 7px;
-  border-radius: 12px;
-  min-width: 18px;
-  text-align: center;
-  line-height: 1.2;
-}
-
-.document-tab:hover .files-count {
-  background: #ced4da;
-  color: #495057;
-}
-
-.document-tab.active .files-count {
-  background: #0056b3;
-  color: white;
 }
 
 /* Upload Area */
@@ -183,22 +211,30 @@
 .preview-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
   padding-bottom: 12px;
   border-bottom: 1px solid #e1e5e9;
+  gap: 16px;
 }
 
 .preview-header h4 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .preview-header-controls {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .preview-grid {
@@ -393,7 +429,7 @@
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  max-height: 200px;
+  max-height: 400px;
   overflow-y: auto;
   margin-top: 2px;
 }
@@ -695,7 +731,137 @@
 }
 
 /* Дополнительные стили для отзывчивости */
+/* Большие экраны - меню справа */
+@media (min-width: 1201px) {
+  .keep-docs-layout {
+    flex-direction: row;
+  }
+  
+  .keep-docs-sidebar {
+    width: 250px;
+  }
+
+  .keep-docs-content {
+    order: 1;
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 481px) {
+  .keep-docs-layout {
+    flex-direction: row;
+  }
+  
+  .keep-docs-sidebar {
+    width: 200px;
+    border-right: 1px solid #e9ecef;
+    border-bottom: none;
+  }
+  
+  .tab-name {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+  
+  .document-tab {
+    padding: 12px 8px;
+    margin: 2px 8px;
+  }
+  
+  .preview-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .preview-header h4 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 250px;
+    flex-basis: 60%;
+  }
+  
+  .preview-header-controls {
+    flex-wrap: wrap;
+    gap: 12px;
+    min-width: 200px;
+  }
+}
+
 @media (max-width: 768px) {
+  .keep-docs-layout {
+    flex-direction: column;
+  }
+  
+  .keep-docs-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  /* Показываем заголовок аккордеона только на мобильных */
+  .accordion-header {
+    display: flex;
+  }
+  
+  /* На мобильных контейнер управляется состоянием аккордеона */
+  .document-tabs-container {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  
+  .document-tabs-container.open {
+    max-height: 2000px; /* достаточно большое значение для всех вкладок */
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .tab-name {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+  
+  .document-tab {
+    padding: 12px 16px;
+    margin: 2px 12px;
+  }
+  
+  .document-tabs {
+    padding: 16px 0;
+  }
+  
+  .preview-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .preview-header h4 {
+    margin-bottom: 4px;
+    min-width: 0;
+    flex-basis: auto;
+  }
+  
+  .preview-header-controls {
+    justify-content: space-between;
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+  
+  .download-document-button {
+    font-size: 11px;
+    padding: 5px 10px;
+    height: 28px;
+  }
+  
+  .version-selector-trigger {
+    min-width: 140px;
+    font-size: 12px;
+    height: 28px;
+    padding: 5px 10px;
+  }
+  
   .image-modal-controls {
     top: 10px;
     padding: 8px 12px;
@@ -721,5 +887,44 @@
   
   .image-modal-viewport {
     padding: 60px 10px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .preview-header {
+    gap: 8px;
+  }
+  
+  .preview-header h4 {
+    font-size: 14px;
+  }
+  
+  .preview-header-controls {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  
+  .download-document-button {
+    font-size: 10px;
+    padding: 4px 8px;
+    height: 26px;
+    width: 100%;
+  }
+
+  .version-selector {
+    width: 100%;
+  }
+  
+  .version-selector-trigger {
+    min-width: unset;
+    width: 100%;
+    font-size: 11px;
+    height: 26px;
+    padding: 4px 8px;
+  }
+  
+  .version-selector-trigger .version-name {
+    text-align: right;
   }
 }

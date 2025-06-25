@@ -52,6 +52,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
     pageNumber: number;
     total: number;
   } | null>(null);
+  const [accordionOpen, setAccordionOpen] = useState(false);
 
   // Мемоизируем visibleDocuments чтобы избежать ререндеров
   const visibleDocuments = useMemo(() => {
@@ -226,13 +227,19 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
     <div className="keep-docs">
       <div className="keep-docs-layout">
         <div className="keep-docs-sidebar">
-          <DocumentTabs
-            documents={visibleDocuments}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            params={params}
-            dossierDocuments={dossier?.documents || []}
-          />
+          <div className="accordion-header" onClick={() => setAccordionOpen(!accordionOpen)}>
+            <span>Документы ({visibleDocuments.length})</span>
+            <span className={`accordion-arrow ${accordionOpen ? 'open' : ''}`}>▼</span>
+          </div>
+          <div className={`document-tabs-container ${accordionOpen ? 'open' : ''}`}>
+            <DocumentTabs
+              documents={visibleDocuments}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              params={params}
+              dossierDocuments={dossier?.documents || []}
+            />
+          </div>
         </div>
 
         <div className="keep-docs-content">
