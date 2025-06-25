@@ -5,20 +5,15 @@ import { DossierService } from '#services/dossier_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import {
   changeCurrentVersionValidator,
-  createDossierValidator,
   createAddPagesValidator,
+  createDossierValidator,
   deletePageValidator,
   getDocumentsValidator,
   getDocumentValidator,
   getPageValidator,
   getSchemaValidator,
 } from '#validators/document_validator'
-import {
-  DocumentNotFoundException,
-  InvalidDocumentTypeException,
-  PageNotFoundException,
-} from '#exceptions/document_exceptions'
-import { SchemaValidator } from '#validators/schema_validator'
+import { DocumentNotFoundException, PageNotFoundException } from '#exceptions/document_exceptions'
 
 @inject()
 export default class DocumentController {

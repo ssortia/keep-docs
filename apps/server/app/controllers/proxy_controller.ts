@@ -2,7 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import axios from 'axios'
 import FormData from 'form-data'
 
-import { createReadStream } from 'fs'
+import { createReadStream } from 'node:fs'
 
 export default class ProxyController {
   private readonly TARGET_BASE_URL = 'http://localhost:3333/api/docs'
@@ -24,7 +24,7 @@ export default class ProxyController {
         const queryParams = request.qs()
 
         // Всегда используем arraybuffer, чтобы не портить бинарные данные
-        const acceptHeader = request.header('accept')
+        // const acceptHeader = request.header('accept')
 
         const axiosResponse = await axios.get(targetUrl, {
           headers,

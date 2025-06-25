@@ -28,6 +28,28 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   const getPageUrl = (pageNumber: number): string => {
     return `${config.baseUrl}/${uuid}/documents/${document.code}/${pageNumber}`;
   };
+
+  const getDocumentDownloadUrl = (): string => {
+    return `${config.baseUrl}/${uuid}/documents/${document.code}`;
+  };
+
+  const handleDownloadDocument = () => {
+    const link = window.document.createElement('a');
+    link.href = getDocumentDownloadUrl();
+    link.download = `${name}.pdf`;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+  };
+
+  const handleDownloadPage = (pageNumber: number, fileName: string) => {
+    const link = window.document.createElement('a');
+    link.href = getPageUrl(pageNumber);
+    link.download = fileName;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+  };
   const getPageThumbnail = (file: any): string => {
     // Для изображений возвращаем прямую ссылку
     if (file.mimeType.startsWith('image/')) {
@@ -67,6 +89,14 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             onVersionChange={onVersionChange}
             disabled={loading}
           />
+          <button
+            type="button"
+            className="download-document-button"
+            onClick={handleDownloadDocument}
+            title="Скачать весь документ"
+          >
+            ⬇ Скачать документ
+          </button>
           <span className="files-count">Страниц: {document.files.length}</span>
         </div>
       </div>
@@ -79,8 +109,26 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                 src={getPageThumbnail(file)}
                 alt={`Страница ${file.pageNumber}`}
                 className={`preview-image ${file.mimeType.startsWith('image/') ? 'clickable' : 'non-clickable'}`}
-                onClick={file.mimeType.startsWith('image/') ? () => onPageEnlarge(getPageThumbnail(file), file.pageNumber, document.files.length) : undefined}
+                onClick={
+                  file.mimeType.startsWith('image/')
+                    ? () =>
+                        onPageEnlarge(
+                          getPageThumbnail(file),
+                          file.pageNumber,
+                          document.files.length,
+                        )
+                    : undefined
+                }
               />
+
+              <button
+                type="button"
+                className="download-page-button"
+                onClick={() => handleDownloadPage(file.pageNumber, file.originalName || `page_${file.pageNumber}.${file.extension}`)}
+                title="Скачать страницу"
+              >
+                ⬇
+              </button>
 
               {canDelete && (
                 <button
