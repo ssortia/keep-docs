@@ -32,7 +32,8 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
   onUpdate,
   onRemove,
 }) => {
-  const { getDossier, uploadDocument, deletePage, loading, error } = useDocumentManager(config);
+  const { getDossier, uploadDocument, deletePage, changeCurrentVersion, loading, error } =
+    useDocumentManager(config);
 
   const [dossier, setDossier] = useState<Dossier | null>(null);
   const [activeTab, setActiveTab] = useState<string>('');
@@ -159,6 +160,30 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
     [activeTab, deletePage, uuid, refreshDossier, onRemove, onError],
   );
 
+  const handleVersionChange = useCallback(
+    async (versionId: number) => {
+      if (!activeTab) return;
+
+      try {
+        const success = await changeCurrentVersion(uuid, activeTab, versionId);
+
+        if (success) {
+          const updatedDossier = await refreshDossier();
+          if (updatedDossier) {
+            const updatedDocument = updatedDossier.documents.find((doc) => doc.code === activeTab);
+            if (updatedDocument) {
+              onUpdate?.(updatedDocument);
+            }
+          }
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Ошибка изменения версии';
+        onError?.(errorMessage);
+      }
+    },
+    [activeTab, changeCurrentVersion, uuid, refreshDossier, onUpdate, onError],
+  );
+
   const currentDocument = dossier?.documents.find((doc) => doc.code === activeTab);
   const activeSchemaDocument = visibleDocuments.find((doc) => doc.type === activeTab);
   const isEditable = activeSchemaDocument
@@ -192,15 +217,17 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
                   accept={activeSchemaDocument?.accept}
                 />
               )}
-              {currentDocument && (
+              {currentDocument && activeSchemaDocument && (
                 <DocumentPreview
                   uuid={dossier.uuid}
                   name={activeSchemaDocument.name}
                   document={currentDocument}
                   onPageDelete={handlePageDelete}
                   onPageEnlarge={setEnlargedPage}
+                  onVersionChange={handleVersionChange}
                   canDelete={isEditable}
                   config={config}
+                  loading={loading}
                 />
               )}
             </>

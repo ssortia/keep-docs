@@ -75,11 +75,15 @@ export default function Home() {
     <div style={{ padding: '24px' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          
+
           <Card style={{ textAlign: 'center' }}>
             <Space direction="vertical" size="large">
               <Title level={1}>Добро пожаловать, {user.fullName || user.email}!</Title>
             </Space>
+          </Card>
+
+          <Card>
+            <KeepDocsDemo />
           </Card>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -108,10 +112,6 @@ export default function Home() {
               </Space>
             </Card>
           </div>
-
-          <Card title="Keep Docs UI Demo" style={{ marginTop: '20px' }}>
-            <KeepDocsDemo />
-          </Card>
           
         </Space>
       </div>

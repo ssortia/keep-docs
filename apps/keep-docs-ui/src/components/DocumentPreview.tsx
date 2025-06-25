@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Document, DocumentManagerConfig } from '../types';
+import { VersionSelector } from './VersionSelector';
 
 interface DocumentPreviewProps {
   uuid: string;
@@ -7,8 +8,10 @@ interface DocumentPreviewProps {
   document: Document;
   onPageDelete: (pageUuid: string) => void;
   onPageEnlarge: (imageSrc: string) => void;
+  onVersionChange: (versionId: number) => void;
   canDelete: boolean;
   config: DocumentManagerConfig;
+  loading?: boolean;
 }
 
 export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
@@ -17,8 +20,10 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   document,
   onPageDelete,
   onPageEnlarge,
+  onVersionChange,
   canDelete,
   config,
+  loading = false,
 }) => {
   const getPageUrl = (pageNumber: number): string => {
     return `${config.baseUrl}/${uuid}/documents/${document.code}/${pageNumber}`;
@@ -44,10 +49,16 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   return (
     <div className="document-preview">
       <div className="preview-header">
-        <h4>
-          {name} - {document.currentVersion?.name || 'Без версии'}
-        </h4>
-        <span className="files-count">Страниц: {document.files.length}</span>
+        <h4>{name}</h4>
+        <div className="preview-header-controls">
+          <VersionSelector
+            versions={document.versions || []}
+            currentVersion={document.currentVersion}
+            onVersionChange={onVersionChange}
+            disabled={loading}
+          />
+          <span className="files-count">Страниц: {document.files.length}</span>
+        </div>
       </div>
 
       <div className="preview-grid">

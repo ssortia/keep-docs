@@ -17,6 +17,7 @@ export interface Document {
   id: number;
   code: string;
   currentVersion?: DocumentVersion;
+  versions: DocumentVersion[];
   filesCount: number;
   files?: DossierFile[];
   createdAt: string;

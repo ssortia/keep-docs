@@ -195,6 +195,12 @@
   font-weight: 600;
 }
 
+.preview-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .preview-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -273,6 +279,119 @@
   background: #f8f9fa;
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+/* Version Selector */
+.version-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.version-selector-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
+.version-selector-trigger:hover:not(.disabled) {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.version-selector-trigger.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.version-label {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.version-name {
+  flex: 1;
+  text-align: left;
+  color: #495057;
+  font-weight: 600;
+}
+
+.version-arrow {
+  color: #6c757d;
+  font-size: 10px;
+  margin-left: auto;
+}
+
+.version-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 2px;
+}
+
+.version-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.version-option:last-child {
+  border-bottom: none;
+}
+
+.version-option:hover {
+  background: #f8f9fa;
+}
+
+.version-option.active {
+  background: #e3f2fd;
+}
+
+.version-option-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.version-option-name {
+  font-weight: 500;
+  color: #495057;
+  font-size: 13px;
+}
+
+.version-option-date {
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.version-current-indicator {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 14px;
+  margin-left: 8px;
 }
 
 /* Modal */
