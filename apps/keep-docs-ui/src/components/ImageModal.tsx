@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ImageModalProps {
   imageSrc: string;
@@ -13,31 +13,128 @@ export const ImageModal: React.FC<ImageModalProps> = ({
   totalImages,
   onClose,
 }) => {
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(1.5); // Стандартный масштаб 150%
   const [rotation, setRotation] = useState(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const handleZoomIn = useCallback(() => {
-    setScale(prev => Math.min(prev + 0.25, 3));
+    setScale((prev) => Math.min(prev + 0.25, 3));
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    setScale(prev => Math.max(prev - 0.25, 0.25));
+    setScale((prev) => Math.max(prev - 0.25, 0.25));
   }, []);
 
   const handleRotate = useCallback(() => {
-    setRotation(prev => (prev + 90) % 360);
+    setRotation((prev) => (prev + 90) % 360);
   }, []);
 
   const handleReset = useCallback(() => {
-    setScale(1);
+    setScale(1.5); // Сброс к стандартному масштабу 150%
     setRotation(0);
+    setPosition({ x: 0, y: 0 });
   }, []);
 
-  const handleOverlayClick = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
+  // Обработчики для перетаскивания изображения
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.button === 0 && scale > 1) {
+        // Левая кнопка мыши и изображение увеличено (временно для тестирования)
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+        setDragStart({
+          x: e.clientX - position.x,
+          y: e.clientY - position.y,
+        });
+      }
+    },
+    [scale, position],
+  );
+
+  // Запрет контекстного меню при перетаскивании
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      if (scale > 1) {
+        e.preventDefault();
+      }
+    },
+    [scale],
+  );
+
+  // Эффект для добавления глобальных обработчиков
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDragging && scale > 1) {
+        e.preventDefault();
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        setPosition({ x: newX, y: newY });
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    const handleGlobalContextMenu = (e: Event) => {
+      if (isDragging || scale > 1) {
+        e.preventDefault();
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('contextmenu', handleGlobalContextMenu);
     }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('contextmenu', handleGlobalContextMenu);
+    };
+  }, [isDragging, dragStart, scale]);
+
+  // Обработчик закрытия по клавише Esc
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [onClose]);
+
+  // Обработчик клика вне изображения
+  const handleOverlayClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Закрываем только при клике по оверлею (не по содержимому)
+      if (e.target === e.currentTarget && !isDragging) {
+        onClose();
+      }
+    },
+    [onClose, isDragging],
+  );
+
+  // Обработчик клика по свободному месту в viewport
+  const handleViewportMouseUp = useCallback(
+    (e: React.MouseEvent) => {
+      // Закрываем при клике не по изображению, только левой кнопкой и если не было перетаскивания
+      if (e.target === e.currentTarget && !isDragging && e.button === 0) {
+        onClose();
+      }
+    },
+    [onClose, isDragging],
+  );
 
   return (
     <div className="image-modal-overlay" onClick={handleOverlayClick}>
@@ -96,14 +193,20 @@ export const ImageModal: React.FC<ImageModalProps> = ({
         </div>
 
         {/* Изображение */}
-        <div className="image-modal-viewport">
+        <div className="image-modal-viewport" onMouseUp={handleViewportMouseUp}>
           <img
+            ref={imageRef}
             src={imageSrc}
             alt={`Изображение ${imageNumber}`}
-            className="image-modal-image"
+            className={`image-modal-image ${isDragging ? 'dragging' : ''}`}
             style={{
-              transform: `scale(${scale}) rotate(${rotation}deg)`,
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
+              cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
+              transformOrigin: 'center center',
             }}
+            onMouseDown={handleMouseDown}
+            onContextMenu={handleContextMenu}
+            draggable={false}
           />
         </div>
       </div>

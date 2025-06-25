@@ -495,7 +495,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -631,11 +631,13 @@
   height: auto;
   object-fit: contain;
   transition: transform 0.3s ease;
-  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-.image-modal-image:active {
-  cursor: grabbing;
+.image-modal-image.dragging {
+  transition: none;
+  cursor: grabbing !important;
 }
 
 /* Дополнительные стили для отзывчивости */
