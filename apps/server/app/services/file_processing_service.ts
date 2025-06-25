@@ -267,7 +267,7 @@ export class FileProcessingService {
       saveFilename: 'page',
       savePath: uploadDir,
       format: 'jpeg',
-      quality: 95,
+      quality: 100,
       preserveAspectRatio: true,
     })
 
@@ -321,7 +321,7 @@ export class FileProcessingService {
     const finalPath = join(uploadDir, filename)
 
     // Конвертируем в JPG с высоким качеством
-    await sharp(tempPagePath).jpeg({ quality: 95 }).toFile(finalPath)
+    await sharp(tempPagePath).jpeg({ quality: 100 }).toFile(finalPath)
     await unlink(tempPagePath)
 
     const fileStats = await stat(finalPath)
@@ -404,7 +404,7 @@ export class FileProcessingService {
     const finalPath = join(uploadDir, filename)
 
     await sharp(tempFilePath)
-      .jpeg({ quality: 95 })
+      .jpeg({ quality: 100 })
       .resize(2480, 3508, {
         fit: 'inside',
         withoutEnlargement: true,
