@@ -215,14 +215,6 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
     ? isDocumentEditable(activeSchemaDocument, params)
     : false;
 
-  if (loading || !schema) {
-    return <div className="keep-docs-empty">Загрузка...</div>;
-  }
-
-  if (visibleDocuments.length === 0) {
-    return <div className="keep-docs-empty">Нет доступных документов для отображения</div>;
-  }
-
   return (
     <div className="keep-docs">
       <div className="keep-docs-layout">
