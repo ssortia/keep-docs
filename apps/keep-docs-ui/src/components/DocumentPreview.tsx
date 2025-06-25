@@ -7,7 +7,7 @@ interface DocumentPreviewProps {
   name: string;
   document: Document;
   onPageDelete: (pageUuid: string) => void;
-  onPageEnlarge: (imageSrc: string) => void;
+  onPageEnlarge: (imageSrc: string, pageNumber: number, totalPages: number) => void;
   onVersionChange: (versionId: number) => void;
   canDelete: boolean;
   config: DocumentManagerConfig;
@@ -69,7 +69,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                 src={getPageThumbnail(file)}
                 alt={`Страница ${file.pageNumber}`}
                 className="preview-image"
-                onClick={() => onPageEnlarge(getPageThumbnail(file))}
+                onClick={() => onPageEnlarge(getPageThumbnail(file), file.pageNumber, document.files.length)}
               />
 
               {canDelete && (

@@ -488,45 +488,182 @@
   border-color: #0056b3;
 }
 
-/* Enlarged Image Overlay */
-.keep-docs-enlarged-overlay {
+/* Image Modal */
+.image-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  cursor: pointer;
 }
 
-.keep-docs-enlarged-content {
+.image-modal-content {
   position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.keep-docs-close-button {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: none;
-  border: none;
+.image-modal-controls {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 2001;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.image-modal-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: white;
-  font-size: 32px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.image-number {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.image-total {
+  color: #ccc;
+}
+
+.image-modal-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  width: 40px;
-  height: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 36px;
+  height: 36px;
 }
 
-.keep-docs-enlarged-image {
-  max-width: 100%;
-  max-height: 100%;
+.control-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.control-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.control-button.zoom-out,
+.control-button.zoom-in {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.control-button.rotate {
+  font-size: 16px;
+}
+
+.control-button.reset {
+  font-size: 16px;
+}
+
+.control-button.close {
+  background: rgba(220, 53, 69, 0.8);
+  border-color: rgba(220, 53, 69, 0.8);
+  font-size: 16px;
+}
+
+.control-button.close:hover {
+  background: rgba(220, 53, 69, 1);
+  border-color: rgba(220, 53, 69, 1);
+}
+
+.zoom-level {
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 48px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.image-modal-viewport {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 20px;
+  overflow: hidden;
+}
+
+.image-modal-image {
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
   object-fit: contain;
+  transition: transform 0.3s ease;
+  cursor: grab;
+}
+
+.image-modal-image:active {
+  cursor: grabbing;
+}
+
+/* Дополнительные стили для отзывчивости */
+@media (max-width: 768px) {
+  .image-modal-controls {
+    top: 10px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  
+  .control-button {
+    padding: 6px 8px;
+    min-width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .image-modal-info {
+    font-size: 12px;
+  }
+  
+  .zoom-level {
+    font-size: 10px;
+    min-width: 40px;
+    padding: 4px 6px;
+  }
+  
+  .image-modal-viewport {
+    padding: 60px 10px 10px;
+  }
 }

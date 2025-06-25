@@ -7,6 +7,7 @@ import { DocumentTabs } from './DocumentTabs';
 import { DocumentUploadArea } from './DocumentUploadArea';
 import { DocumentPreview } from './DocumentPreview';
 import { VersionModal } from './VersionModal';
+import { ImageModal } from './ImageModal';
 import '../styles/KeepDocs.css';
 
 export interface KeepDocsProps {
@@ -39,7 +40,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
   const [activeTab, setActiveTab] = useState<string>('');
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const [enlargedPage, setEnlargedPage] = useState<string | null>(null);
+  const [enlargedPage, setEnlargedPage] = useState<{src: string, pageNumber: number, total: number} | null>(null);
 
   // Мемоизируем visibleDocuments чтобы избежать ререндеров
   const visibleDocuments = useMemo(() => {
@@ -223,7 +224,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
                   name={activeSchemaDocument.name}
                   document={currentDocument}
                   onPageDelete={handlePageDelete}
-                  onPageEnlarge={setEnlargedPage}
+                  onPageEnlarge={(src, pageNumber, total) => setEnlargedPage({src, pageNumber, total})}
                   onVersionChange={handleVersionChange}
                   canDelete={isEditable}
                   config={config}
@@ -247,18 +248,12 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
       )}
 
       {enlargedPage && (
-        <div className="keep-docs-enlarged-overlay" onClick={() => setEnlargedPage(null)}>
-          <div className="keep-docs-enlarged-content">
-            <button className="keep-docs-close-button" onClick={() => setEnlargedPage(null)}>
-              ×
-            </button>
-            <img
-              src={enlargedPage}
-              alt="Увеличенная страница"
-              className="keep-docs-enlarged-image"
-            />
-          </div>
-        </div>
+        <ImageModal
+          imageSrc={enlargedPage.src}
+          imageNumber={enlargedPage.pageNumber}
+          totalImages={enlargedPage.total}
+          onClose={() => setEnlargedPage(null)}
+        />
       )}
     </div>
   );
