@@ -5,6 +5,8 @@ interface ImageModalProps {
   imageNumber: number;
   totalImages: number;
   onClose: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
 }
 
 export const ImageModal: React.FC<ImageModalProps> = ({
@@ -12,6 +14,8 @@ export const ImageModal: React.FC<ImageModalProps> = ({
   imageNumber,
   totalImages,
   onClose,
+  onPrevious,
+  onNext,
 }) => {
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -99,12 +103,18 @@ export const ImageModal: React.FC<ImageModalProps> = ({
     };
   }, [isDragging, dragStart, scale]);
 
-  // Обработчик закрытия по клавише Esc
+  // Обработчик закрытия по клавише Esc и навигации стрелками
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
+      } else if (e.key === 'ArrowLeft' && onPrevious && imageNumber > 1) {
+        e.preventDefault();
+        onPrevious();
+      } else if (e.key === 'ArrowRight' && onNext && imageNumber < totalImages) {
+        e.preventDefault();
+        onNext();
       }
     };
 
@@ -112,7 +122,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, onPrevious, onNext, imageNumber, totalImages]);
 
   // Обработчик клика вне изображения
   const handleOverlayClick = useCallback(
@@ -144,6 +154,26 @@ export const ImageModal: React.FC<ImageModalProps> = ({
           <div className="image-modal-info">
             <span className="image-number">Изображение #{imageNumber}</span>
             <span className="image-total">из {totalImages}</span>
+          </div>
+          <div className="image-modal-navigation">
+            <button
+              type="button"
+              className="control-button nav-prev"
+              onClick={onPrevious}
+              title="Предыдущее изображение"
+              disabled={!onPrevious || imageNumber <= 1}
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              className="control-button nav-next"
+              onClick={onNext}
+              title="Следующее изображение"
+              disabled={!onNext || imageNumber >= totalImages}
+            >
+              →
+            </button>
           </div>
           <div className="image-modal-buttons">
             <button

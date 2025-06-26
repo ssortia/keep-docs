@@ -8,7 +8,7 @@ export const checkAccess = (
   condition: string[] | '*' | { [key: string]: string[] },
   params: SchemaParams,
 ): boolean => {
-  if (condition === '*') {
+  if (condition === '*' || !condition) {
     return true;
   }
 
@@ -35,10 +35,10 @@ export const checkAccess = (
 };
 
 export const isDocumentVisible = (document: UISchemaDocument, params: SchemaParams): boolean =>
-  checkAccess(document.access.show, params);
+  checkAccess(document.access?.show, params);
 
 export const isDocumentEditable = (document: UISchemaDocument, params: SchemaParams): boolean =>
-  checkAccess(document.access.editable, params);
+  checkAccess(document.access?.editable, params);
 
 export const isDocumentRequired = (document: UISchemaDocument, params: SchemaParams): boolean => {
   if (!document.required) {

@@ -6,35 +6,22 @@ export default {
       required: ['CREATION'],
       access: {
         show: '*',
-        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
+        editable: {
+          statusCode: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
+        },
       },
     },
     {
       type: 'inn',
       name: 'ИНН',
-      required: ['CREATION'],
-      access: {
-        show: '*',
-        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
-      },
     },
     {
       type: 'fns_screenshot',
       name: 'Скриншот данных из ФНС',
-      required: ['CREATION'],
-      access: {
-        show: '*',
-        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
-      },
     },
     {
       type: 'snils',
       name: 'СНИЛС',
-      required: ['CREATION'],
-      access: {
-        show: '*',
-        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
-      },
     },
     {
       type: 'buyerQuestionnaire',
@@ -60,28 +47,14 @@ export default {
     {
       type: 'qual_statement',
       name: 'Заявление о признании квалифицированным инвестором',
-      required: ['CREATION'],
-      access: {
-        show: '*',
-        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
-      },
     },
     {
       type: 'qual_exclude_statement',
       name: 'Заявление об исключении из реестра квалифицированных инвесторов',
-      required: ['CREATION'],
-      access: {
-        show: '*',
-        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
-      },
     },
     {
       type: 'other',
       name: 'Прочее',
-      access: {
-        show: '*',
-        editable: ['CREATION', 'CREATED', 'CONTINUE_QUESTIONNAIRE'],
-      },
     },
   ],
 }

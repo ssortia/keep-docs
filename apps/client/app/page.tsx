@@ -86,32 +86,32 @@ export default function Home() {
             <KeepDocsDemo />
           </Card>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <UserProfile />
-            
-            <Card title="Полезные ссылки">
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <a
-                  href="https://nextjs.org/learn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: '#1890ff' }}
-                >
-                  <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-                  {' '}Learn Next.js
-                </a>
-                <a
-                  href="https://adonisjs.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: '#1890ff' }}
-                >
-                  <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-                  {' '}AdonisJS Documentation
-                </a>
-              </Space>
-            </Card>
-          </div>
+          {/* <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}> */}
+          {/*   <UserProfile /> */}
+          {/*    */}
+          {/*   <Card title="Полезные ссылки"> */}
+          {/*     <Space direction="vertical" style={{ width: '100%' }}> */}
+          {/*       <a */}
+          {/*         href="https://nextjs.org/learn" */}
+          {/*         target="_blank" */}
+          {/*         rel="noopener noreferrer" */}
+          {/*         style={{ color: '#1890ff' }} */}
+          {/*       > */}
+          {/*         <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} /> */}
+          {/*         {' '}Learn Next.js */}
+          {/*       </a> */}
+          {/*       <a */}
+          {/*         href="https://adonisjs.com" */}
+          {/*         target="_blank" */}
+          {/*         rel="noopener noreferrer" */}
+          {/*         style={{ color: '#1890ff' }} */}
+          {/*       > */}
+          {/*         <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} /> */}
+          {/*         {' '}AdonisJS Documentation */}
+          {/*       </a> */}
+          {/*     </Space> */}
+          {/*   </Card> */}
+          {/* </div> */}
           
         </Space>
       </div>

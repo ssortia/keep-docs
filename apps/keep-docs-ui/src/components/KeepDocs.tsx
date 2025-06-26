@@ -11,7 +11,6 @@ import '../styles/KeepDocs.css';
 
 export interface KeepDocsProps {
   config: DocumentManagerConfig;
-  schemaName: string;
   uuid: string;
   defaultTab?: string;
   params?: { [key: string]: any };
@@ -23,7 +22,6 @@ export interface KeepDocsProps {
 
 export const KeepDocs: React.FC<KeepDocsProps> = ({
   config,
-  schemaName,
   uuid,
   defaultTab,
   params = {},
@@ -65,7 +63,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
 
   // Инициализация компонента - параллельные запросы схемы и досье
   useEffect(() => {
-    if (isInitialized.current || !uuid || !schemaName) {
+    if (isInitialized.current || !uuid || !config.schema) {
       return;
     }
 
@@ -74,8 +72,8 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
         isInitialized.current = true;
         // Параллельные запросы схемы и досье
         const [schemaData, dossierData] = await Promise.all([
-          getSchema(schemaName),
-          getDossier(uuid, schemaName),
+          getSchema(),
+          getDossier(uuid),
         ]);
 
         if (schemaData) {
@@ -103,7 +101,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
       }
     };
     initComponent();
-  }, [uuid, schemaName, defaultTab, params, getDossier, getSchema, onInit, onError]);
+  }, [uuid, config.schema, defaultTab, params, getDossier, getSchema, onInit, onError]);
 
   // Обработка ошибок от хука
   useEffect(() => {
@@ -120,7 +118,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
   // Функция для обновления данных досье
   const refreshDossier = useCallback(async () => {
     try {
-      const updatedDossier = await getDossier(uuid, schemaName);
+      const updatedDossier = await getDossier(uuid);
       if (updatedDossier) {
         setDossier(updatedDossier);
         return updatedDossier;
@@ -129,7 +127,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
       console.error('Ошибка обновления досье:', err);
     }
     return null;
-  }, [getDossier, uuid, schemaName]);
+  }, [getDossier, uuid, config.schema]);
 
   const handleVersionSubmit = useCallback(
     async (versionName: string, isNewVersion: boolean) => {
@@ -208,8 +206,25 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
     },
     [activeTab, changeCurrentVersion, uuid, refreshDossier, onUpdate, onError],
   );
-
   const currentDocument = dossier?.documents.find((doc) => doc.code === activeTab);
+
+  const handlePageNavigation = useCallback(
+    (pageNumber: number) => {
+      if (!currentDocument || !currentDocument.files || !enlargedPage) return;
+
+      const targetFile = currentDocument.files.find((file) => file.pageNumber === pageNumber);
+      if (!targetFile || !targetFile.mimeType.startsWith('image/')) return;
+
+      const pageUrl = `${config.baseUrl}/${uuid}/documents/${currentDocument.code}/${pageNumber}`;
+      setEnlargedPage({
+        src: pageUrl,
+        pageNumber,
+        total: enlargedPage.total,
+      });
+    },
+    [currentDocument, enlargedPage, config.baseUrl, uuid],
+  );
+
   const activeSchemaDocument = visibleDocuments.find((doc) => doc.type === activeTab);
   const isEditable = activeSchemaDocument
     ? isDocumentEditable(activeSchemaDocument, params)
@@ -281,6 +296,16 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
           imageNumber={enlargedPage.pageNumber}
           totalImages={enlargedPage.total}
           onClose={() => setEnlargedPage(null)}
+          onPrevious={
+            enlargedPage.pageNumber > 1
+              ? () => handlePageNavigation(enlargedPage.pageNumber - 1)
+              : undefined
+          }
+          onNext={
+            enlargedPage.pageNumber < enlargedPage.total
+              ? () => handlePageNavigation(enlargedPage.pageNumber + 1)
+              : undefined
+          }
         />
       )}
     </div>

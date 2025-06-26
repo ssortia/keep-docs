@@ -16,10 +16,9 @@ export class DocumentApiClient {
     });
   }
 
-  async getDossier(uuid: string, schemaName?: string): Promise<Dossier> {
-    const schema = schemaName || this.config.schema;
+  async getDossier(uuid: string): Promise<Dossier> {
     const response: AxiosResponse<Dossier> = await this.api.get(
-      `/${uuid}/documents?schema=${schema}`,
+      `/${uuid}/documents?schema=${this.config.schema}`,
     );
 
     return response.data;
@@ -81,8 +80,8 @@ export class DocumentApiClient {
     });
   }
 
-  async getSchema(schemaName: string): Promise<UISchema> {
-    const response = await this.api.get(`/schema/${schemaName}`);
+  async getSchema(): Promise<UISchema> {
+    const response = await this.api.get(`/schema/${this.config.schema}`);
     return response.data.schema;
   }
 }

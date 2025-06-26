@@ -634,6 +634,12 @@
   color: #ccc;
 }
 
+.image-modal-navigation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .image-modal-buttons {
   display: flex;
   align-items: center;

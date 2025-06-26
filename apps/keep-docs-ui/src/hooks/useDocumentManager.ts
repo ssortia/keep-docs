@@ -14,11 +14,11 @@ export const useDocumentManager = (config: DocumentManagerConfig) => {
   }, []);
 
   const getDossier = useCallback(
-    async (uuid: string, schemaName?: string): Promise<Dossier | null> => {
+    async (uuid: string): Promise<Dossier | null> => {
       try {
         setLoading(true);
         setError(null);
-        const dossier = await client.getDossier(uuid, schemaName);
+        const dossier = await client.getDossier(uuid);
         setLoading(false);
         return dossier;
       } catch (err) {
@@ -121,21 +121,18 @@ export const useDocumentManager = (config: DocumentManagerConfig) => {
     [client, handleError],
   );
 
-  const getSchema = useCallback(
-    async (schemaName: string): Promise<UISchema | null> => {
-      try {
-        setLoading(true);
-        setError(null);
-        const schema = await client.getSchema(schemaName);
-        setLoading(false);
-        return schema;
-      } catch (err) {
-        handleError(err);
-        return null;
-      }
-    },
-    [client, handleError],
-  );
+  const getSchema = useCallback(async (): Promise<UISchema | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const schema = await client.getSchema();
+      setLoading(false);
+      return schema;
+    } catch (err) {
+      handleError(err);
+      return null;
+    }
+  }, [client, handleError]);
 
   return {
     loading,

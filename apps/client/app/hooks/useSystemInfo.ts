@@ -60,7 +60,7 @@ export const useSystemInfo = (autoRefresh = true) => {
   const fetchSystemInfo = useCallback(async () => {
     try {
       setError(null);
-      const response = await api.get('/api/admin/system/info') as SystemInfo
+      const response = await api.get('/admin/system/info') as SystemInfo
       console.log("success", response);
       setSystemInfo(response);
     } catch (err: any) {
