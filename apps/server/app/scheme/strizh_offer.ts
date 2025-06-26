@@ -3,7 +3,9 @@ export default {
     {
       type: 'passport',
       name: 'Паспорт гражданина РФ',
-      required: ['CREATION'],
+      required: {
+        statusCode: ['CREATION'],
+      },
       access: {
         show: '*',
         editable: {
@@ -24,7 +26,7 @@ export default {
       name: 'СНИЛС',
     },
     {
-      type: 'buyerQuestionnaire',
+      type: 'questionnaires',
       name: 'Анкеты',
       accept: [
         'image/*',
@@ -54,6 +56,36 @@ export default {
     },
     {
       type: 'other',
+      name: 'Прочее',
+    },
+
+    {
+      type: 'head_passport',
+      name: 'Паспорт гражданина РФ',
+    },
+    {
+      type: 'head_questionnaires',
+      name: 'Анкеты',
+      accept: [
+        'image/*',
+        'application/pdf',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.oasis.opendocument.text',
+        'application/zip',
+        'application/x-tika-ooxml',
+        'application/x-tika-msoffice',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.oasis.opendocument.spreadsheet',
+      ],
+    },
+    {
+      type: 'head_snils',
+      name: 'СНИЛС',
+    },
+    {
+      type: 'head_other',
       name: 'Прочее',
     },
   ],

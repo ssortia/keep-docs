@@ -14,6 +14,7 @@ export interface KeepDocsProps {
   uuid: string;
   defaultTab?: string;
   params?: { [key: string]: any };
+  documentGroups?: Record<string, readonly string[]>;
   onError?: (error: string) => void;
   onInit?: (dossier: Dossier) => void;
   onUpdate?: (document: Document) => void;
@@ -25,6 +26,7 @@ export function KeepDocs({
   uuid,
   defaultTab,
   params = {},
+  documentGroups,
   onError,
   onInit,
   onUpdate,
@@ -248,6 +250,7 @@ export function KeepDocs({
               onTabChange={setActiveTab}
               params={params}
               dossierDocuments={dossier?.documents || []}
+              documentGroups={documentGroups}
             />
           </div>
         </div>

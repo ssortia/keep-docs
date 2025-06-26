@@ -15,6 +15,10 @@ export default function KeepDocsDemo() {
 
   const uuid = '550e8400-e29b-41d4-a716-446655440000';
 
+  const documentGroups = {
+    'Руководитель': ['head_passport', 'head_questionnaires', 'head_snils', 'head_other']
+  } as const;
+
   return (
     <div>
       <h2 style={{ marginBottom: '20px' }}>Демо Keep Docs UI</h2>
@@ -22,6 +26,7 @@ export default function KeepDocsDemo() {
         config={config}
         uuid={uuid}
         params={params}
+        documentGroups={documentGroups}
         onError={(docs) => console.log(docs, "onError")}
         onInit={(docs) => console.log(docs, "onInit")}
         onUpdate={(docs) => console.log(docs, "onUpdate")}

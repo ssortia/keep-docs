@@ -202,6 +202,79 @@
   color: var(--keep-docs-red-dark);
 }
 
+/* Document Groups */
+.document-group {
+  margin: 2px 0;
+}
+
+.document-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 12px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border-radius: 4px;
+  color: var(--keep-docs-muted-color);
+  font-size: 14px;
+  font-weight: 600;
+  width: 100%;
+}
+
+.document-group-header:hover {
+  background: var(--keep-docs-gray-200);
+}
+
+.document-group-header.active {
+  background: var(--keep-docs-gray-200);
+}
+
+.document-group-header.active .group-name {
+  color: var(--keep-docs-primary-color);
+}
+
+.document-group-header.active:hover {
+  background: var(--keep-docs-gray-300);
+}
+
+.group-name {
+  flex: 1;
+}
+
+.group-arrow {
+  transition: transform 0.2s ease;
+  font-size: 12px;
+  color: var(--keep-docs-muted-color);
+}
+
+.group-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.document-group-content {
+  overflow: hidden;
+  transition: all 0.5s ease;
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 2000px;
+}
+
+.document-group-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.document-group-content .document-tab {
+  margin: 2px 12px;
+  width: calc(100% - 24px);
+}
+
+
 /* Upload Area */
 .upload-area {
   border: 2px dashed var(--keep-docs-gray-400);
