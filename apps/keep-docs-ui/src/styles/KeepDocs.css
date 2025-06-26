@@ -339,7 +339,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   line-height: 1.4;
   word-wrap: break-word;
@@ -931,8 +931,9 @@ button.preview-image.clickable img {
     display: flex;
     align-items: center;
     gap: 12px;
-    min-width: 250px;
-    flex-basis: 60%;
+    min-width: 0;
+    flex-basis: auto;
+    max-width: 50%;
   }
   
   .preview-header-controls {

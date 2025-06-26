@@ -16,10 +16,6 @@ export function VersionSelector({
 }: VersionSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (versions.length <= 1) {
-    return null; // Не показываем селектор если версия одна или нет версий
-  }
-
   const sortedVersions = [...versions].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
@@ -37,7 +33,7 @@ export function VersionSelector({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
       >
-        <span className="version-label">Текущая версия:</span>
+        <span className="version-label">Версия:</span>
         <span className="version-name">{currentVersion?.name || 'Без версии'}</span>
         <span className="version-arrow">{isOpen ? '▲' : '▼'}</span>
       </button>

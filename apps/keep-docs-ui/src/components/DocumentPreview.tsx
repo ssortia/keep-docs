@@ -68,13 +68,7 @@ export function DocumentPreview({
     return `data:image/svg+xml;base64,${btoa(svgPlaceholder)}`;
   };
 
-  if (!document.files || document.files.length === 0) {
-    return (
-      <div className="document-preview-empty">
-        <p>Нет загруженных страниц для этого документа</p>
-      </div>
-    );
-  }
+  const hasFiles = document.files && document.files.length > 0;
 
   return (
     <div className="document-preview">
@@ -87,79 +81,87 @@ export function DocumentPreview({
             onVersionChange={onVersionChange}
             disabled={loading}
           />
-          <button
-            type="button"
-            className="download-document-button"
-            onClick={handleDownloadDocument}
-            title="Скачать весь документ"
-          >
-            ⬇ Скачать документ
-          </button>
+          {hasFiles && (
+            <button
+              type="button"
+              className="download-document-button"
+              onClick={handleDownloadDocument}
+              title="Скачать весь документ"
+            >
+              ⬇ Скачать документ
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="preview-grid">
-        {document.files.map((file) => (
-          <div key={file.uuid} className="preview-item">
-            <div className="preview-image-container">
-              {file.mimeType.startsWith('image/') ? (
+      {!hasFiles ? (
+        <div className="document-preview-empty">
+          <p>Нет загруженных страниц для этого документа</p>
+        </div>
+      ) : (
+        <div className="preview-grid">
+          {(document.files || []).map((file) => (
+            <div key={file.uuid} className="preview-item">
+              <div className="preview-image-container">
+                {file.mimeType.startsWith('image/') ? (
+                  <button
+                    type="button"
+                    className="preview-image clickable"
+                    onClick={() =>
+                      onPageEnlarge(
+                        getPageThumbnail(file),
+                        file.pageNumber,
+                        (document.files as []).length,
+                      )
+                    }
+                    title="Открыть изображение"
+                  >
+                    <img src={getPageThumbnail(file)} alt={`Страница ${file.pageNumber}`} />
+                  </button>
+                ) : (
+                  <img
+                    src={getPageThumbnail(file)}
+                    alt={`Страница ${file.pageNumber}`}
+                    className="preview-image non-clickable"
+                  />
+                )}
+
                 <button
                   type="button"
-                  className="preview-image clickable"
+                  className="download-page-button"
                   onClick={() =>
-                    onPageEnlarge(
-                      getPageThumbnail(file),
+                    handleDownloadPage(
                       file.pageNumber,
-                      (document.files as []).length,
+                      file.originalName || `page_${file.pageNumber}.${file.extension}`,
                     )
                   }
-                  title="Открыть изображение"
+                  title="Скачать страницу"
                 >
-                  <img src={getPageThumbnail(file)} alt={`Страница ${file.pageNumber}`} />
+                  ⬇
                 </button>
-              ) : (
-                <img
-                  src={getPageThumbnail(file)}
-                  alt={`Страница ${file.pageNumber}`}
-                  className="preview-image non-clickable"
-                />
-              )}
 
-              <button
-                type="button"
-                className="download-page-button"
-                onClick={() =>
-                  handleDownloadPage(
-                    file.pageNumber,
-                    file.originalName || `page_${file.pageNumber}.${file.extension}`,
-                  )
-                }
-                title="Скачать страницу"
-              >
-                ⬇
-              </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="delete-page-button"
+                    onClick={() => onPageDelete(file.uuid)}
+                    title="Удалить страницу"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
 
-              {canDelete && (
-                <button
-                  type="button"
-                  className="delete-page-button"
-                  onClick={() => onPageDelete(file.uuid)}
-                  title="Удалить страницу"
-                >
-                  ×
-                </button>
-              )}
+              <div className="preview-info">
+                <span className="page-number">
+                  {file.originalName || `Страница ${file.pageNumber}`}
+                </span>
+                <span className="file-type">{file.extension.toUpperCase()}</span>
+              </div>
             </div>
-
-            <div className="preview-info">
-              <span className="page-number">
-                {file.originalName || `Страница ${file.pageNumber}`}
-              </span>
-              <span className="file-type">{file.extension.toUpperCase()}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
