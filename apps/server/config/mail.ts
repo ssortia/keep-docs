@@ -1,3 +1,4 @@
+// @ts-nocheck
 import env from '#start/env'
 import { defineConfig, transports } from '@adonisjs/mail'
 

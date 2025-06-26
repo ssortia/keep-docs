@@ -88,7 +88,8 @@ test.group('Documents', (group) => {
 
     // Проверяем, что ответ имеет правильный тип контента
     const contentType = response.headers()['content-type']
-    const isStreamResponse = contentType === 'application/pdf' || contentType === 'application/json; charset=utf-8'
+    const isStreamResponse =
+      contentType === 'application/pdf' || contentType === 'application/json; charset=utf-8'
     assert.isTrue(isStreamResponse)
   })
 

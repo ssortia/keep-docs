@@ -15,17 +15,28 @@ import { middleware } from '#start/kernel'
  */
 router
   .group(() => {
-    router.post('/documents', '#controllers/document_controller.createDossier')
-    router.get('/schema/:schema', '#controllers/document_controller.getSchema')
-    router.get('/:uuid/documents', '#controllers/document_controller.getDocuments')
-    router.get('/:uuid/documents/:type/:number', '#controllers/document_controller.getPage')
-    router.get('/:uuid/documents/:type', '#controllers/document_controller.getDocument')
-    router.put('/:uuid/documents/:type', '#controllers/document_controller.addPages')
+    // Dossiers
+    router.post('/dossiers', '#controllers/dossier_controller.create')
+    router.get('/:uuid/dossier', '#controllers/dossier_controller.show')
+
+    // Documents (meta)
+    router.get('/:uuid/documents', '#controllers/document_controller.list')
     router.patch(
       '/:uuid/documents/:type/current-version',
-      '#controllers/document_controller.changeCurrentVersion'
+      '#controllers/document_controller.setVersion'
     )
-    router.delete('/:uuid/documents/:type/:pageUuid', '#controllers/document_controller.deletePage')
+
+    // Document files/pages
+    router.put('/:uuid/documents/:type', '#controllers/document_file_controller.upload')
+    router.get('/:uuid/documents/:type', '#controllers/document_file_controller.download')
+    router.get('/:uuid/documents/:type/:number', '#controllers/document_file_controller.getPage')
+    router.delete(
+      '/:uuid/documents/:type/:pageUuid',
+      '#controllers/document_file_controller.deletePage'
+    )
+
+    // Schemas
+    router.get('/schema/:schema', '#controllers/schema_controller.get')
   })
   .prefix('/api/docs')
   .middleware([middleware.auth({ guards: ['api'] }), middleware.schemaAccess()])

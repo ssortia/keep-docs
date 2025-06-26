@@ -9,7 +9,7 @@ export class SchemaValidator {
     const schemaModule = await import(`#scheme/${schemaName}`)
     const schema = schemaModule.default
     const allowedTypes = schema.documents.map((document: any) => document.type)
-    console.log("123", schema, documentType, allowedTypes)
+
     return allowedTypes.includes(documentType)
   }
 
@@ -19,19 +19,12 @@ export class SchemaValidator {
   static async getAllowedMimeTypes(schemaName: string, documentType: string): Promise<string[]> {
     const schemaModule = await import(`#scheme/${schemaName}`)
     const schema = schemaModule.default
-    
+
     const documentConfig = schema.documents.find((document: any) => document.type === documentType)
-    
+
     if (!documentConfig) {
       // Если тип документа не найден, возвращаем стандартные типы для изображений и PDF
-      return [
-        'image/jpeg',
-        'image/jpg', 
-        'image/png',
-        'image/tiff',
-        'image/tif',
-        'application/pdf'
-      ]
+      return ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
     }
 
     // Если в схеме указаны допустимые типы файлов, используем их
@@ -40,14 +33,7 @@ export class SchemaValidator {
     }
 
     // По умолчанию разрешаем только изображения и PDF
-    return [
-      'image/jpeg',
-      'image/jpg',
-      'image/png', 
-      'image/tiff',
-      'image/tif',
-      'application/pdf'
-    ]
+    return ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
   }
 
   /**
@@ -55,13 +41,13 @@ export class SchemaValidator {
    */
   static async getAllowedExtensions(schemaName: string, documentType: string): Promise<string[]> {
     const allowedMimeTypes = await this.getAllowedMimeTypes(schemaName, documentType)
-    
+
     // Маппинг MIME-типов к расширениям файлов
     const mimeToExtensions: Record<string, string[]> = {
       'image/jpeg': ['jpg', 'jpeg'],
       'image/jpg': ['jpg'],
       'image/png': ['png'],
-      'image/tiff': ['tiff', 'tif'], 
+      'image/tiff': ['tiff', 'tif'],
       'image/tif': ['tif'],
       'application/pdf': ['pdf'],
       'application/vnd.ms-excel': ['xls'],
@@ -73,7 +59,7 @@ export class SchemaValidator {
       'application/msword': ['doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'],
       'application/vnd.oasis.opendocument.spreadsheet': ['ods'],
-      'image/*': ['jpg', 'jpeg', 'png', 'tiff', 'tif', 'gif', 'bmp', 'webp']
+      'image/*': ['jpg', 'jpeg', 'png', 'webp'],
     }
 
     const extensions = new Set<string>()
@@ -81,13 +67,13 @@ export class SchemaValidator {
     for (const mimeType of allowedMimeTypes) {
       const exts = mimeToExtensions[mimeType]
       if (exts) {
-        exts.forEach(ext => extensions.add(ext))
+        exts.forEach((ext) => extensions.add(ext))
       }
     }
 
     // Если расширения не найдены, возвращаем стандартные
     if (extensions.size === 0) {
-      return ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif']
+      return ['pdf', 'jpg', 'jpeg', 'png']
     }
 
     return Array.from(extensions)

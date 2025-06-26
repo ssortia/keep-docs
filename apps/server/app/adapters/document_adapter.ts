@@ -102,14 +102,13 @@ export class DocumentAdapter {
 
   formatDocumentResponse(document: Document, versions: Version[] = []): DocumentResponse {
     // Фильтруем файлы только текущей версии
-    const currentVersionFiles = document.files?.filter(
-      (f) => !f.deletedAt && f.versionId === document.currentVersionId
-    ) || []
+    const currentVersionFiles =
+      document.files?.filter((f) => !f.deletedAt && f.versionId === document.currentVersionId) || []
 
     return {
       id: document.id,
       code: document.code,
-      currentVersion: document.currentVersion 
+      currentVersion: document.currentVersion
         ? this.formatVersionResponse(document.currentVersion)
         : undefined,
       versions: versions.map((version) => this.formatVersionResponse(version)),

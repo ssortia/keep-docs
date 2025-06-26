@@ -18,7 +18,7 @@ export class DocumentApiClient {
 
   async getDossier(uuid: string): Promise<Dossier> {
     const response: AxiosResponse<Dossier> = await this.api.get(
-      `/${uuid}/documents?schema=${this.config.schema}`,
+      `/${uuid}/dossier?schema=${this.config.schema}`,
     );
 
     return response.data;
