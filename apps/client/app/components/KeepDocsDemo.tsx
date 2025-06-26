@@ -21,7 +21,7 @@ export default function KeepDocsDemo() {
       <KeepDocs
         config={config}
         uuid={uuid}
-        // params={params}
+        params={params}
         onError={(docs) => console.log(docs, "onError")}
         onInit={(docs) => console.log(docs, "onInit")}
         onUpdate={(docs) => console.log(docs, "onUpdate")}
