@@ -20,15 +20,14 @@ router
     router.get('/:uuid/dossier', '#controllers/dossier_controller.show')
 
     // Documents (meta)
-    router.get('/:uuid/documents', '#controllers/document_controller.list')
     router.patch(
       '/:uuid/documents/:type/current-version',
       '#controllers/document_controller.setVersion'
     )
+    router.get('/:uuid/documents/:type', '#controllers/document_controller.download')
+    router.put('/:uuid/documents/:type', '#controllers/document_controller.upload')
 
     // Document files/pages
-    router.put('/:uuid/documents/:type', '#controllers/document_file_controller.upload')
-    router.get('/:uuid/documents/:type', '#controllers/document_file_controller.download')
     router.get('/:uuid/documents/:type/:number', '#controllers/document_file_controller.getPage')
     router.delete(
       '/:uuid/documents/:type/:pageUuid',
