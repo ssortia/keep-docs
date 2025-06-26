@@ -114,7 +114,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                         onPageEnlarge(
                           getPageThumbnail(file),
                           file.pageNumber,
-                          document.files.length,
+                          (document.files as []).length,
                         )
                     : undefined
                 }
@@ -123,7 +123,12 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               <button
                 type="button"
                 className="download-page-button"
-                onClick={() => handleDownloadPage(file.pageNumber, file.originalName || `page_${file.pageNumber}.${file.extension}`)}
+                onClick={() =>
+                  handleDownloadPage(
+                    file.pageNumber,
+                    file.originalName || `page_${file.pageNumber}.${file.extension}`,
+                  )
+                }
                 title="Скачать страницу"
               >
                 ⬇

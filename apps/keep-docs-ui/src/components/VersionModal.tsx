@@ -6,11 +6,7 @@ interface VersionModalProps {
   filesCount: number;
 }
 
-export const VersionModal: React.FC<VersionModalProps> = ({
-  onSubmit,
-  onCancel,
-  filesCount,
-}) => {
+export const VersionModal: React.FC<VersionModalProps> = ({ onSubmit, onCancel, filesCount }) => {
   const [versionName, setVersionName] = useState('');
   const [isNewVersion, setIsNewVersion] = useState(false);
 
@@ -27,9 +23,7 @@ export const VersionModal: React.FC<VersionModalProps> = ({
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="versionName">
-              Название версии (необязательно):
-            </label>
+            <label htmlFor="versionName">Название версии (необязательно):</label>
             <input
               id="versionName"
               type="text"

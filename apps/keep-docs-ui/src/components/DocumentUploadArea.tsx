@@ -35,9 +35,7 @@ export const DocumentUploadArea: React.FC<DocumentUploadAreaProps> = ({
   return (
     <div
       {...getRootProps()}
-      className={`upload-area ${isDragActive ? 'drag-active' : ''} ${
-        disabled ? 'disabled' : ''
-      }`}
+      className={`upload-area ${isDragActive ? 'drag-active' : ''} ${disabled ? 'disabled' : ''}`}
     >
       <input {...getInputProps()} />
       <div className="upload-content">
@@ -48,9 +46,7 @@ export const DocumentUploadArea: React.FC<DocumentUploadAreaProps> = ({
           ) : (
             <>
               <p className="upload-title">Загрузить файлы</p>
-              <p className="upload-subtitle">
-                Нажмите или перетащите файлы сюда
-              </p>
+              <p className="upload-subtitle">Нажмите или перетащите файлы сюда</p>
             </>
           )}
         </div>

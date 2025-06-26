@@ -6,7 +6,7 @@ export interface SchemaParams {
 
 export const checkAccess = (
   condition: string[] | '*' | { [key: string]: string[] },
-  params: SchemaParams
+  params: SchemaParams,
 ): boolean => {
   if (condition === '*') {
     return true;
@@ -24,7 +24,7 @@ export const checkAccess = (
       }
 
       if (Array.isArray(paramValue)) {
-        return paramValue.some(val => allowedValues.includes(String(val)));
+        return paramValue.some((val) => allowedValues.includes(String(val)));
       }
 
       return allowedValues.includes(String(paramValue));
@@ -34,13 +34,11 @@ export const checkAccess = (
   return false;
 };
 
-export const isDocumentVisible = (document: UISchemaDocument, params: SchemaParams): boolean => {
-  return checkAccess(document.access.show, params);
-};
+export const isDocumentVisible = (document: UISchemaDocument, params: SchemaParams): boolean =>
+  checkAccess(document.access.show, params);
 
-export const isDocumentEditable = (document: UISchemaDocument, params: SchemaParams): boolean => {
-  return checkAccess(document.access.editable, params);
-};
+export const isDocumentEditable = (document: UISchemaDocument, params: SchemaParams): boolean =>
+  checkAccess(document.access.editable, params);
 
 export const isDocumentRequired = (document: UISchemaDocument, params: SchemaParams): boolean => {
   if (!document.required) {
@@ -50,10 +48,12 @@ export const isDocumentRequired = (document: UISchemaDocument, params: SchemaPar
   return checkAccess(document.required, params);
 };
 
-export const getVisibleDocuments = (documents: UISchemaDocument[], params: SchemaParams): UISchemaDocument[] => {
-  return documents.filter(doc => isDocumentVisible(doc, params));
-};
+export const getVisibleDocuments = (
+  documents: UISchemaDocument[],
+  params: SchemaParams,
+): UISchemaDocument[] => documents.filter((doc) => isDocumentVisible(doc, params));
 
-export const getEditableDocuments = (documents: UISchemaDocument[], params: SchemaParams): UISchemaDocument[] => {
-  return documents.filter(doc => isDocumentEditable(doc, params));
-};
+export const getEditableDocuments = (
+  documents: UISchemaDocument[],
+  params: SchemaParams,
+): UISchemaDocument[] => documents.filter((doc) => isDocumentEditable(doc, params));

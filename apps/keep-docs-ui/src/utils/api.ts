@@ -3,6 +3,7 @@ import type { DocumentManagerConfig, DocumentUploadResponse, Dossier, UISchema }
 
 export class DocumentApiClient {
   private api: AxiosInstance;
+
   private config: DocumentManagerConfig;
 
   constructor(config: DocumentManagerConfig) {

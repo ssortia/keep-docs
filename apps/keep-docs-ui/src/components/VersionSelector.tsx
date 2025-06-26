@@ -20,8 +20,8 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
     return null; // Не показываем селектор если версия одна или нет версий
   }
 
-  const sortedVersions = [...versions].sort((a, b) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  const sortedVersions = [...versions].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
   const handleVersionSelect = (versionId: number) => {
@@ -48,9 +48,7 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
             <button
               key={version.id}
               type="button"
-              className={`version-option ${
-                version.id === currentVersion?.id ? 'active' : ''
-              }`}
+              className={`version-option ${version.id === currentVersion?.id ? 'active' : ''}`}
               onClick={() => handleVersionSelect(version.id)}
             >
               <div className="version-option-content">

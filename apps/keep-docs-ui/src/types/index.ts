@@ -48,16 +48,6 @@ export interface DocumentUploadResponse {
   };
 }
 
-export interface ApiResponse<T> {
-  data: T;
-}
-
-export interface ApiError {
-  message: string;
-  code?: string;
-  status: number;
-}
-
 export interface DocumentManagerConfig {
   baseUrl: string;
   schema: string;
@@ -68,7 +58,7 @@ export interface UISchemaDocument {
   type: string;
   name: string;
   block?: string;
-  accept?: string;
+  accept?: string[];
   required?: string[] | '*' | { [key: string]: string[] };
   access: {
     show: string[] | '*' | { [key: string]: string[] };
