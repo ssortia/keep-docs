@@ -7,11 +7,11 @@ interface DocumentUploadAreaProps {
   accept?: string[];
 }
 
-export const DocumentUploadArea: React.FC<DocumentUploadAreaProps> = ({
+export function DocumentUploadArea({
   onFilesSelected,
   disabled = false,
   accept,
-}) => {
+}: DocumentUploadAreaProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
@@ -53,4 +53,4 @@ export const DocumentUploadArea: React.FC<DocumentUploadAreaProps> = ({
       </div>
     </div>
   );
-};
+}

@@ -20,7 +20,7 @@ export interface KeepDocsProps {
   onRemove?: (documentType: string, pageUuid: string) => void;
 }
 
-export const KeepDocs: React.FC<KeepDocsProps> = ({
+export function KeepDocs({
   config,
   uuid,
   defaultTab,
@@ -29,7 +29,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
   onInit,
   onUpdate,
   onRemove,
-}) => {
+}: KeepDocsProps) {
   const {
     getDossier,
     uploadDocument,
@@ -52,7 +52,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
   } | null>(null);
   const [accordionOpen, setAccordionOpen] = useState(false);
 
-  // Мемоизируем visibleDocuments чтобы избежать ререндеров
+  // Мемоизируем visibleDocuments, чтобы избежать ререндеров
   const visibleDocuments = useMemo(() => {
     if (!schema) return [];
     return getVisibleDocuments(schema.documents, params);
@@ -71,10 +71,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
       try {
         isInitialized.current = true;
         // Параллельные запросы схемы и досье
-        const [schemaData, dossierData] = await Promise.all([
-          getSchema(),
-          getDossier(uuid),
-        ]);
+        const [schemaData, dossierData] = await Promise.all([getSchema(), getDossier(uuid)]);
 
         if (schemaData) {
           setSchema(schemaData);
@@ -100,7 +97,7 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
         onError?.(errorMessage);
       }
     };
-    initComponent();
+    initComponent().catch(console.log);
   }, [uuid, config.schema, defaultTab, params, getDossier, getSchema, onInit, onError]);
 
   // Обработка ошибок от хука
@@ -234,7 +231,13 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
     <div className="keep-docs">
       <div className="keep-docs-layout">
         <div className="keep-docs-sidebar">
-          <div className="accordion-header" onClick={() => setAccordionOpen(!accordionOpen)}>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+          <div
+            role="button"
+            tabIndex={0}
+            className="accordion-header"
+            onClick={() => setAccordionOpen(!accordionOpen)}
+          >
             <span>Документы ({visibleDocuments.length})</span>
             <span className={`accordion-arrow ${accordionOpen ? 'open' : ''}`}>▼</span>
           </div>
@@ -310,4 +313,4 @@ export const KeepDocs: React.FC<KeepDocsProps> = ({
       )}
     </div>
   );
-};
+}

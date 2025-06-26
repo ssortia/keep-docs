@@ -9,14 +9,14 @@ interface ImageModalProps {
   onNext?: () => void;
 }
 
-export const ImageModal: React.FC<ImageModalProps> = ({
+export function ImageModal({
   imageSrc,
   imageNumber,
   totalImages,
   onClose,
   onPrevious,
   onNext,
-}) => {
+}: ImageModalProps) {
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -146,8 +146,20 @@ export const ImageModal: React.FC<ImageModalProps> = ({
     [onClose, isDragging],
   );
 
+  const getCursorStyle = useCallback(() => {
+    if (scale <= 1) return 'default';
+    return isDragging ? 'grabbing' : 'grab';
+  }, [scale, isDragging]);
+
   return (
-    <div className="image-modal-overlay" onClick={handleOverlayClick}>
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+    <div
+      className="image-modal-overlay"
+      onClick={handleOverlayClick}
+      role="button"
+      tabIndex={0}
+      aria-label="Закрыть модальное окно"
+    >
       <div className="image-modal-content">
         {/* Управляющая панель */}
         <div className="image-modal-controls">
@@ -223,7 +235,17 @@ export const ImageModal: React.FC<ImageModalProps> = ({
         </div>
 
         {/* Изображение */}
-        <div className="image-modal-viewport" onMouseUp={handleViewportMouseUp}>
+        <div
+          className="image-modal-viewport"
+          onMouseUp={handleViewportMouseUp}
+          onMouseDown={handleMouseDown}
+          onContextMenu={handleContextMenu}
+          role="button"
+          tabIndex={0}
+          style={{
+            cursor: getCursorStyle(),
+          }}
+        >
           <img
             ref={imageRef}
             src={imageSrc}
@@ -231,15 +253,12 @@ export const ImageModal: React.FC<ImageModalProps> = ({
             className={`image-modal-image ${isDragging ? 'dragging' : ''}`}
             style={{
               transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
-              cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
               transformOrigin: 'center center',
             }}
-            onMouseDown={handleMouseDown}
-            onContextMenu={handleContextMenu}
             draggable={false}
           />
         </div>
       </div>
     </div>
   );
-};
+}

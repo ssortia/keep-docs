@@ -8,12 +8,12 @@ interface VersionSelectorProps {
   disabled?: boolean;
 }
 
-export const VersionSelector: React.FC<VersionSelectorProps> = ({
+export function VersionSelector({
   versions,
   currentVersion,
   onVersionChange,
   disabled = false,
-}) => {
+}: VersionSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   if (versions.length <= 1) {
@@ -66,4 +66,4 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
       )}
     </div>
   );
-};
+}

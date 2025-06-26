@@ -16,7 +16,7 @@ export const checkAccess = (
     return condition.length > 0;
   }
 
-  if (typeof condition === 'object' && condition !== null) {
+  if (typeof condition === 'object') {
     return Object.entries(condition).every(([paramKey, allowedValues]) => {
       const paramValue = params[paramKey];
       if (paramValue === undefined) {

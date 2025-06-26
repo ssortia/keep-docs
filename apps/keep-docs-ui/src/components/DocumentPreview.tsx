@@ -14,7 +14,7 @@ interface DocumentPreviewProps {
   loading?: boolean;
 }
 
-export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
+export function DocumentPreview({
   uuid,
   name,
   document,
@@ -24,14 +24,12 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   canDelete,
   config,
   loading = false,
-}) => {
-  const getPageUrl = (pageNumber: number): string => {
-    return `${config.baseUrl}/${uuid}/documents/${document.code}/${pageNumber}`;
-  };
+}: DocumentPreviewProps) {
+  const getPageUrl = (pageNumber: number): string =>
+    `${config.baseUrl}/${uuid}/documents/${document.code}/${pageNumber}`;
 
-  const getDocumentDownloadUrl = (): string => {
-    return `${config.baseUrl}/${uuid}/documents/${document.code}`;
-  };
+  const getDocumentDownloadUrl = (): string =>
+    `${config.baseUrl}/${uuid}/documents/${document.code}`;
 
   const handleDownloadDocument = () => {
     const link = window.document.createElement('a');
@@ -67,7 +65,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         <text x="100" y="140" text-anchor="middle" fill="#999999" font-size="14">${extension} file</text>
       </svg>
     `;
-    return 'data:image/svg+xml;base64,' + btoa(svgPlaceholder);
+    return `data:image/svg+xml;base64,${btoa(svgPlaceholder)}`;
   };
 
   if (!document.files || document.files.length === 0) {
@@ -104,21 +102,28 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         {document.files.map((file) => (
           <div key={file.uuid} className="preview-item">
             <div className="preview-image-container">
-              <img
-                src={getPageThumbnail(file)}
-                alt={`Страница ${file.pageNumber}`}
-                className={`preview-image ${file.mimeType.startsWith('image/') ? 'clickable' : 'non-clickable'}`}
-                onClick={
-                  file.mimeType.startsWith('image/')
-                    ? () =>
-                        onPageEnlarge(
-                          getPageThumbnail(file),
-                          file.pageNumber,
-                          (document.files as []).length,
-                        )
-                    : undefined
-                }
-              />
+              {file.mimeType.startsWith('image/') ? (
+                <button
+                  type="button"
+                  className="preview-image clickable"
+                  onClick={() =>
+                    onPageEnlarge(
+                      getPageThumbnail(file),
+                      file.pageNumber,
+                      (document.files as []).length,
+                    )
+                  }
+                  title="Открыть изображение"
+                >
+                  <img src={getPageThumbnail(file)} alt={`Страница ${file.pageNumber}`} />
+                </button>
+              ) : (
+                <img
+                  src={getPageThumbnail(file)}
+                  alt={`Страница ${file.pageNumber}`}
+                  className="preview-image non-clickable"
+                />
+              )}
 
               <button
                 type="button"
@@ -157,4 +162,4 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       </div>
     </div>
   );
-};
+}

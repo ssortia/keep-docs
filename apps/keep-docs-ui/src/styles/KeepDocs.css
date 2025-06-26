@@ -281,6 +281,37 @@
   opacity: 0.8;
 }
 
+/* Стили для кнопки-изображения */
+button.preview-image.clickable {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: none;
+  outline: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+button.preview-image.clickable:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+button.preview-image.clickable:hover {
+  transform: scale(1.02);
+}
+
+/* Стили для изображения внутри кнопки */
+button.preview-image.clickable img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s;
+}
+
 .download-document-button {
   padding: 6px 12px;
   background: #2e66a3;
