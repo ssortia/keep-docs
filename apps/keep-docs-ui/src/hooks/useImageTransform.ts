@@ -1,16 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 
-interface ImageTransform {
-  scale: number;
-  rotation: number;
-  position: { x: number; y: number };
-}
-
-interface DragState {
-  isDragging: boolean;
-  dragStart: { x: number; y: number };
-}
-
 export function useImageTransform() {
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);

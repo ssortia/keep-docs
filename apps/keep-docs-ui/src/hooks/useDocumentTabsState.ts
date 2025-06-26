@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { SchemaParams } from '../utils/schemaUtils';
 import { isDocumentRequired } from '../utils/schemaUtils';
 import type { Document, UISchemaDocument } from '../types';
-import type { SchemaParams } from '../utils/schemaUtils';
 
 interface UseDocumentTabsStateProps {
   documents: UISchemaDocument[];

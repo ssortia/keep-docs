@@ -1,32 +1,45 @@
 import { useCallback, useState } from 'react';
 import { DocumentApiClient } from '../utils/api';
-import type { DocumentManagerConfig, DocumentUploadResponse, Dossier, UISchema } from '../types';
+import { useKeepDocsContext } from '../contexts/KeepDocsContext';
+import { useApiError } from './useApiError';
+import type { DocumentUploadResponse, Dossier, UISchema } from '../types';
 
-export const useDocumentManager = (config: DocumentManagerConfig) => {
+export const useDocumentManager = () => {
+  const { config } = useKeepDocsContext();
+  const { handleError: handleApiError } = useApiError();
   const [client] = useState(() => new DocumentApiClient(config));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleError = useCallback((err: any) => {
-    const message = err.response?.data?.message || err.message || 'Произошла ошибка';
-    setError(message);
-    setLoading(false);
-  }, []);
+  const handleError = useCallback(
+    (err: any) => {
+      const message = handleApiError(err);
+      setError(message);
+      setLoading(false);
+    },
+    [handleApiError],
+  );
 
-  const getDossier = useCallback(
-    async (uuid: string): Promise<Dossier | null> => {
+  const executeApiCall = useCallback(
+    async <T>(apiCall: () => Promise<T>, defaultReturn: T): Promise<T> => {
       try {
         setLoading(true);
         setError(null);
-        const dossier = await client.getDossier(uuid);
+        const result = await apiCall();
         setLoading(false);
-        return dossier;
+        return result;
       } catch (err) {
         handleError(err);
-        return null;
+        return defaultReturn;
       }
     },
-    [client, handleError],
+    [handleError],
+  );
+
+  const getDossier = useCallback(
+    async (uuid: string): Promise<Dossier | null> =>
+      executeApiCall(() => client.getDossier(uuid), null),
+    [client, executeApiCall],
   );
 
   const uploadDocument = useCallback(
@@ -36,103 +49,48 @@ export const useDocumentManager = (config: DocumentManagerConfig) => {
       files: File[],
       versionName?: string,
       isNewVersion: boolean = false,
-    ): Promise<DocumentUploadResponse | null> => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await client.uploadDocument(
-          uuid,
-          documentType,
-          files,
-          versionName,
-          isNewVersion,
-        );
-        setLoading(false);
-        return result;
-      } catch (err) {
-        handleError(err);
-        return null;
-      }
-    },
-    [client, handleError],
+    ): Promise<DocumentUploadResponse | null> =>
+      executeApiCall(
+        () => client.uploadDocument(uuid, documentType, files, versionName, isNewVersion),
+        null,
+      ),
+    [client, executeApiCall],
   );
 
   const downloadDocument = useCallback(
-    async (uuid: string, documentType: string): Promise<Blob | null> => {
-      try {
-        setLoading(true);
-        setError(null);
-        const blob = await client.downloadDocument(uuid, documentType);
-        setLoading(false);
-        return blob;
-      } catch (err) {
-        handleError(err);
-        return null;
-      }
-    },
-    [client, handleError],
+    async (uuid: string, documentType: string): Promise<Blob | null> =>
+      executeApiCall(() => client.downloadDocument(uuid, documentType), null),
+    [client, executeApiCall],
   );
 
   const downloadPage = useCallback(
-    async (uuid: string, documentType: string, pageNumber: number): Promise<Blob | null> => {
-      try {
-        setLoading(true);
-        setError(null);
-        const blob = await client.downloadPage(uuid, documentType, pageNumber);
-        setLoading(false);
-        return blob;
-      } catch (err) {
-        handleError(err);
-        return null;
-      }
-    },
-    [client, handleError],
+    async (uuid: string, documentType: string, pageNumber: number): Promise<Blob | null> =>
+      executeApiCall(() => client.downloadPage(uuid, documentType, pageNumber), null),
+    [client, executeApiCall],
   );
 
   const deletePage = useCallback(
-    async (uuid: string, documentType: string, pageUuid: string): Promise<boolean> => {
-      try {
-        setLoading(true);
-        setError(null);
+    async (uuid: string, documentType: string, pageUuid: string): Promise<boolean> =>
+      executeApiCall(async () => {
         await client.deletePage(uuid, documentType, pageUuid);
-        setLoading(false);
         return true;
-      } catch (err) {
-        handleError(err);
-        return false;
-      }
-    },
-    [client, handleError],
+      }, false),
+    [client, executeApiCall],
   );
 
   const changeCurrentVersion = useCallback(
-    async (uuid: string, documentType: string, versionId: number): Promise<boolean> => {
-      try {
-        setLoading(true);
-        setError(null);
+    async (uuid: string, documentType: string, versionId: number): Promise<boolean> =>
+      executeApiCall(async () => {
         await client.changeCurrentVersion(uuid, documentType, versionId);
-        setLoading(false);
         return true;
-      } catch (err) {
-        handleError(err);
-        return false;
-      }
-    },
-    [client, handleError],
+      }, false),
+    [client, executeApiCall],
   );
 
-  const getSchema = useCallback(async (): Promise<UISchema | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const schema = await client.getSchema();
-      setLoading(false);
-      return schema;
-    } catch (err) {
-      handleError(err);
-      return null;
-    }
-  }, [client, handleError]);
+  const getSchema = useCallback(
+    async (): Promise<UISchema | null> => executeApiCall(() => client.getSchema(), null),
+    [client, executeApiCall],
+  );
 
   return {
     loading,

@@ -1,35 +1,31 @@
 import React from 'react';
-import type { Document, DocumentManagerConfig } from '../types';
+import type { Document } from '../types';
+import { useDocumentUrls } from '../hooks/useDocumentUrls';
 import { VersionSelector } from './VersionSelector';
 
 interface DocumentPreviewProps {
-  uuid: string;
   name: string;
   document: Document;
   onPageDelete: (pageUuid: string) => void;
   onPageEnlarge: (imageSrc: string, pageNumber: number, totalPages: number) => void;
   onVersionChange: (versionId: number) => void;
   canDelete: boolean;
-  config: DocumentManagerConfig;
   loading?: boolean;
 }
 
 export function DocumentPreview({
-  uuid,
   name,
   document,
   onPageDelete,
   onPageEnlarge,
   onVersionChange,
   canDelete,
-  config,
   loading = false,
 }: DocumentPreviewProps) {
-  const getPageUrl = (pageNumber: number): string =>
-    `${config.baseUrl}/${uuid}/documents/${document.code}/${pageNumber}`;
+  const { getPageUrl, getDocumentUrl } = useDocumentUrls();
 
-  const getDocumentDownloadUrl = (): string =>
-    `${config.baseUrl}/${uuid}/documents/${document.code}`;
+  const getDocumentPageUrl = (pageNumber: number): string => getPageUrl(document.code, pageNumber);
+  const getDocumentDownloadUrl = (): string => getDocumentUrl(document.code);
 
   const handleDownloadDocument = () => {
     const link = window.document.createElement('a');
@@ -42,16 +38,15 @@ export function DocumentPreview({
 
   const handleDownloadPage = (pageNumber: number, fileName: string) => {
     const link = window.document.createElement('a');
-    link.href = getPageUrl(pageNumber);
+    link.href = getDocumentPageUrl(pageNumber);
     link.download = fileName;
     window.document.body.appendChild(link);
     link.click();
     window.document.body.removeChild(link);
   };
   const getPageThumbnail = (file: any): string => {
-    // Для изображений возвращаем прямую ссылку
     if (file.mimeType.startsWith('image/')) {
-      return getPageUrl(file.pageNumber);
+      return getDocumentPageUrl(file.pageNumber);
     }
 
     // Для других форматов возвращаем заглушку с расширением файла

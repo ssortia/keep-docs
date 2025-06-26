@@ -6,6 +6,7 @@ import { useKeepDocsModals } from '../hooks/useKeepDocsModals';
 import { useKeepDocsActions } from '../hooks/useKeepDocsActions';
 import { getVisibleDocuments, isDocumentEditable, type SchemaParams } from '../utils/schemaUtils';
 import type { Document, DocumentManagerConfig, Dossier } from '../types';
+import { KeepDocsProvider } from '../contexts/KeepDocsContext';
 import { DocumentTabs } from './DocumentTabs';
 import { DocumentUploadArea } from './DocumentUploadArea';
 import { DocumentPreview } from './DocumentPreview';
@@ -25,9 +26,7 @@ export interface KeepDocsProps {
   onRemove?: (documentType: string, pageUuid: string) => void;
 }
 
-export function KeepDocs({
-  config,
-  uuid,
+function KeepDocsContent({
   defaultTab,
   params = {},
   documentGroups,
@@ -35,16 +34,8 @@ export function KeepDocs({
   onInit,
   onUpdate,
   onRemove,
-}: KeepDocsProps) {
-  const {
-    getDossier,
-    uploadDocument,
-    deletePage,
-    changeCurrentVersion,
-    getSchema,
-    loading,
-    error,
-  } = useDocumentManager(config);
+}: Omit<KeepDocsProps, 'config' | 'uuid'>) {
+  const { loading, error } = useDocumentManager();
 
   const {
     dossier,
@@ -70,18 +61,12 @@ export function KeepDocs({
 
   const { handleVersionSubmit, handlePageDelete, handleVersionChange, handlePageNavigation } =
     useKeepDocsActions({
-      uuid,
-      config,
       activeTab,
       getCurrentDocument,
+      updateDossier,
       onUpdate,
       onRemove,
       onError,
-      uploadDocument,
-      deletePage,
-      changeCurrentVersion,
-      getDossier,
-      updateDossier,
     });
 
   const visibleDocuments = useMemo(() => {
@@ -90,14 +75,10 @@ export function KeepDocs({
   }, [schema, params]);
 
   useKeepDocsInit({
-    uuid,
-    config,
     defaultTab,
     params,
     onInit,
     onError,
-    getDossier,
-    getSchema,
     updateDossier,
     updateSchema,
     setActiveTab,
@@ -166,14 +147,12 @@ export function KeepDocs({
               )}
               {currentDocument && activeSchemaDocument && (
                 <DocumentPreview
-                  uuid={dossier.uuid}
                   name={activeSchemaDocument.name}
                   document={currentDocument}
                   onPageDelete={handlePageDelete}
                   onPageEnlarge={openImageModal}
                   onVersionChange={handleVersionChange}
                   canDelete={isEditable}
-                  config={config}
                   loading={loading}
                 />
               )}
@@ -209,5 +188,31 @@ export function KeepDocs({
         />
       )}
     </div>
+  );
+}
+
+export function KeepDocs({
+  config,
+  uuid,
+  defaultTab,
+  params = {},
+  documentGroups,
+  onError,
+  onInit,
+  onUpdate,
+  onRemove,
+}: KeepDocsProps) {
+  return (
+    <KeepDocsProvider config={config} uuid={uuid}>
+      <KeepDocsContent
+        defaultTab={defaultTab}
+        params={params}
+        documentGroups={documentGroups}
+        onError={onError}
+        onInit={onInit}
+        onUpdate={onUpdate}
+        onRemove={onRemove}
+      />
+    </KeepDocsProvider>
   );
 }

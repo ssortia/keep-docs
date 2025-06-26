@@ -1,41 +1,33 @@
 import { useCallback } from 'react';
-import type { Document, DocumentManagerConfig, Dossier } from '../types';
+import { useKeepDocsContext } from '../contexts/KeepDocsContext';
+import { useDocumentUrls } from './useDocumentUrls';
+import { useApiError } from './useApiError';
+import type { Document, Dossier } from '../types';
+import { useDocumentManager } from './useDocumentManager';
 
 interface UseKeepDocsActionsProps {
-  uuid: string;
-  config: DocumentManagerConfig;
   activeTab: string;
   getCurrentDocument: () => Document | undefined;
+  updateDossier: (dossier: Dossier) => void;
   onUpdate?: (document: Document) => void;
   onRemove?: (documentType: string, pageUuid: string) => void;
   onError?: (error: string) => void;
-  uploadDocument: (
-    uuid: string,
-    documentType: string,
-    files: File[],
-    versionName: string,
-    isNewVersion: boolean,
-  ) => Promise<unknown>;
-  deletePage: (uuid: string, documentType: string, pageUuid: string) => Promise<boolean>;
-  changeCurrentVersion: (uuid: string, documentType: string, versionId: number) => Promise<boolean>;
-  getDossier: (uuid: string) => Promise<Dossier | null>;
-  updateDossier: (dossier: Dossier) => void;
 }
 
 export function useKeepDocsActions({
-  uuid,
-  config,
   activeTab,
   getCurrentDocument,
+  updateDossier,
   onUpdate,
   onRemove,
   onError,
-  uploadDocument,
-  deletePage,
-  changeCurrentVersion,
-  getDossier,
-  updateDossier,
 }: UseKeepDocsActionsProps) {
+  const { uuid, config } = useKeepDocsContext();
+  const { getPageUrl } = useDocumentUrls();
+  const { handleError } = useApiError();
+  // Получаем API функции локально, чтобы избежать циклических зависимостей
+  const { uploadDocument, deletePage, changeCurrentVersion, getDossier } = useDocumentManager();
+
   const refreshDossier = useCallback(async () => {
     try {
       const updatedDossier = await getDossier(uuid);
@@ -74,8 +66,7 @@ export function useKeepDocsActions({
           }
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка загрузки файлов';
-        onError?.(errorMessage);
+        handleError(err, onError);
       }
     },
     [activeTab, uploadDocument, uuid, refreshDossier, onUpdate, onError],
@@ -93,8 +84,7 @@ export function useKeepDocsActions({
           onRemove?.(activeTab, pageUuid);
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка удаления страницы';
-        onError?.(errorMessage);
+        handleError(err, onError);
       }
     },
     [activeTab, deletePage, uuid, refreshDossier, onRemove, onError],
@@ -119,8 +109,7 @@ export function useKeepDocsActions({
           }
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Ошибка изменения версии';
-        onError?.(errorMessage);
+        handleError(err, onError);
       }
     },
     [activeTab, changeCurrentVersion, uuid, refreshDossier, onUpdate, onError],
@@ -138,7 +127,7 @@ export function useKeepDocsActions({
       const targetFile = currentDocument.files.find((file) => file.pageNumber === pageNumber);
       if (!targetFile || !targetFile.mimeType.startsWith('image/')) return;
 
-      const pageUrl = `${config.baseUrl}/${uuid}/documents/${currentDocument.code}/${pageNumber}`;
+      const pageUrl = getPageUrl(currentDocument.code, pageNumber);
       setEnlargedPage({
         src: pageUrl,
         pageNumber,
