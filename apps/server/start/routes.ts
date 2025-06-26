@@ -8,8 +8,6 @@
 */
 
 import router from '@adonisjs/core/services/router'
-import AutoSwagger from 'adonis-autoswagger'
-import swagger from '#config/swagger'
 import '#start/documents_routes'
 import { middleware } from '#start/kernel'
 
@@ -76,13 +74,3 @@ router
     middleware.auth({ guards: ['api'] }),
     middleware.permission({ permissions: ['admin.access'] }),
   ])
-
-// Swagger Documentation
-router.get('/swagger', async () => {
-  return AutoSwagger.default.docs(router.toJSON(), swagger)
-})
-
-// Swagger UI
-router.get('/docs', async () => {
-  return AutoSwagger.default.ui('/swagger', swagger)
-})

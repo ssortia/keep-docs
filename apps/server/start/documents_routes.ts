@@ -9,6 +9,8 @@
 
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
+import AutoSwagger from 'adonis-autoswagger'
+import swagger from '#config/swagger'
 
 /**
  * API маршруты для документов
@@ -39,5 +41,17 @@ router
   })
   .prefix('/api/docs')
   .middleware([middleware.auth({ guards: ['api'] }), middleware.schemaAccess()])
+
+// Swagger Documentation - только для документов
+router.get('/swagger', async () => {
+  const filteredRoutes = router.toJSON().root.filter((route) => route.pattern.includes('/api/docs'))
+
+  return AutoSwagger.default.docs({ root: filteredRoutes }, swagger)
+})
+
+// Swagger UI
+router.get('/docs', async () => {
+  return AutoSwagger.default.ui('/swagger', swagger)
+})
 
 export default router
