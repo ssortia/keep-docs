@@ -66,7 +66,7 @@ export default class VersionController {
           .filter((v) => v.id !== versionId)
           .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis())[0] || null
 
-      await this.documentService.changeCurrentVersion(document!, prevVersion?.id)
+      await this.documentService.updateCurrentVersion(document!, prevVersion?.id || null)
     }
 
     await this.versionService.deleteVersion(versionId)

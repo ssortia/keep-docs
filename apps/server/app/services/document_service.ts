@@ -149,32 +149,6 @@ export class DocumentService {
   }
 
   /**
-   * Изменяет текущую версию документа
-   */
-  async changeCurrentVersion(document: Document, versionId: number): Promise<void> {
-    const trx = await db.transaction()
-
-    try {
-      // Проверяем, что версия принадлежит этому документу
-      const version = await Version.query({ client: trx })
-        .where('id', versionId)
-        .where('documentId', document.id)
-        .first()
-
-      if (!version) {
-        throw new DocumentProcessingException('Версия не найдена или не принадлежит документу')
-      }
-
-      // Обновляем текущую версию
-      await this.updateCurrentVersion(document, version.id, trx)
-      await trx.commit()
-    } catch (error) {
-      await trx.rollback()
-      throw error
-    }
-  }
-
-  /**
    * Стримит файлы документа
    */
   async streamDocumentFiles(files: any[], documentType: string, response: any): Promise<any> {
@@ -341,12 +315,16 @@ export class DocumentService {
   /**
    * Обновляет текущую версию документа
    */
-  private async updateCurrentVersion(
+  async updateCurrentVersion(
     document: Document,
     versionId: number | null,
-    trx: TransactionClientContract
+    trx?: TransactionClientContract
   ): Promise<void> {
     document.currentVersionId = versionId
-    await document.useTransaction(trx).save()
+    if (trx) {
+      await document.useTransaction(trx).save()
+    } else {
+      await document.save()
+    }
   }
 }
