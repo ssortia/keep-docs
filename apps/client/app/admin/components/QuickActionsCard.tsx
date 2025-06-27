@@ -45,7 +45,7 @@ const QuickActionsCard: React.FC = () => {
           </Link>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <a href="http://localhost:8080/" target="_blank">
+          <a href="http://localhost:3333/docs" target="_blank">
             <Card size="small" hoverable style={{ textAlign: 'center' }}>
               <SettingOutlined
                 style={{ fontSize: '24px', color: '#fa8c16', marginBottom: '8px' }}
