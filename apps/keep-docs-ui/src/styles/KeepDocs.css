@@ -962,7 +962,6 @@ button.preview-image.clickable img {
     gap: 12px;
     min-width: 0;
     flex-basis: auto;
-    max-width: 50%;
   }
   
   .preview-header-controls {
