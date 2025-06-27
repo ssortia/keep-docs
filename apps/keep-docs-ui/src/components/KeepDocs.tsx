@@ -158,7 +158,6 @@ function KeepDocsContent({
               {isEditable && (
                 <DocumentUploadArea
                   onFilesSelected={openVersionModal}
-                  disabled={loading}
                   accept={activeSchemaDocument?.accept}
                 />
               )}
@@ -177,6 +176,7 @@ function KeepDocsContent({
 
       {showVersionModal && (
         <VersionModal
+          isOpen={showVersionModal}
           onSubmit={handleVersionSubmitWithModal}
           onCancel={closeVersionModal}
           filesCount={pendingFiles.length}

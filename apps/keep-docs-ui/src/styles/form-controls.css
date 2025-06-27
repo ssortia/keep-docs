@@ -1,0 +1,132 @@
+@import './variables.css';
+
+/* Form Controls */
+.modal-button {
+  padding: var(--keep-docs-spacing-sm) var(--keep-docs-spacing-lg);
+  border-radius: var(--keep-docs-radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--keep-docs-transition-fast);
+  min-width: 80px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+
+.modal-button-primary {
+  background: var(--keep-docs-primary-color);
+  color: white;
+}
+
+.modal-button-primary:hover {
+  background: var(--keep-docs-primary-dark);
+}
+
+.modal-button-secondary {
+  background: var(--keep-docs-gray-100);
+  border: 1px solid var(--keep-docs-gray-300);
+  color: var(--keep-docs-text-color);
+}
+
+.modal-button-secondary:hover {
+  background: var(--keep-docs-gray-200);
+  border-color: var(--keep-docs-gray-400);
+}
+
+.modal-button-danger {
+  background: var(--keep-docs-danger-color);
+  color: white;
+}
+
+.modal-button-danger:hover {
+  background: var(--keep-docs-red-dark);
+}
+
+.modal-button-warning {
+  background: var(--keep-docs-warning-color);
+  color: var(--keep-docs-text-color);
+}
+
+.modal-button-warning:hover {
+  background: #e0a800;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-group:has(+ .form-group) {
+  margin-bottom: var(--keep-docs-spacing-lg);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--keep-docs-spacing-xs);
+  font-weight: 500;
+  color: var(--keep-docs-text-color);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--keep-docs-spacing-sm) var(--keep-docs-spacing-md);
+  border: 1px solid var(--keep-docs-gray-300);
+  border-radius: var(--keep-docs-radius-sm);
+  font-size: 14px;
+  transition: border-color var(--keep-docs-transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--keep-docs-primary-color);
+  box-shadow: 0 0 0 2px var(--keep-docs-primary-shadow);
+}
+
+.form-input::placeholder {
+  color: var(--keep-docs-muted-color);
+}
+
+/* Checkboxes */
+.form-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--keep-docs-spacing-md);
+  cursor: pointer;
+}
+
+.form-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.form-checkbox-label {
+  color: var(--keep-docs-text-color);
+  cursor: pointer;
+  line-height: 1.4;
+  margin-left: var(--keep-docs-spacing-sm);
+  vertical-align: bottom;
+}
+
+/* Button Groups */
+.button-group {
+  display: flex;
+  gap: var(--keep-docs-spacing-md);
+  justify-content: flex-end;
+}
+
+@media (max-width: 480px) {
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .modal-button {
+    width: 100%;
+  }
+}

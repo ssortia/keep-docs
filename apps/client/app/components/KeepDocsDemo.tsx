@@ -9,7 +9,7 @@ export default function KeepDocsDemo() {
   };
 
   const params = {
-    statusCode: 'CREATION',
+    statusCode: 'CREATION123',
     userType: 'INDIVIDUAL',
   };
 

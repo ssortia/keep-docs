@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Document } from '../types';
 import { useDocumentUrls } from '../hooks/useDocumentUrls';
 import { VersionSelector } from './VersionSelector';
+import { ConfirmationModal } from './ConfirmationModal';
 
 interface DocumentHeaderProps {
   name: string;
@@ -20,6 +21,7 @@ export function DocumentHeader({
   onVersionDelete,
   loading = false,
 }: DocumentHeaderProps) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { getDocumentUrl } = useDocumentUrls();
   const getDocumentDownloadUrl = (): string => getDocumentUrl(document.code);
 
@@ -37,10 +39,7 @@ export function DocumentHeader({
 
   const handleDeleteVersion = async () => {
     if (!document.currentVersion || !onVersionDelete) return;
-    
-    if (window.confirm('Вы уверены, что хотите удалить эту версию?')) {
-      await onVersionDelete(document.currentVersion.id);
-    }
+    await onVersionDelete(document.currentVersion.id);
   };
 
   return (
@@ -70,20 +69,19 @@ export function DocumentHeader({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              style={{ marginRight: '6px' }}
             >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7,10 12,15 17,10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Скачать документ
+            <span className="download-document-button-text">Скачать документ</span>
           </button>
         )}
         {canDeleteVersion && (
           <button
             type="button"
             className="action-document-button delete-version-button"
-            onClick={handleDeleteVersion}
+            onClick={() => setShowDeleteModal(true)}
             title="Удалить версию"
             disabled={loading}
           >
@@ -91,6 +89,17 @@ export function DocumentHeader({
           </button>
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteVersion}
+        title="Удаление версии"
+        message={`Вы уверены, что хотите удалить версию "${document.currentVersion?.name}"? Это действие нельзя отменить.`}
+        confirmText="Удалить"
+        cancelText="Отмена"
+        variant="danger"
+      />
     </div>
   );
 }
