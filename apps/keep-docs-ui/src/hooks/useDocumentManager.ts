@@ -87,6 +87,15 @@ export const useDocumentManager = () => {
     [client, executeApiCall],
   );
 
+  const updateVersionName = useCallback(
+    async (uuid: string, documentType: string, versionId: number, name: string): Promise<boolean> =>
+      executeApiCall(async () => {
+        await client.updateVersionName(uuid, documentType, versionId, name);
+        return true;
+      }, false),
+    [client, executeApiCall],
+  );
+
   const getSchema = useCallback(
     async (): Promise<UISchema | null> => executeApiCall(() => client.getSchema(), null),
     [client, executeApiCall],
@@ -101,6 +110,7 @@ export const useDocumentManager = () => {
     downloadPage,
     deletePage,
     changeCurrentVersion,
+    updateVersionName,
     getSchema,
   };
 };

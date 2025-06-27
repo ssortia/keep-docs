@@ -98,6 +98,18 @@ export class InvalidFileTypeException extends BusinessException {
 }
 
 /**
+ * Version not found exception
+ */
+export class VersionNotFoundException extends BusinessException {
+  constructor(versionId: number | string = '', options?: ErrorOptions) {
+    super(`Version${versionId ? ` with id ${versionId}` : ''} not found`, options)
+  }
+
+  readonly code = 'E_VERSION_NOT_FOUND'
+  readonly status = 404
+}
+
+/**
  * Document version exception
  */
 export class DocumentVersionException extends BusinessException {

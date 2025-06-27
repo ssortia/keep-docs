@@ -5,17 +5,21 @@ import { DossierService } from '#services/dossier_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import {
   changeCurrentVersionValidator,
-  createAddPagesValidator,
+  addPagesValidator,
   getDocumentValidator,
 } from '#validators/document_validator'
 import { DocumentNotFoundException } from '#exceptions/document_exceptions'
+import { DocumentExistsRule } from '#rules/document_exists_rule'
+import { FileExtensionRule } from '#rules/file_extension_rule'
 
 @inject()
 export default class DocumentController {
   constructor(
     private documentService: DocumentService,
     private dossierService: DossierService,
-    private documentAdapter: DocumentAdapter
+    private documentAdapter: DocumentAdapter,
+    private documentExistsRule: DocumentExistsRule,
+    private fileExtensionRule: FileExtensionRule
   ) {}
 
   /**
@@ -37,10 +41,7 @@ export default class DocumentController {
 
     const dossier = await this.dossierService.findDossierByUuid(uuid)
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
-
-    if (!document) {
-      throw new DocumentNotFoundException()
-    }
+    await this.documentExistsRule.validate(document)
 
     await this.documentService.changeCurrentVersion(document, versionId)
 
@@ -62,13 +63,15 @@ export default class DocumentController {
    */
   async upload({ params, request, response }: HttpContext) {
     const dossier = await this.dossierService.findOrCreateDossier(params.uuid)
-    const validator = await createAddPagesValidator(dossier.schema, params.type)
-    const { type, documents, name, isNewVersion } = await validator.validate({
+    const { type, documents, name, isNewVersion } = await addPagesValidator.validate({
       ...params,
       documents: request.files('documents'),
       name: request.input('name'),
       isNewVersion: request.input('isNewVersion', false),
     })
+
+    // Бизнес-валидация расширений файлов
+    await this.fileExtensionRule.validate(dossier.schema, type, documents)
 
     const result = await this.documentService.processDocumentUpload({
       dossier,
@@ -103,10 +106,7 @@ export default class DocumentController {
 
     const dossier = await this.dossierService.findDossierByUuid(uuid)
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
-
-    if (!document || !document.files || document.files.length === 0) {
-      throw new DocumentNotFoundException()
-    }
+    await this.documentExistsRule.validateHasFiles(document)
 
     return this.documentService.streamDocumentFiles(document.files, type, response)
   }

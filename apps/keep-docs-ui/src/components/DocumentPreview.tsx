@@ -9,6 +9,7 @@ interface DocumentPreviewProps {
   onPageDelete: (pageUuid: string) => void;
   onPageEnlarge: (imageSrc: string, pageIndex: number, totalPages: number) => void;
   onVersionChange: (versionId: number) => void;
+  onVersionNameUpdate: (versionId: number, newName: string) => Promise<boolean>;
   canDelete: boolean;
   loading?: boolean;
 }
@@ -19,6 +20,7 @@ export function DocumentPreview({
   onPageDelete,
   onPageEnlarge,
   onVersionChange,
+  onVersionNameUpdate,
   canDelete,
   loading = false,
 }: DocumentPreviewProps) {
@@ -70,12 +72,7 @@ export function DocumentPreview({
       <div className="preview-header">
         <h4>{name}</h4>
         <div className="preview-header-controls">
-          <VersionSelector
-            versions={document.versions || []}
-            currentVersion={document.currentVersion}
-            onVersionChange={onVersionChange}
-            disabled={loading}
-          />
+
           {hasFiles && (
             <button
               type="button"
@@ -86,6 +83,13 @@ export function DocumentPreview({
               ⬇ Скачать документ
             </button>
           )}
+          <VersionSelector
+            versions={document.versions || []}
+            currentVersion={document.currentVersion}
+            onVersionChange={onVersionChange}
+            onVersionNameUpdate={onVersionNameUpdate}
+            disabled={loading}
+          />
         </div>
       </div>
 

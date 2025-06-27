@@ -3,13 +3,16 @@ import { inject } from '@adonisjs/core'
 import { DocumentService } from '#services/document_service'
 import { DossierService } from '#services/dossier_service'
 import { deletePageValidator, getPageValidator } from '#validators/document_validator'
-import { DocumentNotFoundException, PageNotFoundException } from '#exceptions/document_exceptions'
+import { DocumentExistsRule } from '#rules/document_exists_rule'
+import { FileExistsRule } from '#rules/file_exists_rule'
 
 @inject()
 export default class DocumentFileController {
   constructor(
     private documentService: DocumentService,
-    private dossierService: DossierService
+    private dossierService: DossierService,
+    private documentExistsRule: DocumentExistsRule,
+    private fileExistsRule: FileExistsRule
   ) {}
 
   /**
@@ -28,16 +31,10 @@ export default class DocumentFileController {
 
     const dossier = await this.dossierService.findDossierByUuid(uuid)
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
-
-    if (!document) {
-      throw new DocumentNotFoundException()
-    }
+    await this.documentExistsRule.validate(document)
 
     const file = await this.documentService.findFileByUuid(pageUuid, document)
-
-    if (!file) {
-      throw new PageNotFoundException(pageUuid)
-    }
+    await this.fileExistsRule.validate(file, pageUuid)
 
     return this.documentService.streamSingleFile(file, response)
   }
@@ -58,16 +55,10 @@ export default class DocumentFileController {
 
     const dossier = await this.dossierService.findDossierByUuid(uuid)
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
-
-    if (!document) {
-      throw new DocumentNotFoundException()
-    }
+    await this.documentExistsRule.validate(document)
 
     const file = await this.documentService.findFileByUuid(pageUuid, document)
-
-    if (!file) {
-      throw new PageNotFoundException(pageUuid)
-    }
+    await this.fileExistsRule.validate(file, pageUuid)
 
     await this.documentService.deleteFile(file)
 

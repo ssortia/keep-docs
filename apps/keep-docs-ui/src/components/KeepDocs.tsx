@@ -59,7 +59,7 @@ function KeepDocsContent({
     closeImageModal,
   } = useKeepDocsModals();
 
-  const { handleVersionSubmit, handlePageDelete, handleVersionChange, handlePageNavigation } =
+  const { handleVersionSubmit, handlePageDelete, handleVersionChange, handleVersionNameUpdate, handlePageNavigation } =
     useKeepDocsActions({
       activeTab,
       getCurrentDocument,
@@ -152,6 +152,7 @@ function KeepDocsContent({
                   onPageDelete={handlePageDelete}
                   onPageEnlarge={openImageModal}
                   onVersionChange={handleVersionChange}
+                  onVersionNameUpdate={handleVersionNameUpdate}
                   canDelete={isEditable}
                   loading={loading}
                 />

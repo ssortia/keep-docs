@@ -29,6 +29,12 @@ router
       '#controllers/document_controller.setVersion'
     )
 
+    // Document versions resource (nested under documents)
+    router.patch(
+      '/dossiers/:uuid/documents/:type/versions/:versionId',
+      '#controllers/version_controller.updateVersionName'
+    )
+
     // Document pages resource (nested under documents)
     router.get(
       '/dossiers/:uuid/documents/:type/pages/:pageUuid',

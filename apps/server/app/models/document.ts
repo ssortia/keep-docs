@@ -32,6 +32,9 @@ export default class Document extends BaseModel {
   })
   declare currentVersion: BelongsTo<typeof Version>
 
+  @hasMany(() => Version)
+  declare versions: HasMany<typeof Version>
+
   @hasMany(() => File)
   declare files: HasMany<typeof File>
 }

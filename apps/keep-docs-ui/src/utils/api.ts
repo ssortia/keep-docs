@@ -83,6 +83,17 @@ export class DocumentApiClient {
     });
   }
 
+  async updateVersionName(
+    uuid: string,
+    documentType: string,
+    versionId: number,
+    name: string
+  ): Promise<void> {
+    await this.api.patch(`/dossiers/${uuid}/documents/${documentType}/versions/${versionId}`, {
+      name,
+    });
+  }
+
   async getSchema(): Promise<UISchema> {
     const response = await this.api.get(`/schemas/${this.config.schema}`);
     return response.data.schema;
