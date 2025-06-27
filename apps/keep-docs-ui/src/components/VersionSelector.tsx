@@ -93,19 +93,38 @@ export function VersionSelector({
   return (
     <div className="version-selector" ref={dropdownRef}>
       {isEditing ? (
-        <div className="version-edit-container">
+        <div className="version-selector-container">
           <input
             ref={inputRef}
             type="text"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            onBlur={handleEditSave}
             className="version-edit-input"
           />
+          <button
+            type="button"
+            className="version-edit-button"
+            aria-label="Сохранить название версии"
+            onClick={handleEditSave}
+            title="Сохранить название версии"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#666666"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          </button>
         </div>
       ) : (
-        <div className="version-selector-container" style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="version-selector-container">
           <button
             type="button"
             className={`version-selector-trigger ${disabled ? 'disabled' : ''}`}
@@ -118,20 +137,11 @@ export function VersionSelector({
           </button>
           {currentVersion && !disabled && (
             <button
+              aria-label="Редактировать название версии"
               type="button"
               className="version-edit-button"
               onClick={handleEditClick}
               title="Редактировать название версии"
-              style={{
-                border: 'none',
-                background: 'transparent',
-                padding: '0',
-                margin: '0 0 0 8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                height: '100%'
-              }}
             >
               <svg
                 width="20"

@@ -10,6 +10,7 @@ import { KeepDocsProvider } from '../contexts/KeepDocsContext';
 import { DocumentTabs } from './DocumentTabs';
 import { DocumentUploadArea } from './DocumentUploadArea';
 import { DocumentPreview } from './DocumentPreview';
+import { DocumentHeader } from './DocumentHeader';
 import { VersionModal } from './VersionModal';
 import { ImageModal } from './ImageModal';
 import '../styles/KeepDocs.css';
@@ -59,15 +60,20 @@ function KeepDocsContent({
     closeImageModal,
   } = useKeepDocsModals();
 
-  const { handleVersionSubmit, handlePageDelete, handleVersionChange, handleVersionNameUpdate, handlePageNavigation } =
-    useKeepDocsActions({
-      activeTab,
-      getCurrentDocument,
-      updateDossier,
-      onUpdate,
-      onRemove,
-      onError,
-    });
+  const {
+    handleVersionSubmit,
+    handlePageDelete,
+    handleVersionChange,
+    handleVersionNameUpdate,
+    handlePageNavigation,
+  } = useKeepDocsActions({
+    activeTab,
+    getCurrentDocument,
+    updateDossier,
+    onUpdate,
+    onRemove,
+    onError,
+  });
 
   const visibleDocuments = useMemo(() => {
     if (!schema) return [];
@@ -138,6 +144,15 @@ function KeepDocsContent({
         <div className="keep-docs-content">
           {activeTab && dossier && (
             <>
+              {currentDocument && activeSchemaDocument && (
+                <DocumentHeader
+                  name={activeSchemaDocument.name}
+                  document={currentDocument}
+                  onVersionChange={handleVersionChange}
+                  onVersionNameUpdate={handleVersionNameUpdate}
+                  loading={loading}
+                />
+              )}
               {isEditable && (
                 <DocumentUploadArea
                   onFilesSelected={openVersionModal}
@@ -147,14 +162,10 @@ function KeepDocsContent({
               )}
               {currentDocument && activeSchemaDocument && (
                 <DocumentPreview
-                  name={activeSchemaDocument.name}
                   document={currentDocument}
                   onPageDelete={handlePageDelete}
                   onPageEnlarge={openImageModal}
-                  onVersionChange={handleVersionChange}
-                  onVersionNameUpdate={handleVersionNameUpdate}
                   canDelete={isEditable}
-                  loading={loading}
                 />
               )}
             </>

@@ -1,35 +1,32 @@
 import React from 'react';
 import type { Document } from '../types';
-import { PreviewGrid } from './PreviewGrid';
-import { EmptyPreview } from './EmptyPreview';
+import { PreviewItem } from './PreviewItem';
 
-interface DocumentPreviewProps {
+interface PreviewGridProps {
   document: Document;
   onPageDelete: (pageUuid: string) => void;
   onPageEnlarge: (imageSrc: string, pageIndex: number, totalPages: number) => void;
   canDelete: boolean;
 }
 
-export function DocumentPreview({
+export function PreviewGrid({
   document,
   onPageDelete,
   onPageEnlarge,
   canDelete,
-}: DocumentPreviewProps) {
-  const hasFiles = document.files && document.files.length > 0;
-
+}: PreviewGridProps) {
   return (
-    <div className="document-preview">
-      {!hasFiles ? (
-        <EmptyPreview />
-      ) : (
-        <PreviewGrid
+    <div className="preview-grid">
+      {(document.files || []).map((file) => (
+        <PreviewItem
+          key={file.uuid}
+          file={file}
           document={document}
           onPageDelete={onPageDelete}
           onPageEnlarge={onPageEnlarge}
           canDelete={canDelete}
         />
-      )}
+      ))}
     </div>
   );
 }

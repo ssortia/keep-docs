@@ -15,7 +15,7 @@ export class VersionOwnershipRule {
       })
       .first()
 
-    if (!version) {
+    if (!version || !version.document) {
       throw new VersionNotFoundException(versionId)
     }
 
