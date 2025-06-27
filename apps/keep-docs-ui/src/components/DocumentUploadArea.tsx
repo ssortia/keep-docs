@@ -3,15 +3,10 @@ import { useDropzone } from 'react-dropzone';
 
 interface DocumentUploadAreaProps {
   onFilesSelected: (files: File[]) => void;
-  disabled?: boolean;
   accept?: string[];
 }
 
-export function DocumentUploadArea({
-  onFilesSelected,
-  disabled = false,
-  accept,
-}: DocumentUploadAreaProps) {
+export function DocumentUploadArea({ onFilesSelected, accept }: DocumentUploadAreaProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
@@ -21,9 +16,10 @@ export function DocumentUploadArea({
     [onFilesSelected],
   );
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
-    disabled,
+    noClick: true,
+    noKeyboard: true,
     accept: accept
       ? accept.reduce<Record<string, string[]>>((acc, mimeType) => {
           acc[mimeType] = [];
@@ -32,10 +28,22 @@ export function DocumentUploadArea({
       : undefined,
   });
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      open();
+    }
+  };
+
   return (
     <div
       {...getRootProps()}
-      className={`upload-area ${isDragActive ? 'drag-active' : ''} ${disabled ? 'disabled' : ''}`}
+      className={`upload-area ${isDragActive ? 'drag-active' : ''}`}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onClick={open}
+      role="button"
+      aria-label="Загрузить файлы"
     >
       <input {...getInputProps()} />
       <div className="upload-content">

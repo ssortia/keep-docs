@@ -16,6 +16,13 @@
   background-color: var(--keep-docs-upload-hover);
 }
 
+.upload-area:focus {
+  outline: 2px solid var(--keep-docs-blue);
+  outline-offset: 2px;
+  border-color: var(--keep-docs-blue);
+  background-color: var(--keep-docs-upload-hover);
+}
+
 .upload-area.drag-active {
   border-color: var(--keep-docs-blue);
   background-color: var(--keep-docs-blue-light);
