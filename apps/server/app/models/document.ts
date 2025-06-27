@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Dossier from '#models/dossier'
 import Version from '#models/version'
@@ -16,7 +16,7 @@ export default class Document extends BaseModel {
   declare dossierId: number
 
   @column()
-  declare currentVersionId: number
+  declare currentVersionId: number | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -37,4 +37,8 @@ export default class Document extends BaseModel {
 
   @hasMany(() => File)
   declare files: HasMany<typeof File>
+
+  isCurrentVersion(versionId: number): boolean {
+    return this.currentVersionId === versionId
+  }
 }

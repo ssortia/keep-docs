@@ -69,7 +69,7 @@ export class DocumentService {
 
       // Устанавливаем текущую версию если это первая версия или создается новая версия
       if (!document.currentVersionId || data.isNewVersion) {
-        await this.updateCurrentVersion(document, version, trx)
+        await this.updateCurrentVersion(document, version.id, trx)
       }
 
       await trx.commit()
@@ -108,14 +108,12 @@ export class DocumentService {
   /**
    * Находит документ по досье и типу с файлами текущей версии
    */
-  async findDocumentByDossierAndType(
-    dossier: Dossier,
-    documentType: string
-  ): Promise<Document | null> {
+  async findDocument(dossierId: number, documentType: string): Promise<Document | null> {
     const document = await Document.query()
-      .where('dossierId', dossier.id)
+      .where('dossierId', dossierId)
       .where('code', documentType)
       .preload('currentVersion')
+      .preload('versions')
       .first()
 
     if (!document || !document.currentVersionId) {
@@ -124,7 +122,7 @@ export class DocumentService {
 
     await document.load('files', (query) => {
       query
-        .where('versionId', document.currentVersionId)
+        .where('versionId', document.currentVersionId!)
         .whereNull('deletedAt')
         .orderBy('pageNumber', 'asc')
     })
@@ -159,10 +157,8 @@ export class DocumentService {
     try {
       // Проверяем, что версия принадлежит этому документу
       const version = await Version.query({ client: trx })
-        .whereHas('files', (query) => {
-          query.where('documentId', document.id)
-        })
         .where('id', versionId)
+        .where('documentId', document.id)
         .first()
 
       if (!version) {
@@ -170,7 +166,7 @@ export class DocumentService {
       }
 
       // Обновляем текущую версию
-      await this.updateCurrentVersion(document, version, trx)
+      await this.updateCurrentVersion(document, version.id, trx)
       await trx.commit()
     } catch (error) {
       await trx.rollback()
@@ -246,12 +242,12 @@ export class DocumentService {
     trx?: TransactionClientContract
   ): Promise<Version> {
     if (isNewVersion) {
-      return await this.createNewVersion(versionName, trx)
+      return await this.createNewVersion(document.id, versionName, trx)
     }
     const currentVersion = await Version.find(document.currentVersionId || 0, { client: trx })
 
     if (!currentVersion) {
-      return await this.createNewVersion(versionName, trx)
+      return await this.createNewVersion(document.id, versionName, trx)
     }
 
     return currentVersion
@@ -261,12 +257,13 @@ export class DocumentService {
    * Создает новую версию
    */
   private async createNewVersion(
+    documentId: number,
     versionName?: string,
     trx?: TransactionClientContract
   ): Promise<Version> {
     const name = versionName || this.generateVersionName()
 
-    return await Version.create({ name }, { client: trx })
+    return await Version.create({ name, documentId }, { client: trx })
   }
 
   /**
@@ -346,10 +343,10 @@ export class DocumentService {
    */
   private async updateCurrentVersion(
     document: Document,
-    version: Version,
+    versionId: number | null,
     trx: TransactionClientContract
   ): Promise<void> {
-    document.currentVersionId = version.id
+    document.currentVersionId = versionId
     await document.useTransaction(trx).save()
   }
 }

@@ -39,7 +39,7 @@ export default class DocumentController {
     })
 
     const dossier = await this.dossierService.findDossierByUuid(uuid)
-    const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
+    const document = await this.documentService.findDocument(dossier.id, type)
     await this.documentExistsRule.validate(document)
 
     await this.documentService.changeCurrentVersion(document!, versionId)
@@ -104,7 +104,7 @@ export default class DocumentController {
     const { uuid, type } = await getDocumentValidator.validate(params)
 
     const dossier = await this.dossierService.findDossierByUuid(uuid)
-    const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
+    const document = await this.documentService.findDocument(dossier.id, type)
     await this.documentExistsRule.validateHasFiles(document)
 
     return this.documentService.streamDocumentFiles(document!.files, type, response)

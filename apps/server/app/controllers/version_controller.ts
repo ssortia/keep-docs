@@ -3,12 +3,16 @@ import { inject } from '@adonisjs/core'
 import { VersionService } from '#services/version_service'
 import { deleteVersionValidator, updateVersionNameValidator } from '#validators/document_validator'
 import { VersionOwnershipRule } from '#rules/version_ownership_rule'
+import { DocumentService } from '#services/document_service'
+import { DossierService } from '#services/dossier_service'
 
 @inject()
 export default class VersionController {
   constructor(
     private versionService: VersionService,
-    private versionOwnershipRule: VersionOwnershipRule
+    private documentService: DocumentService,
+    private versionOwnershipRule: VersionOwnershipRule,
+    private dossierService: DossierService
   ) {}
 
   /**
@@ -53,6 +57,18 @@ export default class VersionController {
       versionId: Number(params.versionId),
     })
     await this.versionOwnershipRule.validate(uuid, type, versionId)
+    const dossier = await this.dossierService.findDossierByUuid(uuid)
+    const document = await this.documentService.findDocument(dossier.id, type)
+
+    if (document!.isCurrentVersion(versionId)) {
+      const prevVersion =
+        document!.versions
+          .filter((v) => v.id !== versionId)
+          .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis())[0] || null
+
+      await this.documentService.changeCurrentVersion(document!, prevVersion?.id)
+    }
+
     await this.versionService.deleteVersion(versionId)
 
     return response.ok({ message: 'Версия успешно удалена' })

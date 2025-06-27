@@ -28,9 +28,9 @@ export default class DocumentFileController {
    */
   async getPage({ params, response }: HttpContext) {
     const { uuid, type, pageUuid } = await getPageValidator.validate(params)
-
+    // todo убрать дублирование и убрать бизнес-валидацию? (придумать как недопустить доступа к страницаи чужих документов/досье/схем)
     const dossier = await this.dossierService.findDossierByUuid(uuid)
-    const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
+    const document = await this.documentService.findDocument(dossier.id, type)
     await this.documentExistsRule.validate(document)
 
     const file = await this.documentService.findFileByUuid(pageUuid, document!)
@@ -54,7 +54,7 @@ export default class DocumentFileController {
     const { uuid, type, pageUuid } = await deletePageValidator.validate(params)
 
     const dossier = await this.dossierService.findDossierByUuid(uuid)
-    const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
+    const document = await this.documentService.findDocument(dossier.id, type)
     await this.documentExistsRule.validate(document)
 
     const file = await this.documentService.findFileByUuid(pageUuid, document!)
