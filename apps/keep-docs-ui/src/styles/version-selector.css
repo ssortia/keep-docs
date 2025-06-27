@@ -55,6 +55,10 @@
   text-align: left;
   color: var(--keep-docs-dark-gray);
   font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .version-arrow {
