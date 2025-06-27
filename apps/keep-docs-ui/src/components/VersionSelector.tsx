@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { DocumentVersion } from '../types';
 
 interface VersionSelectorProps {
@@ -15,10 +15,27 @@ export function VersionSelector({
   disabled = false,
 }: VersionSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const sortedVersions = [...versions].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const handleVersionSelect = (versionId: number) => {
     onVersionChange(versionId);
@@ -26,7 +43,7 @@ export function VersionSelector({
   };
 
   return (
-    <div className="version-selector">
+    <div className="version-selector" ref={dropdownRef}>
       <button
         type="button"
         className={`version-selector-trigger ${disabled ? 'disabled' : ''}`}
