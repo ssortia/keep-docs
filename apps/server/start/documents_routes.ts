@@ -13,31 +13,25 @@ import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
 
 /**
- * API маршруты для документов
+ * API маршруты для документов (REST)
  */
 router
   .group(() => {
-    // Dossiers
+    // Dossiers resource
     router.post('/dossiers', '#controllers/dossier_controller.create')
-    router.get('/:uuid/dossier', '#controllers/dossier_controller.show')
+    router.get('/dossiers/:uuid', '#controllers/dossier_controller.show')
 
-    // Documents (meta)
-    router.patch(
-      '/:uuid/documents/:type/current-version',
-      '#controllers/document_controller.setVersion'
-    )
-    router.get('/:uuid/documents/:type', '#controllers/document_controller.download')
-    router.put('/:uuid/documents/:type', '#controllers/document_controller.upload')
+    // Documents resource (nested under dossiers)
+    router.get('/dossiers/:uuid/documents/:type', '#controllers/document_controller.download')
+    router.put('/dossiers/:uuid/documents/:type', '#controllers/document_controller.upload')
+    router.patch('/dossiers/:uuid/documents/:type/version', '#controllers/document_controller.setVersion')
 
-    // Document files/pages
-    router.get('/:uuid/documents/:type/:pageUuid', '#controllers/document_file_controller.getPage')
-    router.delete(
-      '/:uuid/documents/:type/:pageUuid',
-      '#controllers/document_file_controller.deletePage'
-    )
+    // Document pages resource (nested under documents)
+    router.get('/dossiers/:uuid/documents/:type/pages/:pageUuid', '#controllers/document_file_controller.getPage')
+    router.delete('/dossiers/:uuid/documents/:type/pages/:pageUuid', '#controllers/document_file_controller.deletePage')
 
-    // Schemas
-    router.get('/schema/:schema', '#controllers/schema_controller.get')
+    // Schemas resource
+    router.get('/schemas/:schema', '#controllers/schema_controller.get')
   })
   .prefix('/api/docs')
   .middleware([middleware.auth({ guards: ['api'] }), middleware.schemaAccess()])

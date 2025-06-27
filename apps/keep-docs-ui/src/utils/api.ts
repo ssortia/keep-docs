@@ -18,7 +18,7 @@ export class DocumentApiClient {
 
   async getDossier(uuid: string): Promise<Dossier> {
     const response: AxiosResponse<Dossier> = await this.api.get(
-      `/${uuid}/dossier?schema=${this.config.schema}`,
+      `/dossiers/${uuid}?schema=${this.config.schema}`,
     );
 
     return response.data;
@@ -44,7 +44,7 @@ export class DocumentApiClient {
     formData.append('isNewVersion', isNewVersion.toString());
 
     const response: AxiosResponse<DocumentUploadResponse> = await this.api.put(
-      `/${uuid}/documents/${documentType}`,
+      `/dossiers/${uuid}/documents/${documentType}`,
       formData,
       {
         headers: {
@@ -57,31 +57,34 @@ export class DocumentApiClient {
   }
 
   async downloadDocument(uuid: string, documentType: string): Promise<Blob> {
-    const response = await this.api.get(`/${uuid}/documents/${documentType}`, {
+    const response = await this.api.get(`/dossiers/${uuid}/documents/${documentType}`, {
       responseType: 'blob',
     });
     return response.data;
   }
 
   async downloadPage(uuid: string, documentType: string, pageUuid: string): Promise<Blob> {
-    const response = await this.api.get(`/${uuid}/documents/${documentType}/${pageUuid}`, {
-      responseType: 'blob',
-    });
+    const response = await this.api.get(
+      `/dossiers/${uuid}/documents/${documentType}/pages/${pageUuid}`,
+      {
+        responseType: 'blob',
+      },
+    );
     return response.data;
   }
 
   async deletePage(uuid: string, documentType: string, pageUuid: string): Promise<void> {
-    await this.api.delete(`/${uuid}/documents/${documentType}/${pageUuid}`);
+    await this.api.delete(`/dossiers/${uuid}/documents/${documentType}/pages/${pageUuid}`);
   }
 
   async changeCurrentVersion(uuid: string, documentType: string, versionId: number): Promise<void> {
-    await this.api.patch(`/${uuid}/documents/${documentType}/current-version`, {
+    await this.api.patch(`/dossiers/${uuid}/documents/${documentType}/version`, {
       versionId,
     });
   }
 
   async getSchema(): Promise<UISchema> {
-    const response = await this.api.get(`/schema/${this.config.schema}`);
+    const response = await this.api.get(`/schemas/${this.config.schema}`);
     return response.data.schema;
   }
 }
