@@ -93,9 +93,9 @@ function KeepDocsContent({
   const currentDocument = getCurrentDocument();
 
   const handlePageNavigationWithModal = useCallback(
-    (pageNumber: number) => {
-      handlePageNavigation(pageNumber, enlargedPage, (page) =>
-        openImageModal(page.src, page.pageNumber, page.total),
+    (pageIndex: number) => {
+      handlePageNavigation(pageIndex, enlargedPage, (page) =>
+        openImageModal(page.src, page.pageIndex, page.total),
       );
     },
     [handlePageNavigation, enlargedPage, openImageModal],
@@ -172,17 +172,17 @@ function KeepDocsContent({
       {enlargedPage && (
         <ImageModal
           imageSrc={enlargedPage.src}
-          imageNumber={enlargedPage.pageNumber}
+          imageNumber={enlargedPage.pageIndex + 1}
           totalImages={enlargedPage.total}
           onClose={closeImageModal}
           onPrevious={
-            enlargedPage.pageNumber > 1
-              ? () => handlePageNavigationWithModal(enlargedPage.pageNumber - 1)
+            enlargedPage.pageIndex > 0
+              ? () => handlePageNavigationWithModal(enlargedPage.pageIndex - 1)
               : undefined
           }
           onNext={
-            enlargedPage.pageNumber < enlargedPage.total
-              ? () => handlePageNavigationWithModal(enlargedPage.pageNumber + 1)
+            enlargedPage.pageIndex < enlargedPage.total - 1
+              ? () => handlePageNavigationWithModal(enlargedPage.pageIndex + 1)
               : undefined
           }
         />

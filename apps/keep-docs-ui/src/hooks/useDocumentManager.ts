@@ -64,8 +64,8 @@ export const useDocumentManager = () => {
   );
 
   const downloadPage = useCallback(
-    async (uuid: string, documentType: string, pageNumber: number): Promise<Blob | null> =>
-      executeApiCall(() => client.downloadPage(uuid, documentType, pageNumber), null),
+    async (uuid: string, documentType: string, pageUuid: string): Promise<Blob | null> =>
+      executeApiCall(() => client.downloadPage(uuid, documentType, pageUuid), null),
     [client, executeApiCall],
   );
 

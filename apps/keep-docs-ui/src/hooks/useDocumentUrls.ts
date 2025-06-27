@@ -5,8 +5,8 @@ export function useDocumentUrls() {
   const { config, uuid } = useKeepDocsContext();
 
   const getPageUrl = useCallback(
-    (documentCode: string, pageNumber: number): string =>
-      `${config.baseUrl}/${uuid}/documents/${documentCode}/${pageNumber}`,
+    (documentCode: string, pageUuid: string): string =>
+      `${config.baseUrl}/${uuid}/documents/${documentCode}/${pageUuid}`,
     [config.baseUrl, uuid],
   );
 
@@ -15,17 +15,8 @@ export function useDocumentUrls() {
     [config.baseUrl, uuid],
   );
 
-  const getDownloadUrl = useCallback(
-    (documentCode: string, pageNumber?: number): string => {
-      const baseUrl = `${config.baseUrl}/${uuid}/documents/${documentCode}`;
-      return pageNumber ? `${baseUrl}/${pageNumber}/download` : `${baseUrl}/download`;
-    },
-    [config.baseUrl, uuid],
-  );
-
   return {
     getPageUrl,
     getDocumentUrl,
-    getDownloadUrl,
   };
 }

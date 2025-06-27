@@ -63,8 +63,8 @@ export class DocumentApiClient {
     return response.data;
   }
 
-  async downloadPage(uuid: string, documentType: string, pageNumber: number): Promise<Blob> {
-    const response = await this.api.get(`/${uuid}/documents/${documentType}/${pageNumber}`, {
+  async downloadPage(uuid: string, documentType: string, pageUuid: string): Promise<Blob> {
+    const response = await this.api.get(`/${uuid}/documents/${documentType}/${pageUuid}`, {
       responseType: 'blob',
     });
     return response.data;

@@ -7,7 +7,7 @@ interface DocumentPreviewProps {
   name: string;
   document: Document;
   onPageDelete: (pageUuid: string) => void;
-  onPageEnlarge: (imageSrc: string, pageNumber: number, totalPages: number) => void;
+  onPageEnlarge: (imageSrc: string, pageIndex: number, totalPages: number) => void;
   onVersionChange: (versionId: number) => void;
   canDelete: boolean;
   loading?: boolean;
@@ -24,7 +24,7 @@ export function DocumentPreview({
 }: DocumentPreviewProps) {
   const { getPageUrl, getDocumentUrl } = useDocumentUrls();
 
-  const getDocumentPageUrl = (pageNumber: number): string => getPageUrl(document.code, pageNumber);
+  const getDocumentPageUrl = (pageUuid: string): string => getPageUrl(document.code, pageUuid);
   const getDocumentDownloadUrl = (): string => getDocumentUrl(document.code);
 
   const handleDownloadDocument = () => {
@@ -36,9 +36,9 @@ export function DocumentPreview({
     window.document.body.removeChild(link);
   };
 
-  const handleDownloadPage = (pageNumber: number, fileName: string) => {
+  const handleDownloadPage = (pageUuid: string, fileName: string) => {
     const link = window.document.createElement('a');
-    link.href = getDocumentPageUrl(pageNumber);
+    link.href = getDocumentPageUrl(pageUuid);
     link.download = fileName;
     window.document.body.appendChild(link);
     link.click();
@@ -46,7 +46,7 @@ export function DocumentPreview({
   };
   const getPageThumbnail = (file: any): string => {
     if (file.mimeType.startsWith('image/')) {
-      return getDocumentPageUrl(file.pageNumber);
+      return getDocumentPageUrl(file.uuid);
     }
 
     // Для других форматов возвращаем заглушку с расширением файла
@@ -105,18 +105,21 @@ export function DocumentPreview({
                     onClick={() =>
                       onPageEnlarge(
                         getPageThumbnail(file),
-                        file.pageNumber,
+                        (document.files || []).indexOf(file),
                         (document.files as []).length,
                       )
                     }
                     title="Открыть изображение"
                   >
-                    <img src={getPageThumbnail(file)} alt={`Страница ${file.pageNumber}`} />
+                    <img
+                      src={getPageThumbnail(file)}
+                      alt={`Страница ${(document.files || []).indexOf(file) + 1}`}
+                    />
                   </button>
                 ) : (
                   <img
                     src={getPageThumbnail(file)}
-                    alt={`Страница ${file.pageNumber}`}
+                    alt={`Страница ${(document.files || []).indexOf(file) + 1}`}
                     className="preview-image non-clickable"
                   />
                 )}
@@ -126,8 +129,9 @@ export function DocumentPreview({
                   className="download-page-button"
                   onClick={() =>
                     handleDownloadPage(
-                      file.pageNumber,
-                      file.originalName || `page_${file.pageNumber}.${file.extension}`,
+                      file.uuid,
+                      file.originalName ||
+                        `page_${(document.files || []).indexOf(file) + 1}.${file.extension}`,
                     )
                   }
                   title="Скачать страницу"
@@ -149,7 +153,7 @@ export function DocumentPreview({
 
               <div className="preview-info">
                 <span className="page-number">
-                  {file.originalName || `Страница ${file.pageNumber}`}
+                  {file.originalName || `Страница ${(document.files || []).indexOf(file) + 1}`}
                 </span>
                 <span className="file-type">{file.extension.toUpperCase()}</span>
               </div>

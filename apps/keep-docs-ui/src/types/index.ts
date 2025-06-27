@@ -3,7 +3,7 @@ export interface DossierFile {
   originalName: string;
   extension: string;
   mimeType: string;
-  pageNumber: number;
+  pageNumber: number; // Используется только для отображения, для API используется uuid
   createdAt: string;
 }
 

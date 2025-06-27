@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 
 interface EnlargedPage {
   src: string;
-  pageNumber: number;
+  pageIndex: number;
   total: number;
 }
 
@@ -21,16 +21,16 @@ export function useKeepDocsModals() {
     setPendingFiles([]);
   }, []);
 
-  const openImageModal = useCallback((src: string, pageNumber: number, total: number) => {
-    setEnlargedPage({ src, pageNumber, total });
+  const openImageModal = useCallback((src: string, pageIndex: number, total: number) => {
+    setEnlargedPage({ src, pageIndex, total });
   }, []);
 
   const closeImageModal = useCallback(() => {
     setEnlargedPage(null);
   }, []);
 
-  const navigateToPage = useCallback((pageNumber: number) => {
-    setEnlargedPage((prev) => (prev ? { ...prev, pageNumber } : null));
+  const navigateToPage = useCallback((pageIndex: number) => {
+    setEnlargedPage((prev) => (prev ? { ...prev, pageIndex } : null));
   }, []);
 
   return {

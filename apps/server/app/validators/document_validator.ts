@@ -36,7 +36,7 @@ export const getPageValidator = vine.compile(
   vine.object({
     uuid: uuidRule,
     type: typeRule,
-    number: pageRule,
+    pageUuid: uuidRule,
   })
 )
 

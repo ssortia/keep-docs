@@ -22,7 +22,7 @@ export function useKeepDocsActions({
   onRemove,
   onError,
 }: UseKeepDocsActionsProps) {
-  const { uuid, config } = useKeepDocsContext();
+  const { uuid } = useKeepDocsContext();
   const { getPageUrl } = useDocumentUrls();
   const { handleError } = useApiError();
   // Получаем API функции локально, чтобы избежать циклических зависимостей
@@ -117,24 +117,24 @@ export function useKeepDocsActions({
 
   const handlePageNavigation = useCallback(
     (
-      pageNumber: number,
+      pageIndex: number,
       enlargedPage: { total: number } | null,
-      setEnlargedPage: (page: { src: string; pageNumber: number; total: number }) => void,
+      setEnlargedPage: (page: { src: string; pageIndex: number; total: number }) => void,
     ) => {
       const currentDocument = getCurrentDocument();
       if (!currentDocument || !currentDocument.files || !enlargedPage) return;
 
-      const targetFile = currentDocument.files.find((file) => file.pageNumber === pageNumber);
+      const targetFile = currentDocument.files[pageIndex];
       if (!targetFile || !targetFile.mimeType.startsWith('image/')) return;
 
-      const pageUrl = getPageUrl(currentDocument.code, pageNumber);
+      const pageUrl = getPageUrl(currentDocument.code, targetFile.uuid);
       setEnlargedPage({
         src: pageUrl,
-        pageNumber,
+        pageIndex,
         total: enlargedPage.total,
       });
     },
-    [getCurrentDocument, config.baseUrl, uuid],
+    [getCurrentDocument, getPageUrl],
   );
 
   return {

@@ -6,7 +6,6 @@ import { DocumentAdapter } from '#adapters/document_adapter'
 import {
   changeCurrentVersionValidator,
   createAddPagesValidator,
-  getDocumentsValidator,
   getDocumentValidator,
 } from '#validators/document_validator'
 import { DocumentNotFoundException } from '#exceptions/document_exceptions'

@@ -19,12 +19,12 @@ export default class DocumentFileController {
    * @description Скачивает отдельную страницу документа
    * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
-   * @paramPath number - Номер страницы - eg: 1
+   * @paramPath pageUuid - UUID страницы - eg: 660e8400-e29b-41d4-a716-446655440001
    * @responseBody 200 - Файл страницы документа
    * @responseBody 404 - {"message": "Страница не найдена"}
    */
   async getPage({ params, response }: HttpContext) {
-    const { uuid, type, number } = await getPageValidator.validate(params)
+    const { uuid, type, pageUuid } = await getPageValidator.validate(params)
 
     const dossier = await this.dossierService.findDossierByUuid(uuid)
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
@@ -33,10 +33,10 @@ export default class DocumentFileController {
       throw new DocumentNotFoundException()
     }
 
-    const file = document.files?.find((f) => f.pageNumber === number)
+    const file = await this.documentService.findFileByUuid(pageUuid, document)
 
     if (!file) {
-      throw new PageNotFoundException(number)
+      throw new PageNotFoundException(pageUuid)
     }
 
     return this.documentService.streamSingleFile(file, response)

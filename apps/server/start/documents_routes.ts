@@ -30,7 +30,7 @@ router
     router.put('/:uuid/documents/:type', '#controllers/document_controller.upload')
 
     // Document files/pages
-    router.get('/:uuid/documents/:type/:number', '#controllers/document_file_controller.getPage')
+    router.get('/:uuid/documents/:type/:pageUuid', '#controllers/document_file_controller.getPage')
     router.delete(
       '/:uuid/documents/:type/:pageUuid',
       '#controllers/document_file_controller.deletePage'

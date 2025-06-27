@@ -80,28 +80,6 @@ export class FileProcessingService {
   }
 
   /**
-   * Удаляет файл из файловой системы
-   */
-  async deleteFile(filePath: string): Promise<void> {
-    const fullPath = this.getFullPath(filePath)
-
-    try {
-      await unlink(fullPath)
-    } catch (error) {
-      console.warn(`Не удалось удалить файл: ${filePath}`, error)
-    }
-  }
-
-  /**
-   * Генерирует уникальное имя файла
-   */
-  generateUniqueFilename(originalName: string): string {
-    const uuid = randomUUID()
-    const extension = originalName.split('.').pop()
-    return `${uuid}.${extension}`
-  }
-
-  /**
    * Очищает имя файла от опасных символов
    */
   sanitizeFilename(filename: string): string {
