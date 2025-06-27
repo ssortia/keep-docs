@@ -24,23 +24,36 @@ router
     // Documents resource (nested under dossiers)
     router.get('/dossiers/:uuid/documents/:type', '#controllers/document_controller.download')
     router.put('/dossiers/:uuid/documents/:type', '#controllers/document_controller.upload')
-    router.patch('/dossiers/:uuid/documents/:type/version', '#controllers/document_controller.setVersion')
+    router.patch(
+      '/dossiers/:uuid/documents/:type/version',
+      '#controllers/document_controller.setVersion'
+    )
 
     // Document pages resource (nested under documents)
-    router.get('/dossiers/:uuid/documents/:type/pages/:pageUuid', '#controllers/document_file_controller.getPage')
-    router.delete('/dossiers/:uuid/documents/:type/pages/:pageUuid', '#controllers/document_file_controller.deletePage')
+    router.get(
+      '/dossiers/:uuid/documents/:type/pages/:pageUuid',
+      '#controllers/document_file_controller.getPage'
+    )
+    router.delete(
+      '/dossiers/:uuid/documents/:type/pages/:pageUuid',
+      '#controllers/document_file_controller.deletePage'
+    )
 
     // Schemas resource
     router.get('/schemas/:schema', '#controllers/schema_controller.get')
   })
-  .prefix('/api/docs')
+  .prefix('/api')
   .middleware([middleware.auth({ guards: ['api'] }), middleware.schemaAccess()])
 
-// Swagger Documentation - только для документов
+// Swagger Documentation
 router.get('/swagger', async () => {
-  const filteredRoutes = router.toJSON().root.filter((route) => route.pattern.includes('/api/docs'))
+  const documentsRoutes = router
+    .toJSON()
+    .root.filter(
+      (route) => route.pattern.includes('/dossiers') || route.pattern.includes('/schemas')
+    )
 
-  return AutoSwagger.default.docs({ root: filteredRoutes }, swagger)
+  return AutoSwagger.default.docs({ root: documentsRoutes }, swagger)
 })
 
 // Swagger UI

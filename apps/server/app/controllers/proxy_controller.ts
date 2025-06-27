@@ -5,7 +5,7 @@ import FormData from 'form-data'
 import { createReadStream } from 'node:fs'
 
 export default class ProxyController {
-  private readonly TARGET_BASE_URL = 'http://localhost:3333/api/docs'
+  private readonly TARGET_BASE_URL = 'http://localhost:3333/api'
 
   async proxy({ request, response }: HttpContext) {
     try {
