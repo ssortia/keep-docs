@@ -70,6 +70,14 @@ export const updateVersionNameValidator = vine.compile(
   })
 )
 
+export const deleteVersionValidator = vine.compile(
+  vine.object({
+    uuid: uuidRule,
+    type: typeRule,
+    versionId: vine.number().positive(),
+  })
+)
+
 export const getSchemaValidator = vine.compile(
   vine.object({
     schema: schemaNameRule,

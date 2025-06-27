@@ -1,0 +1,15 @@
+/* Главный файл стилей для KeepDocs UI */
+
+/* Переменные */
+@import './variables.css';
+
+/* Компоненты */
+@import './layout.css';
+@import './accordion.css';
+@import './document-tabs.css';
+@import './upload-area.css';
+@import './document-header.css';
+@import './document-preview.css';
+@import './version-selector.css';
+@import './modal.css';
+@import './image-modal.css';

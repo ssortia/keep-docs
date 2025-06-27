@@ -11,7 +11,8 @@ export function useDocumentUrls() {
   );
 
   const getDocumentUrl = useCallback(
-    (documentCode: string): string => `${config.baseUrl}/dossiers/${uuid}/documents/${documentCode}`,
+    (documentCode: string): string =>
+      `${config.baseUrl}/dossiers/${uuid}/documents/${documentCode}`,
     [config.baseUrl, uuid],
   );
 

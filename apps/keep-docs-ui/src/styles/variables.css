@@ -1,0 +1,71 @@
+/* CSS переменные для темизации */
+:root {
+  /* Основные цвета */
+  --keep-docs-primary-color: #2e66a3;
+  --keep-docs-primary-dark: #1a4d7a;
+  --keep-docs-secondary-color: #4CAF50;
+  --keep-docs-danger-color: #e02234;
+  --keep-docs-warning-color: #ffc107;
+  --keep-docs-blue: #007bff;
+  --keep-docs-red-dark: #c82333;
+  --keep-docs-success-color: #28a745;
+  
+  /* Нейтральные цвета */
+  --keep-docs-white: #ffffff;
+  --keep-docs-background: #ffffff;
+  --keep-docs-text-color: #333333;
+  --keep-docs-muted-color: #6c757d;
+  --keep-docs-border-color: #e0e0e0;
+  
+  /* Градации серого */
+  --keep-docs-gray-100: #f8f9fa;
+  --keep-docs-gray-200: #e9ecef;
+  --keep-docs-gray-300: #dee2e6;
+  --keep-docs-gray-400: #ced4da;
+  --keep-docs-gray-500: #adb5bd;
+  --keep-docs-gray-600: #6c757d;
+  --keep-docs-gray-700: #495057;
+  --keep-docs-gray-800: #343a40;
+  --keep-docs-gray-900: #212529;
+  
+  /* Алиасы для совместимости */
+  --keep-docs-light-gray: var(--keep-docs-gray-100);
+  --keep-docs-dark-gray: var(--keep-docs-gray-700);
+  
+  /* Тени и эффекты */
+  --keep-docs-shadow: rgba(0, 0, 0, 0.15);
+  --keep-docs-shadow-light: rgba(0, 0, 0, 0.1);
+  --keep-docs-overlay: rgba(0, 0, 0, 0.8);
+  --keep-docs-modal-backdrop: rgba(0, 0, 0, 0.5);
+  --keep-docs-modal-bg: rgba(0, 0, 0, 0.85);
+  
+  /* Прозрачности */
+  --keep-docs-white-alpha-10: rgba(255, 255, 255, 0.1);
+  --keep-docs-white-alpha-20: rgba(255, 255, 255, 0.2);
+  --keep-docs-white-alpha-30: rgba(255, 255, 255, 0.3);
+  
+  /* Цвета с альфа-каналом */
+  --keep-docs-primary-shadow: rgba(46, 102, 163, 0.1);
+  --keep-docs-primary-glow: rgba(46, 102, 163, 0.4);
+  --keep-docs-danger-alpha: rgba(220, 53, 69, 0.8);
+  --keep-docs-blue-light: #e3f2fd;
+  --keep-docs-upload-hover: #f8f9ff;
+  
+  /* Отступы и размеры */
+  --keep-docs-spacing-xs: 4px;
+  --keep-docs-spacing-sm: 8px;
+  --keep-docs-spacing-md: 12px;
+  --keep-docs-spacing-lg: 16px;
+  --keep-docs-spacing-xl: 20px;
+  --keep-docs-spacing-xxl: 24px;
+  
+  /* Радиусы скругления */
+  --keep-docs-radius-sm: 4px;
+  --keep-docs-radius-md: 6px;
+  --keep-docs-radius-lg: 8px;
+  
+  /* Переходы */
+  --keep-docs-transition-fast: 0.2s ease;
+  --keep-docs-transition-normal: 0.3s ease;
+  --keep-docs-transition-slow: 0.5s ease;
+}

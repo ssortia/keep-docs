@@ -1,0 +1,106 @@
+@import './variables.css';
+
+/* KeepDocs Component Styles */
+.keep-docs {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--keep-docs-text-color);
+  min-width: 260px;
+  container-type: inline-size;
+}
+
+.keep-docs-layout {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--keep-docs-border-color);
+  border-radius: var(--keep-docs-radius-lg);
+  overflow: hidden;
+  min-height: 666px;
+  background: var(--keep-docs-background);
+}
+
+.keep-docs-sidebar {
+  width: 100%;
+  background: var(--keep-docs-light-gray);
+  border-bottom: 1px solid var(--keep-docs-border-color);
+  transition: all var(--keep-docs-transition-normal);
+}
+
+.keep-docs-content {
+  flex: 1;
+  padding: var(--keep-docs-spacing-xl);
+  background-color: var(--keep-docs-background);
+}
+
+.keep-docs-empty {
+  padding: 40px var(--keep-docs-spacing-xl);
+  text-align: center;
+  color: var(--keep-docs-muted-color);
+}
+
+/* Контейнер для вкладок с анимацией */
+.document-tabs-container {
+  overflow: hidden;
+  transition: all var(--keep-docs-transition-slow);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* На больших экранах контейнер всегда открыт */
+.document-tabs-container {
+  max-height: none;
+}
+
+/* Дополнительные стили для отзывчивости */
+/* Большие экраны - меню справа */
+@container (min-width: 1201px) {
+  .keep-docs-layout {
+    flex-direction: row;
+  }
+  
+  .keep-docs-sidebar {
+    width: 250px;
+  }
+
+  .keep-docs-content {
+    order: 1;
+  }
+}
+
+@container (max-width: 1200px) {
+  .keep-docs-layout {
+    flex-direction: row;
+  }
+  
+  .keep-docs-sidebar {
+    width: 200px;
+    border-right: 1px solid var(--keep-docs-gray-200);
+    border-bottom: none;
+  }
+}
+
+@container (max-width: 768px) {
+  .keep-docs-layout {
+    flex-direction: column;
+  }
+  
+  .keep-docs-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--keep-docs-gray-200);
+  }
+  
+  /* На мобильных контейнер управляется состоянием аккордеона */
+  .document-tabs-container {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  
+  .document-tabs-container.open {
+    max-height: 2000px; /* достаточно большое значение для всех вкладок */
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

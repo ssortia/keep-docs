@@ -26,7 +26,14 @@ export function useKeepDocsActions({
   const { getPageUrl } = useDocumentUrls();
   const { handleError } = useApiError();
   // Получаем API функции локально, чтобы избежать циклических зависимостей
-  const { uploadDocument, deletePage, changeCurrentVersion, updateVersionName, getDossier } = useDocumentManager();
+  const {
+    uploadDocument,
+    deletePage,
+    changeCurrentVersion,
+    updateVersionName,
+    deleteVersion,
+    getDossier,
+  } = useDocumentManager();
 
   const refreshDossier = useCallback(async () => {
     try {
@@ -142,6 +149,33 @@ export function useKeepDocsActions({
     [activeTab, updateVersionName, uuid, refreshDossier, onUpdate, onError],
   );
 
+  const handleVersionDelete = useCallback(
+    async (versionId: number) => {
+      if (!activeTab) return false;
+
+      try {
+        const success = await deleteVersion(uuid, activeTab, versionId);
+
+        if (success) {
+          const updatedDossier = await refreshDossier();
+          if (updatedDossier) {
+            const updatedDocument = updatedDossier.documents.find(
+              (doc: Document) => doc.code === activeTab,
+            );
+            if (updatedDocument) {
+              onUpdate?.(updatedDocument);
+            }
+          }
+          return true;
+        }
+      } catch (err) {
+        handleError(err, onError);
+      }
+      return false;
+    },
+    [activeTab, deleteVersion, uuid, refreshDossier, onUpdate, onError],
+  );
+
   const handlePageNavigation = useCallback(
     (
       pageIndex: number,
@@ -169,6 +203,7 @@ export function useKeepDocsActions({
     handlePageDelete,
     handleVersionChange,
     handleVersionNameUpdate,
+    handleVersionDelete,
     handlePageNavigation,
     refreshDossier,
   };

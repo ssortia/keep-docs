@@ -1,0 +1,222 @@
+@import './variables.css';
+
+/* Version Selector */
+.version-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.version-selector-container {
+  display: flex;
+  align-items: stretch;
+}
+
+.version-selector-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--keep-docs-spacing-sm);
+  padding: var(--keep-docs-spacing-xs) var(--keep-docs-spacing-md);
+  background: var(--keep-docs-gray-100);
+  border: 1px solid var(--keep-docs-gray-300);
+  border-radius: var(--keep-docs-radius-sm) 0 0 var(--keep-docs-radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all var(--keep-docs-transition-fast);
+  min-width: 160px;
+  height: 30px;
+}
+
+.version-selector-container:has(.version-edit-button) .version-selector-trigger {
+  border-right: none;
+}
+
+.version-selector-container:not(:has(.version-edit-button)) .version-selector-trigger {
+  border-radius: var(--keep-docs-radius-sm);
+  min-width: 180px;
+}
+
+.version-selector-trigger:hover:not(.disabled) {
+  background: var(--keep-docs-gray-200);
+  border-color: var(--keep-docs-gray-500);
+}
+
+.version-selector-trigger.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.version-label {
+  color: var(--keep-docs-muted-color);
+  font-weight: 500;
+}
+
+.version-name {
+  flex: 1;
+  text-align: left;
+  color: var(--keep-docs-dark-gray);
+  font-weight: 600;
+}
+
+.version-arrow {
+  color: var(--keep-docs-muted-color);
+  font-size: 10px;
+  margin-left: auto;
+}
+
+.version-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--keep-docs-gray-300);
+  border-radius: var(--keep-docs-radius-sm);
+  box-shadow: 0 4px var(--keep-docs-spacing-md) var(--keep-docs-shadow);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 2px;
+}
+
+.version-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--keep-docs-spacing-sm) var(--keep-docs-spacing-md);
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--keep-docs-transition-fast);
+  border-bottom: 1px solid var(--keep-docs-gray-100);
+}
+
+.version-option:last-child {
+  border-bottom: none;
+}
+
+.version-option:hover {
+  background: var(--keep-docs-gray-100);
+}
+
+.version-option.active {
+  background: var(--keep-docs-blue-light);
+}
+
+.version-option-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.version-option-name {
+  font-weight: 500;
+  color: var(--keep-docs-dark-gray);
+  font-size: 13px;
+}
+
+.version-option-date {
+  font-size: 11px;
+  color: var(--keep-docs-muted-color);
+}
+
+.version-current-indicator {
+  color: var(--keep-docs-success-color);
+  font-weight: bold;
+  font-size: 14px;
+  margin-left: var(--keep-docs-spacing-sm);
+}
+
+.version-edit-button {
+  background: var(--keep-docs-white);
+  border: 1px solid var(--keep-docs-gray-300);
+  border-radius: 0 var(--keep-docs-radius-sm) var(--keep-docs-radius-sm) 0;
+  cursor: pointer;
+  padding: var(--keep-docs-spacing-xs) var(--keep-docs-spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 32px;
+  transition: all var(--keep-docs-transition-fast);
+}
+
+.version-edit-button:hover {
+  background: var(--keep-docs-gray-100);
+  border-color: var(--keep-docs-gray-500);
+}
+
+.version-edit-input {
+  width: 160px;
+  height: 30px;
+  padding: var(--keep-docs-spacing-xs) var(--keep-docs-spacing-md);
+  border: 1px solid var(--keep-docs-gray-300);
+  border-radius: var(--keep-docs-radius-sm) 0 0 var(--keep-docs-radius-sm);
+  border-right: none;
+  font-size: 13px;
+  background: var(--keep-docs-gray-100);
+  outline: none;
+  transition: all var(--keep-docs-transition-fast);
+  color: var(--keep-docs-dark-gray);
+  font-weight: 600;
+}
+
+.version-edit-input:focus {
+  border-color: var(--keep-docs-blue);
+  background: var(--keep-docs-white);
+}
+
+/* Responsive */
+@container (max-width: 768px) {
+  .version-selector-trigger {
+    min-width: 140px;
+    font-size: 12px;
+    height: 28px;
+    padding: 5px 10px;
+  }
+  
+  .version-edit-button {
+    height: 28px;
+    width: 28px;
+    padding: 4px;
+  }
+  
+  .version-edit-input {
+    width: 140px;
+    height: 28px;
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}
+
+@container (max-width: 480px) {
+  .version-selector {
+    width: 100%;
+  }
+  
+  .version-selector-trigger {
+    min-width: unset;
+    width: 100%;
+    font-size: 11px;
+    height: 26px;
+    padding: 4px 8px;
+  }
+  
+  .version-selector-trigger .version-name {
+    text-align: right;
+  }
+  
+  .version-edit-button {
+    height: 26px;
+    width: 26px;
+    padding: 3px;
+  }
+  
+  .version-edit-input {
+    width: 100%;
+    height: 26px;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}

@@ -1,0 +1,37 @@
+@import './variables.css';
+
+/* Accordion Header - только на мобильных */
+.accordion-header {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--keep-docs-spacing-lg) var(--keep-docs-spacing-xl);
+  background: var(--keep-docs-gray-200);
+  border-bottom: 1px solid var(--keep-docs-gray-300);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--keep-docs-dark-gray);
+  user-select: none;
+  transition: background-color var(--keep-docs-transition-fast);
+}
+
+.accordion-header:hover {
+  background: var(--keep-docs-gray-300);
+}
+
+.accordion-arrow {
+  font-size: 12px;
+  transition: transform var(--keep-docs-transition-slow);
+  color: var(--keep-docs-muted-color);
+}
+
+.accordion-arrow.open {
+  transform: rotate(180deg);
+}
+
+@container (max-width: 768px) {
+  /* Показываем заголовок аккордеона только на мобильных */
+  .accordion-header {
+    display: flex;
+  }
+}

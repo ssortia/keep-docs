@@ -13,7 +13,7 @@ import { DocumentPreview } from './DocumentPreview';
 import { DocumentHeader } from './DocumentHeader';
 import { VersionModal } from './VersionModal';
 import { ImageModal } from './ImageModal';
-import '../styles/KeepDocs.css';
+import '../styles/index.css';
 
 export interface KeepDocsProps {
   config: DocumentManagerConfig;
@@ -65,6 +65,7 @@ function KeepDocsContent({
     handlePageDelete,
     handleVersionChange,
     handleVersionNameUpdate,
+    handleVersionDelete,
     handlePageNavigation,
   } = useKeepDocsActions({
     activeTab,
@@ -150,6 +151,7 @@ function KeepDocsContent({
                   document={currentDocument}
                   onVersionChange={handleVersionChange}
                   onVersionNameUpdate={handleVersionNameUpdate}
+                  onVersionDelete={handleVersionDelete}
                   loading={loading}
                 />
               )}

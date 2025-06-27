@@ -1,0 +1,95 @@
+@import './variables.css';
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--keep-docs-modal-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--keep-docs-radius-lg);
+  padding: var(--keep-docs-spacing-xxl);
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.modal-content h3 {
+  margin: 0 0 var(--keep-docs-spacing-lg) 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: var(--keep-docs-spacing-lg);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--keep-docs-spacing-xs);
+  font-weight: 500;
+  color: var(--keep-docs-text-color);
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: var(--keep-docs-spacing-sm) var(--keep-docs-spacing-md);
+  border: 1px solid var(--keep-docs-gray-400);
+  border-radius: var(--keep-docs-radius-sm);
+  font-size: 14px;
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-right: var(--keep-docs-spacing-sm);
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--keep-docs-spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--keep-docs-spacing-xxl);
+}
+
+.cancel-button,
+.submit-button {
+  padding: var(--keep-docs-spacing-sm) var(--keep-docs-spacing-lg);
+  border: 1px solid var(--keep-docs-gray-400);
+  border-radius: var(--keep-docs-radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all var(--keep-docs-transition-fast);
+}
+
+.cancel-button {
+  background: white;
+  color: var(--keep-docs-text-color);
+}
+
+.cancel-button:hover {
+  background: var(--keep-docs-gray-100);
+}
+
+.submit-button {
+  background: var(--keep-docs-blue);
+  color: white;
+  border-color: var(--keep-docs-blue);
+}
+
+.submit-button:hover {
+  background: var(--keep-docs-primary-color);
+  border-color: var(--keep-docs-primary-color);
+}

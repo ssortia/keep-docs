@@ -14,7 +14,7 @@ npm install @keep-docs/ui
 ```tsx
 import React from 'react';
 import { KeepDocs } from '@keep-docs/ui';
-import '@keep-docs/ui/styles/KeepDocs.css';
+import '@keep-docs/ui/styles/index.css';
 
 const config = {
   baseUrl: 'http://localhost:3333/api/proxydocs',
@@ -237,7 +237,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 Подключите CSS файл для корректного отображения:
 
 ```tsx
-import '@keep-docs/ui/styles/KeepDocs.css';
+import '@keep-docs/ui/styles/index.css';
 ```
 
 ### Кастомизация темы

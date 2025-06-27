@@ -83,11 +83,15 @@ export class DocumentApiClient {
     });
   }
 
+  async deleteVersion(uuid: string, documentType: string, versionId: number): Promise<void> {
+    await this.api.delete(`/dossiers/${uuid}/documents/${documentType}/versions/${versionId}`);
+  }
+
   async updateVersionName(
     uuid: string,
     documentType: string,
     versionId: number,
-    name: string
+    name: string,
   ): Promise<void> {
     await this.api.patch(`/dossiers/${uuid}/documents/${documentType}/versions/${versionId}`, {
       name,

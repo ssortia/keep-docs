@@ -1,18 +1,18 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { DocumentApiClient } from '../utils/api';
 import { useKeepDocsContext } from '../contexts/KeepDocsContext';
 import { useApiError } from './useApiError';
-import type { DocumentUploadResponse, Dossier, UISchema } from '../types';
 
 export const useDocumentManager = () => {
   const { config } = useKeepDocsContext();
   const { handleError: handleApiError } = useApiError();
-  const [client] = useState(() => new DocumentApiClient(config));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const client = useMemo(() => new DocumentApiClient(config), [config]);
+
   const handleError = useCallback(
-    (err: any) => {
+    (err: unknown) => {
       const message = handleApiError(err);
       setError(message);
       setLoading(false);
@@ -21,35 +21,45 @@ export const useDocumentManager = () => {
   );
 
   const executeApiCall = useCallback(
-    async <T>(apiCall: () => Promise<T>, defaultReturn: T): Promise<T> => {
+    async <T>(apiCall: () => Promise<T>, fallback: T): Promise<T> => {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
         const result = await apiCall();
-        setLoading(false);
         return result;
       } catch (err) {
         handleError(err);
-        return defaultReturn;
+        return fallback;
+      } finally {
+        setLoading(false);
       }
     },
     [handleError],
   );
 
+  // Утилита для обёртки вызовов, которые возвращают просто true/false
+  const executeBooleanCall = useCallback(
+    (fn: () => Promise<void>) =>
+      executeApiCall(async () => {
+        await fn();
+        return true;
+      }, false),
+    [executeApiCall],
+  );
+
   const getDossier = useCallback(
-    async (uuid: string): Promise<Dossier | null> =>
-      executeApiCall(() => client.getDossier(uuid), null),
+    (uuid: string) => executeApiCall(() => client.getDossier(uuid), null),
     [client, executeApiCall],
   );
 
   const uploadDocument = useCallback(
-    async (
+    (
       uuid: string,
       documentType: string,
       files: File[],
       versionName?: string,
-      isNewVersion: boolean = false,
-    ): Promise<DocumentUploadResponse | null> =>
+      isNewVersion = false,
+    ) =>
       executeApiCall(
         () => client.uploadDocument(uuid, documentType, files, versionName, isNewVersion),
         null,
@@ -58,46 +68,43 @@ export const useDocumentManager = () => {
   );
 
   const downloadDocument = useCallback(
-    async (uuid: string, documentType: string): Promise<Blob | null> =>
+    (uuid: string, documentType: string) =>
       executeApiCall(() => client.downloadDocument(uuid, documentType), null),
     [client, executeApiCall],
   );
 
   const downloadPage = useCallback(
-    async (uuid: string, documentType: string, pageUuid: string): Promise<Blob | null> =>
+    (uuid: string, documentType: string, pageUuid: string) =>
       executeApiCall(() => client.downloadPage(uuid, documentType, pageUuid), null),
     [client, executeApiCall],
   );
 
   const deletePage = useCallback(
-    async (uuid: string, documentType: string, pageUuid: string): Promise<boolean> =>
-      executeApiCall(async () => {
-        await client.deletePage(uuid, documentType, pageUuid);
-        return true;
-      }, false),
-    [client, executeApiCall],
+    (uuid: string, documentType: string, pageUuid: string) =>
+      executeBooleanCall(() => client.deletePage(uuid, documentType, pageUuid)),
+    [client, executeBooleanCall],
   );
 
   const changeCurrentVersion = useCallback(
-    async (uuid: string, documentType: string, versionId: number): Promise<boolean> =>
-      executeApiCall(async () => {
-        await client.changeCurrentVersion(uuid, documentType, versionId);
-        return true;
-      }, false),
-    [client, executeApiCall],
+    (uuid: string, documentType: string, versionId: number) =>
+      executeBooleanCall(() => client.changeCurrentVersion(uuid, documentType, versionId)),
+    [client, executeBooleanCall],
   );
 
   const updateVersionName = useCallback(
-    async (uuid: string, documentType: string, versionId: number, name: string): Promise<boolean> =>
-      executeApiCall(async () => {
-        await client.updateVersionName(uuid, documentType, versionId, name);
-        return true;
-      }, false),
-    [client, executeApiCall],
+    (uuid: string, documentType: string, versionId: number, name: string) =>
+      executeBooleanCall(() => client.updateVersionName(uuid, documentType, versionId, name)),
+    [client, executeBooleanCall],
+  );
+
+  const deleteVersion = useCallback(
+    (uuid: string, documentType: string, versionId: number) =>
+      executeBooleanCall(() => client.deleteVersion(uuid, documentType, versionId)),
+    [client, executeBooleanCall],
   );
 
   const getSchema = useCallback(
-    async (): Promise<UISchema | null> => executeApiCall(() => client.getSchema(), null),
+    () => executeApiCall(() => client.getSchema(), null),
     [client, executeApiCall],
   );
 
@@ -111,6 +118,7 @@ export const useDocumentManager = () => {
     deletePage,
     changeCurrentVersion,
     updateVersionName,
+    deleteVersion,
     getSchema,
   };
 };

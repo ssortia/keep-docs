@@ -8,7 +8,6 @@ import {
   addPagesValidator,
   getDocumentValidator,
 } from '#validators/document_validator'
-import { DocumentNotFoundException } from '#exceptions/document_exceptions'
 import { DocumentExistsRule } from '#rules/document_exists_rule'
 import { FileExtensionRule } from '#rules/file_extension_rule'
 
@@ -27,7 +26,7 @@ export default class DocumentController {
    * @tag Documents
    * @summary Изменить текущую версию
    * @description Изменяет текущую активную версию документа
-   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
    * @requestBody {"versionId": 2}
    * @responseBody 200 - {"message": "Текущая версия документа успешно изменена"}
@@ -43,7 +42,7 @@ export default class DocumentController {
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
     await this.documentExistsRule.validate(document)
 
-    await this.documentService.changeCurrentVersion(document, versionId)
+    await this.documentService.changeCurrentVersion(document!, versionId)
 
     return response.ok({ message: 'Текущая версия документа успешно изменена' })
   }
@@ -53,7 +52,7 @@ export default class DocumentController {
    * @tag Documents
    * @summary Загрузить страницы документа
    * @description Загружает файлы документа в досье
-   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
    * @paramForm documents - Файлы документа (multipart/form-data)
    * @paramForm name - Название версии документа - eg: Паспорт 01.01.2024
@@ -96,7 +95,7 @@ export default class DocumentController {
    * @tag Documents
    * @summary Скачать полный документ
    * @description Скачивает документ как объединенный файл
-   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
    * @responseBody 200 - Файл документа в формате PDF или Excel
    * @responseBody 404 - {"message": "Документ не найден"}
@@ -108,6 +107,6 @@ export default class DocumentController {
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
     await this.documentExistsRule.validateHasFiles(document)
 
-    return this.documentService.streamDocumentFiles(document.files, type, response)
+    return this.documentService.streamDocumentFiles(document!.files, type, response)
   }
 }

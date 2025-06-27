@@ -1,0 +1,150 @@
+@import './variables.css';
+
+/* Document Preview */
+.document-preview-empty {
+  text-align: center;
+  padding: 40px var(--keep-docs-spacing-xl);
+  color: var(--keep-docs-muted-color);
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--keep-docs-spacing-xl);
+}
+
+.preview-item {
+  border: 1px solid var(--keep-docs-border-color);
+  border-radius: var(--keep-docs-radius-lg);
+  overflow: hidden;
+  background: white;
+  transition: box-shadow var(--keep-docs-transition-fast);
+}
+
+.preview-item:hover {
+  box-shadow: 0 2px 8px var(--keep-docs-shadow-light);
+}
+
+.preview-image-container {
+  position: relative;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--keep-docs-transition-fast);
+}
+
+.preview-image.clickable {
+  cursor: pointer;
+}
+
+.preview-image.clickable:hover {
+  transform: scale(1.02);
+}
+
+.preview-image.non-clickable {
+  cursor: default;
+  opacity: 0.8;
+}
+
+/* Стили для кнопки-изображения */
+button.preview-image.clickable {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: none;
+  outline: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+button.preview-image.clickable:focus {
+  outline: 2px solid var(--keep-docs-blue);
+  outline-offset: 2px;
+}
+
+button.preview-image.clickable:hover {
+  transform: scale(1.02);
+}
+
+/* Стили для изображения внутри кнопки */
+button.preview-image.clickable img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--keep-docs-transition-fast);
+}
+
+.download-page-button {
+  position: absolute;
+  top: var(--keep-docs-spacing-sm);
+  left: var(--keep-docs-spacing-sm);
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: var(--keep-docs-primary-color);
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--keep-docs-transition-fast);
+}
+
+.download-page-button:hover {
+  background: var(--keep-docs-primary-dark);
+}
+
+.delete-page-button {
+  position: absolute;
+  top: var(--keep-docs-spacing-sm);
+  right: var(--keep-docs-spacing-sm);
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: var(--keep-docs-danger-alpha);
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--keep-docs-transition-fast);
+}
+
+.delete-page-button:hover {
+  background: var(--keep-docs-danger-color);
+}
+
+.preview-info {
+  padding: var(--keep-docs-spacing-sm) var(--keep-docs-spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-number {
+  font-size: 12px;
+  color: var(--keep-docs-text-color);
+  font-weight: 500;
+}
+
+.file-type {
+  font-size: 10px;
+  color: var(--keep-docs-muted-color);
+  background: var(--keep-docs-gray-100);
+  padding: 2px var(--keep-docs-spacing-xs);
+  border-radius: var(--keep-docs-radius-sm);
+}

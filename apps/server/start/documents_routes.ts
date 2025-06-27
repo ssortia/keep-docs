@@ -35,6 +35,11 @@ router
       '#controllers/version_controller.updateVersionName'
     )
 
+    router.delete(
+      '/dossiers/:uuid/documents/:type/versions/:versionId',
+      '#controllers/version_controller.deleteVersion'
+    )
+
     // Document pages resource (nested under documents)
     router.get(
       '/dossiers/:uuid/documents/:type/pages/:pageUuid',

@@ -1,0 +1,43 @@
+@import './variables.css';
+
+/* Upload Area */
+.upload-area {
+  border: 2px dashed var(--keep-docs-gray-400);
+  border-radius: var(--keep-docs-radius-lg);
+  padding: var(--keep-docs-spacing-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--keep-docs-transition-normal);
+  margin-bottom: var(--keep-docs-spacing-xl);
+}
+
+.upload-area:hover {
+  border-color: var(--keep-docs-blue);
+  background-color: var(--keep-docs-upload-hover);
+}
+
+.upload-area.drag-active {
+  border-color: var(--keep-docs-blue);
+  background-color: var(--keep-docs-blue-light);
+}
+
+.upload-area.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--keep-docs-gray-100);
+}
+
+.upload-icon {
+  font-size: 48px;
+}
+
+.upload-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--keep-docs-text-color);
+}
+
+.upload-subtitle {
+  color: var(--keep-docs-muted-color);
+  margin: 0;
+}

@@ -24,7 +24,18 @@ export class VersionService {
     const version = await Version.find(versionId)
     await this.versionExistenceRule.validate(version)
 
-    version.name = name
-    await version.save()
+    version!.name = name
+    await version!.save()
+  }
+
+  /**
+   * Удаляет версию
+   * @param versionId
+   */
+  async deleteVersion(versionId: number): Promise<void> {
+    const version = await Version.find(versionId)
+    await this.versionExistenceRule.validate(version)
+
+    await version!.delete()
   }
 }

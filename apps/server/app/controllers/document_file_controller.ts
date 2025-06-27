@@ -20,7 +20,7 @@ export default class DocumentFileController {
    * @tag Document Files
    * @summary Скачать конкретную страницу
    * @description Скачивает отдельную страницу документа
-   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
    * @paramPath pageUuid - UUID страницы - eg: 660e8400-e29b-41d4-a716-446655440001
    * @responseBody 200 - Файл страницы документа
@@ -33,7 +33,7 @@ export default class DocumentFileController {
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
     await this.documentExistsRule.validate(document)
 
-    const file = await this.documentService.findFileByUuid(pageUuid, document)
+    const file = await this.documentService.findFileByUuid(pageUuid, document!)
     await this.fileExistsRule.validate(file, pageUuid)
 
     return this.documentService.streamSingleFile(file, response)
@@ -44,7 +44,7 @@ export default class DocumentFileController {
    * @tag Document Files
    * @summary Удалить страницу
    * @description Выполняет мягкое удаление страницы документа
-   * @paramPath uuid - UUID досье клиента - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
    * @paramPath pageUuid - UUID страницы - eg: 660e8400-e29b-41d4-a716-446655440001
    * @responseBody 200 - {"message": "Страница успешно удалена"}
@@ -57,10 +57,10 @@ export default class DocumentFileController {
     const document = await this.documentService.findDocumentByDossierAndType(dossier, type)
     await this.documentExistsRule.validate(document)
 
-    const file = await this.documentService.findFileByUuid(pageUuid, document)
+    const file = await this.documentService.findFileByUuid(pageUuid, document!)
     await this.fileExistsRule.validate(file, pageUuid)
 
-    await this.documentService.deleteFile(file)
+    await this.documentService.deleteFile(file!)
 
     return response.ok({ message: 'Страница успешно удалена' })
   }
