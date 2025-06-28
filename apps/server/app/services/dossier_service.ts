@@ -54,6 +54,9 @@ export class DossierService {
       .where('uuid', uuid)
       .preload('documents', (query) => {
         query.preload('currentVersion')
+        query.preload('versions', (versionQuery) => {
+          versionQuery.orderBy('created_at', 'desc')
+        })
         query.preload('files', (fileQuery) => {
           fileQuery.whereNull('deletedAt')
           fileQuery.orderBy('pageNumber', 'asc')
@@ -85,14 +88,7 @@ export class DossierService {
    * Получает все версии для документа
    */
   async getDocumentVersions(documentId: number): Promise<Version[]> {
-    return Version.query()
-      .whereExists((query) => {
-        query
-          .from('files')
-          .whereColumn('files.version_id', 'versions.id')
-          .where('files.document_id', documentId)
-      })
-      .orderBy('created_at', 'desc')
+    return Version.query().where('document_id', documentId).orderBy('created_at', 'desc')
   }
 
   /**

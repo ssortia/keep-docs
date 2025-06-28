@@ -1,7 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { VersionService } from '#services/version_service'
-import { deleteVersionValidator, updateVersionNameValidator } from '#validators/document_validator'
+import {
+  createVersionValidator,
+  deleteVersionValidator,
+  updateVersionNameValidator,
+} from '#validators/document_validator'
 import { VersionOwnershipRule } from '#rules/version_ownership_rule'
 import { DocumentService } from '#services/document_service'
 import { DossierService } from '#services/dossier_service'
@@ -14,6 +18,42 @@ export default class VersionController {
     private versionOwnershipRule: VersionOwnershipRule,
     private dossierService: DossierService
   ) {}
+
+  /**
+   * @createVersion
+   * @tag Versions
+   * @summary Создать новую версию документа
+   * @description Создает новую версию документа и делает её текущей
+   * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
+   * @paramPath type - Тип документа - eg: passport
+   * @requestBody {"name": "Название новой версии"}
+   * @responseBody 201 - {"message": "Версия успешно создана", "version": {"id": 1, "name": "Название версии"}}
+   * @responseBody 404 - {"message": "Документ не найден"}
+   */
+  async createVersion({ params, request, response }: HttpContext) {
+    const { uuid, type, name } = await createVersionValidator.validate({
+      ...params,
+      name: request.input('name'),
+    })
+
+    const dossier = await this.dossierService.findDossierByUuid(uuid)
+    const document = await this.documentService.findDocument(dossier.id, type)
+
+    if (!document) {
+      return response.notFound({ message: 'Документ не найден' })
+    }
+
+    const version = await this.versionService.createVersion(document.id, name)
+    await this.documentService.updateCurrentVersion(document, version.id)
+
+    return response.created({
+      message: 'Версия успешно создана',
+      version: {
+        id: version.id,
+        name: version.name,
+      },
+    })
+  }
 
   /**
    * @updateVersionName

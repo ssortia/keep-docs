@@ -3,12 +3,14 @@ import type { Document } from '../types';
 import { useDocumentUrls } from '../hooks/useDocumentUrls';
 import { VersionSelector } from './VersionSelector';
 import { ConfirmationModal } from './ConfirmationModal';
+import { DownloadIcon } from './icons';
 
 interface DocumentHeaderProps {
   name: string;
   document: Document;
   onVersionChange: (versionId: number) => void;
   onVersionNameUpdate: (versionId: number, newName: string) => Promise<boolean>;
+  onVersionCreate: (name: string) => Promise<boolean>;
   onVersionDelete?: (versionId: number) => Promise<boolean>;
   loading?: boolean;
 }
@@ -18,6 +20,7 @@ export function DocumentHeader({
   document,
   onVersionChange,
   onVersionNameUpdate,
+  onVersionCreate,
   onVersionDelete,
   loading = false,
 }: DocumentHeaderProps) {
@@ -51,6 +54,7 @@ export function DocumentHeader({
           currentVersion={document.currentVersion}
           onVersionChange={onVersionChange}
           onVersionNameUpdate={onVersionNameUpdate}
+          onVersionCreate={onVersionCreate}
           disabled={loading}
         />
         {hasFiles && (
@@ -60,20 +64,7 @@ export function DocumentHeader({
             onClick={handleDownloadDocument}
             title="Скачать весь документ"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7,10 12,15 17,10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
+            <DownloadIcon />
             <span className="download-document-button-text">Скачать документ</span>
           </button>
         )}

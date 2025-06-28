@@ -30,6 +30,7 @@ export function useKeepDocsActions({
     uploadDocument,
     deletePage,
     changeCurrentVersion,
+    createVersion,
     updateVersionName,
     deleteVersion,
     getDossier,
@@ -48,17 +49,17 @@ export function useKeepDocsActions({
     return null;
   }, [getDossier, uuid, updateDossier]);
 
-  const handleVersionSubmit = useCallback(
-    async (versionName: string, isNewVersion: boolean, pendingFiles: File[]) => {
-      if (!activeTab || pendingFiles.length === 0) return;
+  const handleDirectUpload = useCallback(
+    async (files: File[]) => {
+      if (!activeTab || files.length === 0) return;
 
       try {
         const result = await uploadDocument(
           uuid,
           activeTab,
-          pendingFiles,
-          versionName,
-          isNewVersion,
+          files,
+          undefined, // versionName
+          false, // isNewVersion - всегда загружаем в текущую версию
         );
 
         if (result) {
@@ -76,7 +77,7 @@ export function useKeepDocsActions({
         handleError(err, onError);
       }
     },
-    [activeTab, uploadDocument, uuid, refreshDossier, onUpdate, onError],
+    [activeTab, uploadDocument, uuid, refreshDossier, onUpdate, onError, handleError],
   );
 
   const handlePageDelete = useCallback(
@@ -120,6 +121,33 @@ export function useKeepDocsActions({
       }
     },
     [activeTab, changeCurrentVersion, uuid, refreshDossier, onUpdate, onError],
+  );
+
+  const handleVersionCreate = useCallback(
+    async (name: string) => {
+      if (!activeTab) return false;
+
+      try {
+        const success = await createVersion(uuid, activeTab, name);
+
+        if (success) {
+          const updatedDossier = await refreshDossier();
+          if (updatedDossier) {
+            const updatedDocument = updatedDossier.documents.find(
+              (doc: Document) => doc.code === activeTab,
+            );
+            if (updatedDocument) {
+              onUpdate?.(updatedDocument);
+            }
+          }
+          return true;
+        }
+      } catch (err) {
+        handleError(err, onError);
+      }
+      return false;
+    },
+    [activeTab, createVersion, uuid, refreshDossier, onUpdate, onError],
   );
 
   const handleVersionNameUpdate = useCallback(
@@ -199,9 +227,10 @@ export function useKeepDocsActions({
   );
 
   return {
-    handleVersionSubmit,
+    handleDirectUpload,
     handlePageDelete,
     handleVersionChange,
+    handleVersionCreate,
     handleVersionNameUpdate,
     handleVersionDelete,
     handlePageNavigation,

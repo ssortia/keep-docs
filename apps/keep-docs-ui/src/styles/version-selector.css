@@ -163,7 +163,7 @@
   outline: none;
   transition: all var(--keep-docs-transition-fast);
   color: var(--keep-docs-dark-gray);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .version-edit-input:focus {

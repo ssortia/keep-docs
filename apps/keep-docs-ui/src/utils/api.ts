@@ -87,6 +87,16 @@ export class DocumentApiClient {
     await this.api.delete(`/dossiers/${uuid}/documents/${documentType}/versions/${versionId}`);
   }
 
+  async createVersion(
+    uuid: string,
+    documentType: string,
+    name: string,
+  ): Promise<void> {
+    await this.api.post(`/dossiers/${uuid}/documents/${documentType}/versions`, {
+      name,
+    });
+  }
+
   async updateVersionName(
     uuid: string,
     documentType: string,

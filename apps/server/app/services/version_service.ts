@@ -6,6 +6,19 @@ import { VersionExistenceRule } from '#rules/version_existence_rule'
 @inject()
 export class VersionService {
   constructor(private versionExistenceRule: VersionExistenceRule) {}
+  
+  /**
+   * Создает новую версию документа
+   */
+  async createVersion(documentId: number, name: string): Promise<Version> {
+    const version = new Version()
+    version.name = name
+    version.documentId = documentId
+    await version.save()
+    
+    return version
+  }
+
   /**
    * Изменяет текущую версию документа
    */

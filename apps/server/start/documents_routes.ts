@@ -30,6 +30,11 @@ router
     )
 
     // Document versions resource (nested under documents)
+    router.post(
+      '/dossiers/:uuid/documents/:type/versions',
+      '#controllers/version_controller.createVersion'
+    )
+    
     router.patch(
       '/dossiers/:uuid/documents/:type/versions/:versionId',
       '#controllers/version_controller.updateVersionName'
@@ -53,7 +58,7 @@ router
     // Schemas resource
     router.get('/schemas/:schema', '#controllers/schema_controller.get')
   })
-  .prefix('/api')
+  .prefix('/api/v1')
   .middleware([middleware.auth({ guards: ['api'] }), middleware.schemaAccess()])
 
 // Swagger Documentation

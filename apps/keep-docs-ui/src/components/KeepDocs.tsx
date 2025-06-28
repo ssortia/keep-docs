@@ -11,7 +11,6 @@ import { DocumentTabs } from './DocumentTabs';
 import { DocumentUploadArea } from './DocumentUploadArea';
 import { DocumentPreview } from './DocumentPreview';
 import { DocumentHeader } from './DocumentHeader';
-import { VersionModal } from './VersionModal';
 import { ImageModal } from './ImageModal';
 import '../styles/index.css';
 
@@ -51,19 +50,16 @@ function KeepDocsContent({
   } = useKeepDocsState();
 
   const {
-    showVersionModal,
-    pendingFiles,
     enlargedPage,
-    openVersionModal,
-    closeVersionModal,
     openImageModal,
     closeImageModal,
   } = useKeepDocsModals();
 
   const {
-    handleVersionSubmit,
+    handleDirectUpload,
     handlePageDelete,
     handleVersionChange,
+    handleVersionCreate,
     handleVersionNameUpdate,
     handleVersionDelete,
     handlePageNavigation,
@@ -108,13 +104,6 @@ function KeepDocsContent({
     [handlePageNavigation, enlargedPage, openImageModal],
   );
 
-  const handleVersionSubmitWithModal = useCallback(
-    async (versionName: string, isNewVersion: boolean) => {
-      await handleVersionSubmit(versionName, isNewVersion, pendingFiles);
-      closeVersionModal();
-    },
-    [handleVersionSubmit, pendingFiles, closeVersionModal],
-  );
 
   const activeSchemaDocument = visibleDocuments.find((doc) => doc.type === activeTab);
   const isEditable = activeSchemaDocument
@@ -151,13 +140,14 @@ function KeepDocsContent({
                   document={currentDocument}
                   onVersionChange={handleVersionChange}
                   onVersionNameUpdate={handleVersionNameUpdate}
+                  onVersionCreate={handleVersionCreate}
                   onVersionDelete={handleVersionDelete}
                   loading={loading}
                 />
               )}
               {isEditable && (
                 <DocumentUploadArea
-                  onFilesSelected={openVersionModal}
+                  onFilesSelected={handleDirectUpload}
                   accept={activeSchemaDocument?.accept}
                 />
               )}
@@ -173,15 +163,6 @@ function KeepDocsContent({
           )}
         </div>
       </div>
-
-      {showVersionModal && (
-        <VersionModal
-          isOpen={showVersionModal}
-          onSubmit={handleVersionSubmitWithModal}
-          onCancel={closeVersionModal}
-          filesCount={pendingFiles.length}
-        />
-      )}
 
       {enlargedPage && (
         <ImageModal

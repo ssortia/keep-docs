@@ -1,11 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import type { DocumentVersion } from '../types';
+import { useVersionSelector, useVersionInput, useTriggerWidth, useClickOutside } from '../hooks/version';
+import { generateDefaultVersionName, sortVersionsByDate } from '../utils/version/versionUtils';
+import { VersionTrigger, VersionInput, VersionDropdown, VersionActions } from './version';
 
 interface VersionSelectorProps {
   versions: DocumentVersion[];
   currentVersion?: DocumentVersion;
   onVersionChange: (versionId: number) => void;
   onVersionNameUpdate: (versionId: number, newName: string) => Promise<boolean>;
+  onVersionCreate: (name: string) => Promise<boolean>;
   disabled?: boolean;
 }
 
@@ -14,174 +18,104 @@ export function VersionSelector({
   currentVersion,
   onVersionChange,
   onVersionNameUpdate,
+  onVersionCreate,
   disabled = false,
 }: VersionSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const sortedVersions = sortVersionsByDate(versions);
 
-  const sortedVersions = [...versions].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  const {
+    editValue,
+    setEditValue,
+    isDropdownOpen,
+    isEditing,
+    isCreating,
+    isInputMode,
+    openDropdown,
+    startEditing,
+    startCreating,
+    cancelEdit,
+    handleVersionSelect,
+    handleEditSave,
+    handleCreateSave,
+  } = useVersionSelector({
+    onVersionChange,
+    onVersionNameUpdate,
+    onVersionCreate,
+  });
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setIsEditing(false);
+  const { triggerRef, getInputWidth, saveTriggerWidth } = useTriggerWidth({
+    isEditing,
+    isCreating,
+    currentVersion,
+  });
+
+  const { inputRef, handleKeyDown } = useVersionInput({
+    isEditing,
+    isCreating,
+    onEnter: () => {
+      if (isCreating) {
+        handleCreateSave().catch(() => {});
+      } else {
+        handleEditSave(currentVersion?.id || 0).catch(() => {});
       }
-    };
+    },
+    onEscape: cancelEdit,
+  });
 
-    if (isOpen || isEditing) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, isEditing]);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const handleVersionSelect = (versionId: number) => {
-    onVersionChange(versionId);
-    setIsOpen(false);
-  };
+  const dropdownRef = useClickOutside({
+    isActive: isDropdownOpen || isInputMode,
+    onClickOutside: cancelEdit,
+  });
 
   const handleEditClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     if (!currentVersion) return;
-    setIsEditing(true);
-    setEditValue(currentVersion.name);
-    setIsOpen(false);
+    saveTriggerWidth();
+    startEditing(currentVersion.name);
   };
 
-  const handleEditSave = async () => {
-    if (!currentVersion || !editValue.trim()) {
-      setIsEditing(false);
-      return;
-    }
-
-    const success = await onVersionNameUpdate(currentVersion.id, editValue.trim());
-    if (success) {
-      setIsEditing(false);
-    }
-  };
-
-  const handleEditCancel = () => {
-    setIsEditing(false);
-    setEditValue('');
-  };
-
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      handleEditSave();
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      handleEditCancel();
-    }
+  const handleCreateClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    saveTriggerWidth();
+    startCreating(generateDefaultVersionName());
   };
 
   return (
     <div className="version-selector" ref={dropdownRef}>
-      {isEditing ? (
-        <div className="version-selector-container">
-          <input
-            ref={inputRef}
-            type="text"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="version-edit-input"
-          />
-          <button
-            type="button"
-            className="version-edit-button"
-            aria-label="Сохранить название версии"
-            onClick={handleEditSave}
-            title="Сохранить название версии"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#666666"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
-          </button>
-        </div>
+      {isInputMode ? (
+        <VersionInput
+          ref={inputRef}
+          value={editValue}
+          onChange={setEditValue}
+          onKeyDown={handleKeyDown}
+          onSave={isCreating ? handleCreateSave : () => handleEditSave(currentVersion?.id || 0)}
+          isCreating={isCreating}
+          width={getInputWidth()}
+        />
       ) : (
         <div className="version-selector-container">
-          <button
-            type="button"
-            className={`version-selector-trigger ${disabled ? 'disabled' : ''}`}
-            onClick={() => !disabled && setIsOpen(!isOpen)}
+          <VersionTrigger
+            ref={triggerRef}
+            currentVersion={currentVersion}
+            isOpen={isDropdownOpen}
             disabled={disabled}
-          >
-            <span className="version-label">Версия:</span>
-            <span className="version-name">{currentVersion?.name || 'Без версии'}</span>
-            <span className="version-arrow">{isOpen ? '▲' : '▼'}</span>
-          </button>
-          {currentVersion && !disabled && (
-            <button
-              aria-label="Редактировать название версии"
-              type="button"
-              className="version-edit-button"
-              onClick={handleEditClick}
-              title="Редактировать название версии"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#666666"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="m18.5 2.5 3 3L12 15l-4 1 1-4Z" />
-              </svg>
-            </button>
-          )}
+            onClick={openDropdown}
+          />
+          <VersionActions
+            currentVersion={currentVersion}
+            disabled={disabled}
+            onEdit={handleEditClick}
+            onCreate={handleCreateClick}
+          />
         </div>
       )}
 
-      {isOpen && !isEditing && (
-        <div className="version-dropdown">
-          {sortedVersions.map((version) => (
-            <button
-              key={version.id}
-              type="button"
-              className={`version-option ${version.id === currentVersion?.id ? 'active' : ''}`}
-              onClick={() => handleVersionSelect(version.id)}
-            >
-              <div className="version-option-content">
-                <span className="version-option-name">{version.name}</span>
-                <span className="version-option-date">
-                  {new Date(version.createdAt).toLocaleDateString('ru-RU')}
-                </span>
-              </div>
-              {version.id === currentVersion?.id && (
-                <span className="version-current-indicator">✓</span>
-              )}
-            </button>
-          ))}
-        </div>
+      {isDropdownOpen && !isInputMode && (
+        <VersionDropdown
+          versions={sortedVersions}
+          currentVersion={currentVersion}
+          onVersionSelect={handleVersionSelect}
+        />
       )}
     </div>
   );

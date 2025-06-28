@@ -91,6 +91,12 @@ export const useDocumentManager = () => {
     [client, executeBooleanCall],
   );
 
+  const createVersion = useCallback(
+    (uuid: string, documentType: string, name: string) =>
+      executeBooleanCall(() => client.createVersion(uuid, documentType, name)),
+    [client, executeBooleanCall],
+  );
+
   const updateVersionName = useCallback(
     (uuid: string, documentType: string, versionId: number, name: string) =>
       executeBooleanCall(() => client.updateVersionName(uuid, documentType, versionId, name)),
@@ -117,6 +123,7 @@ export const useDocumentManager = () => {
     downloadPage,
     deletePage,
     changeCurrentVersion,
+    createVersion,
     updateVersionName,
     deleteVersion,
     getSchema,
