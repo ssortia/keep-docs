@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { getVisibleDocuments, type SchemaParams } from '../utils/schemaUtils';
 import { useKeepDocsContext } from '../contexts/KeepDocsContext';
-import { useDocumentManager } from './useDocumentManager';
 import type { Dossier, UISchema } from '../types';
 
 interface UseKeepDocsInitProps {
@@ -23,8 +22,8 @@ export function useKeepDocsInit({
   updateSchema,
   setActiveTab,
 }: UseKeepDocsInitProps) {
-  const { uuid, config } = useKeepDocsContext();
-  const { getDossier, getSchema } = useDocumentManager();
+  const { uuid, config, documentManager } = useKeepDocsContext();
+  const { getDossier, getSchema } = documentManager;
   const isInitialized = useRef(false);
 
   useEffect(() => {

@@ -69,9 +69,14 @@ export default function Home() {
         <Card>
           <Row gutter={[20, 20]}>
             <Col span={12}>
-              <Skeleton paragraph={{ rows: 12 }} />
-              <br/><br/>
-              <Skeleton paragraph={{ rows: 12 }} />
+              <Skeleton paragraph={{ rows: 6 }} />
+              <br />
+              <br />
+              <Skeleton paragraph={{ rows: 6 }} />
+              <br />
+              <Skeleton paragraph={{ rows: 6 }} />
+              <br />
+              <Skeleton paragraph={{ rows: 6 }} />
             </Col>
             <Col span={12}>
               <KeepDocsDemo />

@@ -162,7 +162,6 @@
   padding: var(--keep-docs-spacing-xs) var(--keep-docs-spacing-md);
   border: 1px solid var(--keep-docs-gray-300);
   border-radius: var(--keep-docs-radius-sm) 0 0 var(--keep-docs-radius-sm);
-  border-right: none;
   font-size: 13px;
   background: var(--keep-docs-gray-100);
   outline: none;

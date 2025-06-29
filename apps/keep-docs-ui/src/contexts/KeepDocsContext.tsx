@@ -1,9 +1,11 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, ReactNode, useContext, useMemo } from 'react';
 import type { DocumentManagerConfig } from '../types';
+import { useDocumentManager } from '../hooks/useDocumentManager';
 
 interface KeepDocsContextValue {
   config: DocumentManagerConfig;
   uuid: string;
+  documentManager: ReturnType<typeof useDocumentManager>;
 }
 
 interface KeepDocsProviderProps {
@@ -15,11 +17,18 @@ interface KeepDocsProviderProps {
 const KeepDocsContext = createContext<KeepDocsContextValue | null>(null);
 
 export function KeepDocsProvider({ config, uuid, children }: KeepDocsProviderProps) {
-  return (
-    <KeepDocsContext.Provider value={{ config, uuid }}>
-      {children}
-    </KeepDocsContext.Provider>
+  const documentManager = useDocumentManager(config);
+
+  const contextValue = useMemo(
+    () => ({
+      config,
+      uuid,
+      documentManager,
+    }),
+    [config, uuid, documentManager],
   );
+
+  return <KeepDocsContext.Provider value={contextValue}>{children}</KeepDocsContext.Provider>;
 }
 
 export function useKeepDocsContext(): KeepDocsContextValue {

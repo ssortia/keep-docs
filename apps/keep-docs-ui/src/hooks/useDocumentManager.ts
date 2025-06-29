@@ -1,21 +1,21 @@
 import { useCallback, useMemo, useState } from 'react';
 import { DocumentApiClient } from '../utils/api';
-import { useKeepDocsContext } from '../contexts/KeepDocsContext';
 import { useApiError } from './useApiError';
+import type { DocumentManagerConfig } from '../types';
 
-export const useDocumentManager = () => {
-  const { config } = useKeepDocsContext();
+export const useDocumentManager = (config?: DocumentManagerConfig) => {
   const { handleError: handleApiError } = useApiError();
   const [loading, setLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const client = useMemo(() => new DocumentApiClient(config), [config]);
+  const client = useMemo(() => new DocumentApiClient(config!), [config]);
 
   const handleError = useCallback(
     (err: unknown) => {
       const message = handleApiError(err);
       setError(message);
       setLoading(false);
+      setUploadLoading(false);
     },
     [handleApiError],
   );
@@ -52,6 +52,19 @@ export const useDocumentManager = () => {
     [client, executeApiCall],
   );
 
+  const executeUploadCall = useCallback(
+    async <T>(apiCall: () => Promise<T>, fallback: T): Promise<T> => {
+      setUploadLoading(true);
+      try {
+        const result = await executeApiCall(apiCall, fallback);
+        return result;
+      } finally {
+        setUploadLoading(false);
+      }
+    },
+    [executeApiCall],
+  );
+
   const uploadDocument = useCallback(
     (
       uuid: string,
@@ -60,11 +73,11 @@ export const useDocumentManager = () => {
       versionName?: string,
       isNewVersion = false,
     ) =>
-      executeApiCall(
+      executeUploadCall(
         () => client.uploadDocument(uuid, documentType, files, versionName, isNewVersion),
         null,
       ),
-    [client, executeApiCall],
+    [client, executeUploadCall],
   );
 
   const downloadDocument = useCallback(
@@ -116,6 +129,7 @@ export const useDocumentManager = () => {
 
   return {
     loading,
+    uploadLoading,
     error,
     getDossier,
     uploadDocument,

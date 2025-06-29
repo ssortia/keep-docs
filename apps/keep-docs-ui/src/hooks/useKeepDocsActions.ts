@@ -3,7 +3,6 @@ import { useKeepDocsContext } from '../contexts/KeepDocsContext';
 import { useDocumentUrls } from './useDocumentUrls';
 import { useApiError } from './useApiError';
 import type { Document, Dossier } from '../types';
-import { useDocumentManager } from './useDocumentManager';
 
 interface UseKeepDocsActionsProps {
   activeTab: string;
@@ -22,10 +21,10 @@ export function useKeepDocsActions({
   onRemove,
   onError,
 }: UseKeepDocsActionsProps) {
-  const { uuid } = useKeepDocsContext();
+  const { uuid, documentManager } = useKeepDocsContext();
   const { getPageUrl } = useDocumentUrls();
   const { handleError } = useApiError();
-  // Получаем API функции локально, чтобы избежать циклических зависимостей
+  // Получаем API функции из контекста
   const {
     uploadDocument,
     deletePage,
@@ -34,7 +33,7 @@ export function useKeepDocsActions({
     updateVersionName,
     deleteVersion,
     getDossier,
-  } = useDocumentManager();
+  } = documentManager;
 
   const refreshDossier = useCallback(async () => {
     try {

@@ -14,7 +14,6 @@ interface DocumentHeaderProps {
   onVersionNameUpdate: (versionId: number, newName: string) => Promise<boolean>;
   onVersionCreate: (name: string) => Promise<boolean>;
   onVersionDelete?: (versionId: number) => Promise<boolean>;
-  loading?: boolean;
 }
 
 export function DocumentHeader({
@@ -26,7 +25,6 @@ export function DocumentHeader({
   onVersionNameUpdate,
   onVersionCreate,
   onVersionDelete,
-  loading = false,
 }: DocumentHeaderProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { getDocumentUrl } = useDocumentUrls();
@@ -61,7 +59,6 @@ export function DocumentHeader({
           onViewVersionChange={onViewVersionChange}
           onVersionNameUpdate={onVersionNameUpdate}
           onVersionCreate={onVersionCreate}
-          disabled={loading}
         />
         {hasFiles && (
           <button
@@ -80,7 +77,6 @@ export function DocumentHeader({
             className="action-document-button delete-version-button"
             onClick={() => setShowDeleteModal(true)}
             title="Удалить версию"
-            disabled={loading}
           >
             ✕ Удалить версию
           </button>

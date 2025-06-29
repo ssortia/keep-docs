@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useDocumentManager } from '../hooks/useDocumentManager';
 import { useKeepDocsState } from '../hooks/useKeepDocsState';
 import { useKeepDocsInit } from '../hooks/useKeepDocsInit';
 import { useKeepDocsModals } from '../hooks/useKeepDocsModals';
 import { useKeepDocsActions } from '../hooks/useKeepDocsActions';
 import { getVisibleDocuments, isDocumentEditable, type SchemaParams } from '../utils/schemaUtils';
 import type { Document, DocumentManagerConfig, Dossier } from '../types';
-import { KeepDocsProvider } from '../contexts/KeepDocsContext';
+import { KeepDocsProvider, useKeepDocsContext } from '../contexts/KeepDocsContext';
 import { DocumentTabs } from './DocumentTabs';
 import { DocumentUploadArea } from './DocumentUploadArea';
 import { DocumentPreview } from './DocumentPreview';
 import { DocumentHeader } from './DocumentHeader';
+import { LoadingOverlay } from './LoadingOverlay';
 import '../styles/index.css';
 
 export interface KeepDocsProps {
@@ -34,7 +34,8 @@ function KeepDocsContent({
   onUpdate,
   onRemove,
 }: Omit<KeepDocsProps, 'config' | 'uuid'>) {
-  const { loading, error } = useDocumentManager();
+  const { documentManager } = useKeepDocsContext();
+  const { loading, uploadLoading, error } = documentManager;
 
   const {
     dossier,
@@ -135,7 +136,6 @@ function KeepDocsContent({
   const isEditable = activeSchemaDocument
     ? isDocumentEditable(activeSchemaDocument, params) && isViewingCurrentVersion
     : false;
-
   return (
     <div className="keep-docs">
       <div className="keep-docs-layout">
@@ -157,7 +157,7 @@ function KeepDocsContent({
           </div>
         </div>
 
-        <div className="keep-docs-content">
+        <div className="keep-docs-content" style={{ position: 'relative' }}>
           {activeTab && dossier && (
             <>
               {currentDocument && activeSchemaDocument && (
@@ -170,26 +170,28 @@ function KeepDocsContent({
                   onVersionNameUpdate={handleVersionNameUpdate}
                   onVersionCreate={handleVersionCreate}
                   onVersionDelete={handleVersionDelete}
-                  loading={loading}
                 />
               )}
-              {isEditable && !viewedPage && (
-                <DocumentUploadArea
-                  onFilesSelected={handleDirectUpload}
-                  accept={activeSchemaDocument?.accept}
-                />
-              )}
-              {documentForView && activeSchemaDocument && (
-                <DocumentPreview
-                  document={documentForView}
-                  onPageDelete={handlePageDelete}
-                  onPageEnlarge={openPageViewer}
-                  canDelete={isEditable}
-                  viewedPage={viewedPage}
-                  onCloseViewer={closePageViewer}
-                  onNavigateViewer={handlePageNavigationWithViewer}
-                />
-              )}
+              <div className="keep-docs-main-area" style={{ position: 'relative' }}>
+                {isEditable && !viewedPage && (
+                  <DocumentUploadArea
+                    onFilesSelected={handleDirectUpload}
+                    accept={activeSchemaDocument?.accept}
+                  />
+                )}
+                {documentForView && activeSchemaDocument && (
+                  <DocumentPreview
+                    document={documentForView}
+                    onPageDelete={handlePageDelete}
+                    onPageEnlarge={openPageViewer}
+                    canDelete={isEditable}
+                    viewedPage={viewedPage}
+                    onCloseViewer={closePageViewer}
+                    onNavigateViewer={handlePageNavigationWithViewer}
+                  />
+                )}
+                <LoadingOverlay show={uploadLoading} message="Загрузка документа..." />
+              </div>
             </>
           )}
         </div>

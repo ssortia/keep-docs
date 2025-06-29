@@ -18,3 +18,5 @@
 @import './confirmation-modal.css';
 @import './universal-modal.css';
 @import './form-controls.css';
+@import './loading-spinner.css';
+@import './loading-overlay.css';

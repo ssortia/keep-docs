@@ -1,0 +1,29 @@
+@import './variables.css';
+
+.loading-overlay {
+  position: absolute;
+  z-index: 1000;
+  pointer-events: all;
+}
+
+.loading-overlay-backdrop {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 180px;
+}
+
+.loading-overlay .loading-spinner-container {
+  background: var(--keep-docs-white);
+  border-radius: var(--keep-docs-radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: var(--keep-docs-spacing-xl);
+  border: 1px solid var(--keep-docs-gray-200);
+}
