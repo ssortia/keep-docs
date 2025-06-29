@@ -1,30 +1,38 @@
 import { useCallback, useState } from 'react';
 
-interface EnlargedPage {
+interface ViewedPage {
   src: string;
   pageIndex: number;
   total: number;
 }
 
 export function useKeepDocsModals() {
-  const [enlargedPage, setEnlargedPage] = useState<EnlargedPage | null>(null);
+  const [viewedPage, setViewedPage] = useState<ViewedPage | null>(null);
 
-  const openImageModal = useCallback((src: string, pageIndex: number, total: number) => {
-    setEnlargedPage({ src, pageIndex, total });
+  const openPageViewer = useCallback((src: string, pageIndex: number, total: number) => {
+    setViewedPage({ src, pageIndex, total });
   }, []);
 
-  const closeImageModal = useCallback(() => {
-    setEnlargedPage(null);
+  const closePageViewer = useCallback(() => {
+    setViewedPage(null);
   }, []);
 
   const navigateToPage = useCallback((pageIndex: number) => {
-    setEnlargedPage((prev) => (prev ? { ...prev, pageIndex } : null));
+    setViewedPage((prev) => (prev ? { ...prev, pageIndex } : null));
   }, []);
 
+  // Автоматическое закрытие при смене контекста
+  const autoClosePageViewer = useCallback(() => {
+    if (viewedPage) {
+      setViewedPage(null);
+    }
+  }, [viewedPage]);
+
   return {
-    enlargedPage,
-    openImageModal,
-    closeImageModal,
+    viewedPage,
+    openPageViewer,
+    closePageViewer,
     navigateToPage,
+    autoClosePageViewer,
   };
 }

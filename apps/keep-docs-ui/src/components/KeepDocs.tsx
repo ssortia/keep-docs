@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useDocumentManager } from '../hooks/useDocumentManager';
 import { useKeepDocsState } from '../hooks/useKeepDocsState';
 import { useKeepDocsInit } from '../hooks/useKeepDocsInit';
@@ -11,7 +11,6 @@ import { DocumentTabs } from './DocumentTabs';
 import { DocumentUploadArea } from './DocumentUploadArea';
 import { DocumentPreview } from './DocumentPreview';
 import { DocumentHeader } from './DocumentHeader';
-import { ImageModal } from './ImageModal';
 import '../styles/index.css';
 
 export interface KeepDocsProps {
@@ -49,11 +48,7 @@ function KeepDocsContent({
     getCurrentDocument,
   } = useKeepDocsState();
 
-  const {
-    enlargedPage,
-    openImageModal,
-    closeImageModal,
-  } = useKeepDocsModals();
+  const { viewedPage, openPageViewer, closePageViewer, autoClosePageViewer } = useKeepDocsModals();
 
   const {
     handleDirectUpload,
@@ -94,16 +89,30 @@ function KeepDocsContent({
   }, [error, onError]);
 
   const currentDocument = getCurrentDocument();
+  const prevActiveTab = useRef(activeTab);
+  const prevVersionId = useRef(currentDocument?.currentVersion?.id);
 
-  const handlePageNavigationWithModal = useCallback(
+  const handlePageNavigationWithViewer = useCallback(
     (pageIndex: number) => {
-      handlePageNavigation(pageIndex, enlargedPage, (page) =>
-        openImageModal(page.src, page.pageIndex, page.total),
+      handlePageNavigation(pageIndex, viewedPage, (page) =>
+        openPageViewer(page.src, page.pageIndex, page.total),
       );
     },
-    [handlePageNavigation, enlargedPage, openImageModal],
+    [handlePageNavigation, viewedPage, openPageViewer],
   );
 
+  // Автоматическое закрытие просмотра при смене контекста
+  useEffect(() => {
+    const tabChanged = prevActiveTab.current !== activeTab;
+    const versionChanged = prevVersionId.current !== currentDocument?.currentVersion?.id;
+    
+    if ((tabChanged || versionChanged) && viewedPage) {
+      autoClosePageViewer();
+    }
+    
+    prevActiveTab.current = activeTab;
+    prevVersionId.current = currentDocument?.currentVersion?.id;
+  }, [activeTab, currentDocument?.currentVersion?.id, viewedPage, autoClosePageViewer]);
 
   const activeSchemaDocument = visibleDocuments.find((doc) => doc.type === activeTab);
   const isEditable = activeSchemaDocument
@@ -145,7 +154,7 @@ function KeepDocsContent({
                   loading={loading}
                 />
               )}
-              {isEditable && (
+              {isEditable && !viewedPage && (
                 <DocumentUploadArea
                   onFilesSelected={handleDirectUpload}
                   accept={activeSchemaDocument?.accept}
@@ -155,8 +164,11 @@ function KeepDocsContent({
                 <DocumentPreview
                   document={currentDocument}
                   onPageDelete={handlePageDelete}
-                  onPageEnlarge={openImageModal}
+                  onPageEnlarge={openPageViewer}
                   canDelete={isEditable}
+                  viewedPage={viewedPage}
+                  onCloseViewer={closePageViewer}
+                  onNavigateViewer={handlePageNavigationWithViewer}
                 />
               )}
             </>
@@ -164,24 +176,6 @@ function KeepDocsContent({
         </div>
       </div>
 
-      {enlargedPage && (
-        <ImageModal
-          imageSrc={enlargedPage.src}
-          imageNumber={enlargedPage.pageIndex + 1}
-          totalImages={enlargedPage.total}
-          onClose={closeImageModal}
-          onPrevious={
-            enlargedPage.pageIndex > 0
-              ? () => handlePageNavigationWithModal(enlargedPage.pageIndex - 1)
-              : undefined
-          }
-          onNext={
-            enlargedPage.pageIndex < enlargedPage.total - 1
-              ? () => handlePageNavigationWithModal(enlargedPage.pageIndex + 1)
-              : undefined
-          }
-        />
-      )}
     </div>
   );
 }

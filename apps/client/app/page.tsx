@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Button, Card, Space, Typography } from 'antd';
+import { Button, Card, Col, Row, Skeleton, Space, Typography } from 'antd';
 import { LoginOutlined, UserAddOutlined } from '@ant-design/icons';
-import KeepDocsDemo from './components/KeepDocsDemo';
 import { useAuth } from './hooks/useAuth';
+import KeepDocsDemo from '@/app/components/KeepDocsDemo';
 
 const { Title, Paragraph } = Typography;
 
@@ -65,46 +65,55 @@ export default function Home() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <Card style={{ textAlign: 'center' }}>
-            <Space direction="vertical" size="large">
-              <Title level={1}>Добро пожаловать, {user.fullName || user.email}!</Title>
-            </Space>
-          </Card>
+      {/* <div style={{ maxWidth: '1200px', margin: '0 auto' }}> */}
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Card style={{ textAlign: 'center' }}>
+          <Space direction="vertical" size="large">
+            <Title level={1}>Добро пожаловать, {user.fullName || user.email}!</Title>
+          </Space>
+        </Card>
 
-          <Card>
-            <KeepDocsDemo />
-          </Card>
+        <Card>
+          <Row gutter={[20, 20]}>
+            <Col span={12}>
+              <Skeleton paragraph={{ rows: 12 }} />
+              <br/><br/>
+              <Skeleton paragraph={{ rows: 12 }} />
+            </Col>
+            <Col span={12}>
+              <KeepDocsDemo />
+            </Col>
+          </Row>
+        </Card>
 
-          {/* <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}> */}
-          {/*   <UserProfile /> */}
-          {/*    */}
-          {/*   <Card title="Полезные ссылки"> */}
-          {/*     <Space direction="vertical" style={{ width: '100%' }}> */}
-          {/*       <a */}
-          {/*         href="https://nextjs.org/learn" */}
-          {/*         target="_blank" */}
-          {/*         rel="noopener noreferrer" */}
-          {/*         style={{ color: '#1890ff' }} */}
-          {/*       > */}
-          {/*         <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} /> */}
-          {/*         {' '}Learn Next.js */}
-          {/*       </a> */}
-          {/*       <a */}
-          {/*         href="https://adonisjs.com" */}
-          {/*         target="_blank" */}
-          {/*         rel="noopener noreferrer" */}
-          {/*         style={{ color: '#1890ff' }} */}
-          {/*       > */}
-          {/*         <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} /> */}
-          {/*         {' '}AdonisJS Documentation */}
-          {/*       </a> */}
-          {/*     </Space> */}
-          {/*   </Card> */}
-          {/* </div> */}
-        </Space>
-      </div>
+        {/* <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}> */}
+        {/*   <UserProfile /> */}
+        {/*    */}
+        {/*   <Card title="Полезные ссылки"> */}
+        {/*     <Space direction="vertical" style={{ width: '100%' }}> */}
+        {/*       <a */}
+        {/*         href="https://nextjs.org/learn" */}
+        {/*         target="_blank" */}
+        {/*         rel="noopener noreferrer" */}
+        {/*         style={{ color: '#1890ff' }} */}
+        {/*       > */}
+        {/*         <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} /> */}
+        {/*         {' '}Learn Next.js */}
+        {/*       </a> */}
+        {/*       <a */}
+        {/*         href="https://adonisjs.com" */}
+        {/*         target="_blank" */}
+        {/*         rel="noopener noreferrer" */}
+        {/*         style={{ color: '#1890ff' }} */}
+        {/*       > */}
+        {/*         <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} /> */}
+        {/*         {' '}AdonisJS Documentation */}
+        {/*       </a> */}
+        {/*     </Space> */}
+        {/*   </Card> */}
+        {/* </div> */}
+      </Space>
+      {/* </div> */}
     </div>
   );
 }

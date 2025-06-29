@@ -1,0 +1,178 @@
+/* Встроенный просмотр страниц */
+.inline-page-viewer {
+  background: white;
+  border-radius: var(--keep-docs-radius-lg);
+  border: 1px solid var(--keep-docs-border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.inline-page-viewer-header {
+  padding: var(--keep-docs-spacing-sm);
+  border-bottom: 1px solid var(--keep-docs-border-color);
+  background: var(--keep-docs-gray-100);
+}
+
+.inline-page-viewer-header .image-modal-controls {
+  position: static;
+  transform: none;
+  margin: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  backdrop-filter: none;
+  padding: 0;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.inline-page-viewer-header .image-modal-info {
+  color: var(--keep-docs-text-color);
+}
+
+.inline-page-viewer-header .image-number {
+  color: var(--keep-docs-primary-color);
+}
+
+.inline-page-viewer-header .image-total {
+  color: var(--keep-docs-muted-color);
+}
+
+.inline-page-viewer-header .control-button {
+  background: var(--keep-docs-gray-200);
+  border: 1px solid var(--keep-docs-border-color);
+  color: var(--keep-docs-text-color);
+}
+
+.inline-page-viewer-header .control-button:hover:not(:disabled) {
+  background: var(--keep-docs-gray-300);
+  border-color: var(--keep-docs-border-color);
+  transform: none;
+}
+
+.inline-page-viewer-header .control-button.close {
+  background: var(--keep-docs-danger-color);
+  border-color: var(--keep-docs-danger-color);
+  color: white;
+}
+
+.inline-page-viewer-header .control-button.close:hover {
+  background: var(--keep-docs-danger-hover);
+  border-color: var(--keep-docs-danger-hover);
+}
+
+.inline-page-viewer-header .zoom-level {
+  color: var(--keep-docs-text-color);
+  background: var(--keep-docs-gray-200);
+  border: 1px solid var(--keep-docs-border-color);
+}
+
+.inline-page-viewer-counter {
+  font-weight: 500;
+  color: var(--keep-docs-text-color);
+  font-size: 14px;
+}
+
+.inline-page-viewer-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: var(--keep-docs-spacing-xs);
+  color: var(--keep-docs-muted-color);
+  border-radius: var(--keep-docs-radius-sm);
+  transition: background-color 0.2s;
+  line-height: 1;
+}
+
+.inline-page-viewer-close:hover {
+  background-color: var(--keep-docs-gray-200);
+  color: var(--keep-docs-text-color);
+}
+
+.inline-page-viewer-content {
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: var(--keep-docs-gray-100);
+  min-height: 70vh;
+}
+
+.inline-page-viewer-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+  user-select: none;
+}
+
+.inline-page-viewer-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--keep-docs-radius-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.inline-page-viewer-image.dragging {
+  transition: none;
+  cursor: grabbing !important;
+}
+
+.inline-page-viewer-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  font-size: 24px;
+  padding: var(--keep-docs-spacing-md) var(--keep-docs-spacing-sm);
+  cursor: pointer;
+  border-radius: var(--keep-docs-radius-sm);
+  transition: background-color 0.2s;
+  z-index: 10;
+  line-height: 1;
+}
+
+.inline-page-viewer-nav:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.inline-page-viewer-nav:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inline-page-viewer-prev {
+  left: var(--keep-docs-spacing-xs);
+}
+
+.inline-page-viewer-next {
+  right: var(--keep-docs-spacing-xs);
+}
+
+@media (max-width: 768px) {
+  .inline-page-viewer-content {
+    min-height: 300px;
+  }
+
+  .inline-page-viewer-image-container {
+    min-height: 300px;
+  }
+
+  .inline-page-viewer-image {
+    max-height: 300px;
+  }
+
+  .inline-page-viewer-nav {
+    font-size: 20px;
+    padding: var(--keep-docs-spacing-sm);
+  }
+}

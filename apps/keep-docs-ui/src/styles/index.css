@@ -13,6 +13,8 @@
 @import './version-selector.css';
 @import './modal.css';
 @import './image-modal.css';
+@import './page-viewer.css';
+@import './inline-page-viewer.css';
 @import './confirmation-modal.css';
 @import './universal-modal.css';
 @import './form-controls.css';
