@@ -34,7 +34,7 @@ router
       '/dossiers/:uuid/documents/:type/versions',
       '#controllers/version_controller.createVersion'
     )
-    
+
     router.patch(
       '/dossiers/:uuid/documents/:type/versions/:versionId',
       '#controllers/version_controller.updateVersionName'

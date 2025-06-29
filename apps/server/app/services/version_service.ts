@@ -6,7 +6,7 @@ import { VersionExistenceRule } from '#rules/version_existence_rule'
 @inject()
 export class VersionService {
   constructor(private versionExistenceRule: VersionExistenceRule) {}
-  
+
   /**
    * Создает новую версию документа
    */
@@ -15,7 +15,7 @@ export class VersionService {
     version.name = name
     version.documentId = documentId
     await version.save()
-    
+
     return version
   }
 

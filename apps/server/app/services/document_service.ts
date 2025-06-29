@@ -156,15 +156,30 @@ export class DocumentService {
       return await this.streamSingleFile(files[0], response)
     }
 
-    // Объединяем несколько файлов
-    const mergedFilePath = await this.mergeDocumentFiles(files)
-    const { stream, size } = await this.fileProcessingService.getFileStream(mergedFilePath)
+    // Проверяем, можно ли все файлы объединить в PDF
+    const canMergeToPdf = this.canFilesBemerged(files)
 
-    response.header('Content-Type', 'application/pdf')
-    response.header('Content-Length', size.toString())
-    response.header('Content-Disposition', `attachment; filename="${documentType}.pdf"`)
+    if (canMergeToPdf) {
+      // Объединяем файлы в PDF
+      const mergedFilePath = await this.mergeDocumentFiles(files)
+      const { stream, size } = await this.fileProcessingService.getFileStream(mergedFilePath)
 
-    return response.stream(stream)
+      response.header('Content-Type', 'application/pdf')
+      response.header('Content-Length', size.toString())
+      response.header('Content-Disposition', `attachment; filename="${documentType}.pdf"`)
+
+      return response.stream(stream)
+    } else {
+      // Создаем ZIP архив для разнородных файлов
+      const zipFilePath = await this.fileProcessingService.createZipArchive(files, documentType)
+      const { stream, size } = await this.fileProcessingService.getFileStream(zipFilePath)
+
+      response.header('Content-Type', 'application/zip')
+      response.header('Content-Length', size.toString())
+      response.header('Content-Disposition', `attachment; filename="${documentType}.zip"`)
+
+      return response.stream(stream)
+    }
   }
 
   /**
@@ -310,6 +325,18 @@ export class DocumentService {
       .first()
 
     return maxPageFile && maxPageFile.pageNumber ? maxPageFile.pageNumber + 1 : 1
+  }
+
+  /**
+   * Проверяет, могут ли файлы быть объединены в PDF
+   */
+  private canFilesBemerged(files: any[]): boolean {
+    const mergableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif', 'gif', 'bmp', 'webp']
+
+    return files.every((file) => {
+      const extension = file.extension?.toLowerCase()
+      return extension && mergableExtensions.includes(extension)
+    })
   }
 
   /**

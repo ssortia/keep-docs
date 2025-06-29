@@ -8,6 +8,7 @@ import { pipeline } from 'node:stream/promises'
 import { PDFDocument } from 'pdf-lib'
 import sharp from 'sharp'
 import { fromPath } from 'pdf2pic'
+import archiver from 'archiver'
 import { DocumentProcessingException, FileSystemException } from '#exceptions/document_exceptions'
 
 export interface ProcessedFile {
@@ -77,6 +78,38 @@ export class FileProcessingService {
     } catch (error) {
       throw new FileSystemException(`Ошибка чтения файла: ${fullPath}`)
     }
+  }
+
+  /**
+   * Создает ZIP архив из файлов
+   */
+  async createZipArchive(files: any[], archiveName: string): Promise<string> {
+    const zipFileName = `${archiveName}_${randomUUID()}.zip`
+    const zipFilePath = join(this.getUploadDirectory(), zipFileName)
+
+    return new Promise((resolve, reject) => {
+      const output = createWriteStream(zipFilePath)
+      const archive = archiver('zip', { zlib: { level: 9 } })
+
+      output.on('close', () => {
+        resolve(zipFilePath)
+      })
+
+      archive.on('error', (err) => {
+        reject(new DocumentProcessingException(`Ошибка создания архива: ${err.message}`))
+      })
+
+      archive.pipe(output)
+
+      // Добавляем файлы в архив
+      for (const file of files) {
+        const filePath = this.getFullPath(file.path)
+        const fileName = file.originalName || `${file.uuid}.${file.extension}`
+        archive.file(filePath, { name: fileName })
+      }
+
+      archive.finalize()
+    })
   }
 
   /**
