@@ -58,8 +58,8 @@
 }
 
 .inline-page-viewer-header .control-button.close:hover {
-  background: var(--keep-docs-danger-hover);
-  border-color: var(--keep-docs-danger-hover);
+  background: var(--keep-docs-red-dark);
+  border-color: var(--keep-docs-red-dark);
 }
 
 .inline-page-viewer-header .zoom-level {
