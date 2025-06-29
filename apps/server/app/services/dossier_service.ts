@@ -88,7 +88,10 @@ export class DossierService {
    * Получает все версии для документа
    */
   async getDocumentVersions(documentId: number): Promise<Version[]> {
-    return Version.query().where('document_id', documentId).orderBy('created_at', 'desc')
+    return Version.query()
+      .preload('files')
+      .where('document_id', documentId)
+      .orderBy('created_at', 'desc')
   }
 
   /**

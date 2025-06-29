@@ -54,7 +54,6 @@ export default class DossierController {
     // Загружаем версии для каждого документа
     const documentsWithVersions = await Promise.all(
       dossier.documents.map(async (document) => {
-
         const versions = await this.dossierService.getDocumentVersions(document.id)
         return this.documentAdapter.formatDocumentResponse(document, versions)
       })

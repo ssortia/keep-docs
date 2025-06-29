@@ -46,6 +46,10 @@ function KeepDocsContent({
     setActiveTab,
     toggleAccordion,
     getCurrentDocument,
+    getViewVersion,
+    setViewVersion,
+    clearViewVersion,
+    getDocumentForView,
   } = useKeepDocsState();
 
   const { viewedPage, openPageViewer, closePageViewer, autoClosePageViewer } = useKeepDocsModals();
@@ -89,8 +93,18 @@ function KeepDocsContent({
   }, [error, onError]);
 
   const currentDocument = getCurrentDocument();
+  const documentForView = getDocumentForView();
   const prevActiveTab = useRef(activeTab);
   const prevVersionId = useRef(currentDocument?.currentVersion?.id);
+
+  const handleViewVersionChange = useCallback(
+    (versionId: number) => {
+      if (activeTab) {
+        setViewVersion(activeTab, versionId);
+      }
+    },
+    [activeTab, setViewVersion],
+  );
 
   const handlePageNavigationWithViewer = useCallback(
     (pageIndex: number) => {
@@ -105,18 +119,21 @@ function KeepDocsContent({
   useEffect(() => {
     const tabChanged = prevActiveTab.current !== activeTab;
     const versionChanged = prevVersionId.current !== currentDocument?.currentVersion?.id;
-    
+
     if ((tabChanged || versionChanged) && viewedPage) {
       autoClosePageViewer();
     }
-    
+
     prevActiveTab.current = activeTab;
     prevVersionId.current = currentDocument?.currentVersion?.id;
   }, [activeTab, currentDocument?.currentVersion?.id, viewedPage, autoClosePageViewer]);
 
   const activeSchemaDocument = visibleDocuments.find((doc) => doc.type === activeTab);
+  const viewVersionId = getViewVersion(activeTab || '');
+  const currentVersionId = currentDocument?.currentVersion?.id;
+  const isViewingCurrentVersion = !viewVersionId || viewVersionId === currentVersionId;
   const isEditable = activeSchemaDocument
-    ? isDocumentEditable(activeSchemaDocument, params)
+    ? isDocumentEditable(activeSchemaDocument, params) && isViewingCurrentVersion
     : false;
 
   return (
@@ -147,7 +164,9 @@ function KeepDocsContent({
                 <DocumentHeader
                   name={activeSchemaDocument.name}
                   document={currentDocument}
+                  viewVersion={documentForView?.currentVersion}
                   onVersionChange={handleVersionChange}
+                  onViewVersionChange={handleViewVersionChange}
                   onVersionNameUpdate={handleVersionNameUpdate}
                   onVersionCreate={handleVersionCreate}
                   onVersionDelete={handleVersionDelete}
@@ -160,9 +179,9 @@ function KeepDocsContent({
                   accept={activeSchemaDocument?.accept}
                 />
               )}
-              {currentDocument && activeSchemaDocument && (
+              {documentForView && activeSchemaDocument && (
                 <DocumentPreview
-                  document={currentDocument}
+                  document={documentForView}
                   onPageDelete={handlePageDelete}
                   onPageEnlarge={openPageViewer}
                   canDelete={isEditable}
@@ -175,7 +194,6 @@ function KeepDocsContent({
           )}
         </div>
       </div>
-
     </div>
   );
 }

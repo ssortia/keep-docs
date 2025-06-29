@@ -17,6 +17,7 @@ export interface FileResponse {
 export interface VersionResponse {
   id: number
   name: string
+  files: FileResponse[]
   createdAt: string
 }
 
@@ -96,6 +97,7 @@ export class DocumentAdapter {
     return {
       id: version.id,
       name: version.name,
+      files: version.files?.map((file) => this.formatFileResponse(file)) || [],
       createdAt: version.createdAt.toISO() || '',
     }
   }

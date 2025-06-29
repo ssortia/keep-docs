@@ -26,10 +26,6 @@
   height: 30px;
 }
 
-.version-selector-container:has(.version-edit-button) .version-selector-trigger {
-  border-right: none;
-}
-
 .version-selector-container:not(:has(.version-edit-button)) .version-selector-trigger {
   border-radius: var(--keep-docs-radius-sm);
   min-width: 180px;
@@ -135,7 +131,8 @@
 .version-edit-button {
   background: var(--keep-docs-white);
   border: 1px solid var(--keep-docs-gray-300);
-  border-radius: 0 var(--keep-docs-radius-sm) var(--keep-docs-radius-sm) 0;
+  border-left: none;
+  border-radius: 0;
   cursor: pointer;
   padding: var(--keep-docs-spacing-xs) var(--keep-docs-spacing-xs);
   display: flex;
@@ -144,6 +141,14 @@
   height: 30px;
   width: 32px;
   transition: all var(--keep-docs-transition-fast);
+}
+
+.version-edit-button + .version-edit-button {
+  border-left: none;
+}
+
+.version-edit-button:last-child {
+  border-radius: 0 var(--keep-docs-radius-sm) var(--keep-docs-radius-sm) 0;
 }
 
 .version-edit-button:hover {

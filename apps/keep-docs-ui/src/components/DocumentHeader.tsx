@@ -8,7 +8,9 @@ import { DownloadIcon } from './icons';
 interface DocumentHeaderProps {
   name: string;
   document: Document;
+  viewVersion?: any;
   onVersionChange: (versionId: number) => void;
+  onViewVersionChange?: (versionId: number) => void;
   onVersionNameUpdate: (versionId: number, newName: string) => Promise<boolean>;
   onVersionCreate: (name: string) => Promise<boolean>;
   onVersionDelete?: (versionId: number) => Promise<boolean>;
@@ -18,7 +20,9 @@ interface DocumentHeaderProps {
 export function DocumentHeader({
   name,
   document,
+  viewVersion,
   onVersionChange,
+  onViewVersionChange,
   onVersionNameUpdate,
   onVersionCreate,
   onVersionDelete,
@@ -52,7 +56,9 @@ export function DocumentHeader({
         <VersionSelector
           versions={document.versions || []}
           currentVersion={document.currentVersion}
+          viewVersion={viewVersion}
           onVersionChange={onVersionChange}
+          onViewVersionChange={onViewVersionChange}
           onVersionNameUpdate={onVersionNameUpdate}
           onVersionCreate={onVersionCreate}
           disabled={loading}

@@ -1,13 +1,20 @@
 import React from 'react';
 import type { DocumentVersion } from '../types';
-import { useVersionSelector, useVersionInput, useTriggerWidth, useClickOutside } from '../hooks/version';
+import {
+  useClickOutside,
+  useTriggerWidth,
+  useVersionInput,
+  useVersionSelector,
+} from '../hooks/version';
 import { generateDefaultVersionName, sortVersionsByDate } from '../utils/version/versionUtils';
-import { VersionTrigger, VersionInput, VersionDropdown, VersionActions } from './version';
+import { VersionActions, VersionDropdown, VersionInput, VersionTrigger } from './version';
 
 interface VersionSelectorProps {
   versions: DocumentVersion[];
   currentVersion?: DocumentVersion;
+  viewVersion?: DocumentVersion;
   onVersionChange: (versionId: number) => void;
+  onViewVersionChange?: (versionId: number) => void;
   onVersionNameUpdate: (versionId: number, newName: string) => Promise<boolean>;
   onVersionCreate: (name: string) => Promise<boolean>;
   disabled?: boolean;
@@ -16,12 +23,15 @@ interface VersionSelectorProps {
 export function VersionSelector({
   versions,
   currentVersion,
+  viewVersion,
   onVersionChange,
+  onViewVersionChange,
   onVersionNameUpdate,
   onVersionCreate,
   disabled = false,
 }: VersionSelectorProps) {
   const sortedVersions = sortVersionsByDate(versions);
+  const displayedVersion = viewVersion || currentVersion;
 
   const {
     editValue,
@@ -38,7 +48,7 @@ export function VersionSelector({
     handleEditSave,
     handleCreateSave,
   } = useVersionSelector({
-    onVersionChange,
+    onVersionChange: onViewVersionChange || onVersionChange,
     onVersionNameUpdate,
     onVersionCreate,
   });
@@ -46,7 +56,7 @@ export function VersionSelector({
   const { triggerRef, getInputWidth, saveTriggerWidth } = useTriggerWidth({
     isEditing,
     isCreating,
-    currentVersion,
+    currentVersion: displayedVersion,
   });
 
   const { inputRef, handleKeyDown } = useVersionInput({
@@ -96,16 +106,22 @@ export function VersionSelector({
         <div className="version-selector-container">
           <VersionTrigger
             ref={triggerRef}
-            currentVersion={currentVersion}
+            currentVersion={displayedVersion}
             isOpen={isDropdownOpen}
             disabled={disabled}
             onClick={openDropdown}
           />
           <VersionActions
             currentVersion={currentVersion}
+            viewVersion={viewVersion}
             disabled={disabled}
             onEdit={handleEditClick}
             onCreate={handleCreateClick}
+            onMakeCurrent={
+              viewVersion && viewVersion.id !== currentVersion?.id
+                ? () => onVersionChange(viewVersion.id)
+                : undefined
+            }
           />
         </div>
       )}
@@ -113,7 +129,7 @@ export function VersionSelector({
       {isDropdownOpen && !isInputMode && (
         <VersionDropdown
           versions={sortedVersions}
-          currentVersion={currentVersion}
+          currentVersion={displayedVersion}
           onVersionSelect={handleVersionSelect}
         />
       )}
