@@ -8,6 +8,7 @@ import Version from '#models/version'
 import File from '#models/file'
 import { FileProcessingService, ProcessedFile } from '#services/file_processing_service'
 import { DossierService } from '#services/dossier_service'
+import { VersionService } from '#services/version_service'
 import { DocumentProcessingException } from '#exceptions/document_exceptions'
 
 export interface DocumentUploadData {
@@ -33,7 +34,8 @@ interface ProcessedFileWithPageNumber extends ProcessedFile {
 export class DocumentService {
   constructor(
     private fileProcessingService: FileProcessingService,
-    private dossierService: DossierService
+    private dossierService: DossierService,
+    private versionService: VersionService
   ) {}
 
   /**
@@ -45,7 +47,7 @@ export class DocumentService {
     try {
       const dossierPath = this.dossierService.generateDossierPath(data.dossier)
       const document = await this.findOrCreateDocument(data.dossier, data.documentType, trx)
-      const version = await this.createOrFindVersion(
+      const version = await this.versionService.createOrFindVersion(
         document,
         data.versionName,
         data.isNewVersion,
@@ -69,7 +71,7 @@ export class DocumentService {
 
       // Устанавливаем текущую версию если это первая версия или создается новая версия
       if (!document.currentVersionId || data.isNewVersion) {
-        await this.updateCurrentVersion(document, version.id, trx)
+        await this.versionService.updateCurrentVersion(document, version.id, trx)
       }
 
       await trx.commit()
@@ -84,25 +86,6 @@ export class DocumentService {
       await trx.rollback()
       throw new DocumentProcessingException(`Ошибка обработки загрузки: ${error.message}`)
     }
-  }
-
-  /**
-   * Объединяет файлы документа в один PDF
-   */
-  async mergeDocumentFiles(files: File[]): Promise<string> {
-    // Сортируем файлы по номерам страниц перед объединением
-    const sortedFiles = [...files].sort((a, b) => (a.pageNumber || 0) - (b.pageNumber || 0))
-
-    const processedFiles: ProcessedFile[] = sortedFiles.map((file) => ({
-      uuid: file.uuid,
-      originalName: file.originalName || 'unknown',
-      extension: file.extension || 'pdf',
-      mimeType: file.mimeType || 'application/pdf',
-      size: 0, // Не используется при мердже
-      path: file.path,
-    }))
-
-    return await this.fileProcessingService.mergeFiles(processedFiles)
   }
 
   /**
@@ -149,53 +132,6 @@ export class DocumentService {
   }
 
   /**
-   * Стримит файлы документа
-   */
-  async streamDocumentFiles(files: any[], documentType: string, response: any): Promise<any> {
-    if (files.length === 1) {
-      return await this.streamSingleFile(files[0], response)
-    }
-
-    // Проверяем, можно ли все файлы объединить в PDF
-    const canMergeToPdf = this.canFilesBemerged(files)
-
-    if (canMergeToPdf) {
-      // Объединяем файлы в PDF
-      const mergedFilePath = await this.mergeDocumentFiles(files)
-      const { stream, size } = await this.fileProcessingService.getFileStream(mergedFilePath)
-
-      response.header('Content-Type', 'application/pdf')
-      response.header('Content-Length', size.toString())
-      response.header('Content-Disposition', `attachment; filename="${documentType}.pdf"`)
-
-      return response.stream(stream)
-    } else {
-      // Создаем ZIP архив для разнородных файлов
-      const zipFilePath = await this.fileProcessingService.createZipArchive(files, documentType)
-      const { stream, size } = await this.fileProcessingService.getFileStream(zipFilePath)
-
-      response.header('Content-Type', 'application/zip')
-      response.header('Content-Length', size.toString())
-      response.header('Content-Disposition', `attachment; filename="${documentType}.zip"`)
-
-      return response.stream(stream)
-    }
-  }
-
-  /**
-   * Стримит один файл
-   */
-  async streamSingleFile(file: any, response: any): Promise<any> {
-    const { stream, size, mimeType } = await this.fileProcessingService.getFileStream(file.path)
-
-    response.header('Content-Type', mimeType)
-    response.header('Content-Length', size.toString())
-    response.header('Content-Disposition', `attachment; filename="${file.originalName}"`)
-
-    return response.stream(stream)
-  }
-
-  /**
    * Находит или создает документ
    */
   private async findOrCreateDocument(
@@ -219,48 +155,6 @@ export class DocumentService {
     }
 
     return document
-  }
-
-  /**
-   * Создает или находит версию документа
-   */
-  private async createOrFindVersion(
-    document: Document,
-    versionName?: string,
-    isNewVersion?: boolean,
-    trx?: TransactionClientContract
-  ): Promise<Version> {
-    if (isNewVersion) {
-      return await this.createNewVersion(document.id, versionName, trx)
-    }
-    const currentVersion = await Version.find(document.currentVersionId || 0, { client: trx })
-
-    if (!currentVersion) {
-      return await this.createNewVersion(document.id, versionName, trx)
-    }
-
-    return currentVersion
-  }
-
-  /**
-   * Создает новую версию
-   */
-  private async createNewVersion(
-    documentId: number,
-    versionName?: string,
-    trx?: TransactionClientContract
-  ): Promise<Version> {
-    const name = versionName || this.generateVersionName()
-
-    return await Version.create({ name, documentId }, { client: trx })
-  }
-
-  /**
-   * Генерирует имя версии
-   */
-  private generateVersionName(): string {
-    const now = new Date()
-    return `v${now.getFullYear()}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getDate().toString().padStart(2, '0')}.${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`
   }
 
   /**
@@ -325,33 +219,5 @@ export class DocumentService {
       .first()
 
     return maxPageFile && maxPageFile.pageNumber ? maxPageFile.pageNumber + 1 : 1
-  }
-
-  /**
-   * Проверяет, могут ли файлы быть объединены в PDF
-   */
-  private canFilesBemerged(files: any[]): boolean {
-    const mergableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'tiff', 'tif', 'gif', 'bmp', 'webp']
-
-    return files.every((file) => {
-      const extension = file.extension?.toLowerCase()
-      return extension && mergableExtensions.includes(extension)
-    })
-  }
-
-  /**
-   * Обновляет текущую версию документа
-   */
-  async updateCurrentVersion(
-    document: Document,
-    versionId: number | null,
-    trx?: TransactionClientContract
-  ): Promise<void> {
-    document.currentVersionId = versionId
-    if (trx) {
-      await document.useTransaction(trx).save()
-    } else {
-      await document.save()
-    }
   }
 }

@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { DocumentService } from '#services/document_service'
+import { DocumentStreamingService } from '#services/document_streaming_service'
 import { DossierService } from '#services/dossier_service'
 import { deletePageValidator, getPageValidator } from '#validators/document_validator'
 import { DocumentExistsRule } from '#rules/document_exists_rule'
@@ -10,6 +11,7 @@ import { FileExistsRule } from '#rules/file_exists_rule'
 export default class DocumentFileController {
   constructor(
     private documentService: DocumentService,
+    private documentStreamingService: DocumentStreamingService,
     private dossierService: DossierService,
     private documentExistsRule: DocumentExistsRule,
     private fileExistsRule: FileExistsRule
@@ -36,7 +38,7 @@ export default class DocumentFileController {
     const file = await this.documentService.findFileByUuid(pageUuid, document!)
     await this.fileExistsRule.validate(file, pageUuid)
 
-    return this.documentService.streamSingleFile(file, response)
+    return this.documentStreamingService.streamSingleFile(file, response)
   }
 
   /**

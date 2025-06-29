@@ -44,7 +44,7 @@ export default class VersionController {
     }
 
     const version = await this.versionService.createVersion(document.id, name)
-    await this.documentService.updateCurrentVersion(document, version.id)
+    await this.versionService.updateCurrentVersion(document, version.id)
 
     return response.created({
       message: 'Версия успешно создана',
@@ -106,7 +106,7 @@ export default class VersionController {
           .filter((v) => v.id !== versionId)
           .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis())[0] || null
 
-      await this.documentService.updateCurrentVersion(document!, prevVersion?.id || null)
+      await this.versionService.updateCurrentVersion(document!, prevVersion?.id || null)
     }
 
     await this.versionService.deleteVersion(versionId)

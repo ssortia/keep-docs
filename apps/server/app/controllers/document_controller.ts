@@ -2,6 +2,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { DocumentService } from '#services/document_service'
 import { DossierService } from '#services/dossier_service'
+import { DocumentStreamingService } from '#services/document_streaming_service'
+import { VersionService } from '#services/version_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import {
   changeCurrentVersionValidator,
@@ -16,6 +18,8 @@ export default class DocumentController {
   constructor(
     private documentService: DocumentService,
     private dossierService: DossierService,
+    private documentStreamingService: DocumentStreamingService,
+    private versionService: VersionService,
     private documentAdapter: DocumentAdapter,
     private documentExistsRule: DocumentExistsRule,
     private fileExtensionRule: FileExtensionRule
@@ -42,7 +46,7 @@ export default class DocumentController {
     const document = await this.documentService.findDocument(dossier.id, type)
     await this.documentExistsRule.validate(document)
 
-    await this.documentService.updateCurrentVersion(document!, versionId)
+    await this.versionService.updateCurrentVersion(document!, versionId)
 
     return response.ok({ message: 'Текущая версия документа успешно изменена' })
   }
@@ -107,6 +111,6 @@ export default class DocumentController {
     const document = await this.documentService.findDocument(dossier.id, type)
     await this.documentExistsRule.validateHasFiles(document)
 
-    return this.documentService.streamDocumentFiles(document!.files, type, response)
+    return this.documentStreamingService.streamDocumentFiles(document!.files, type, response)
   }
 }
