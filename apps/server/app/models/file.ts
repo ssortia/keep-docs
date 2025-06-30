@@ -5,8 +5,9 @@ import Document from '#models/document'
 import Version from '#models/version'
 import { SoftDeletes } from 'adonis-lucid-soft-deletes'
 import { compose } from '@adonisjs/core/helpers'
+import { Transactional } from 'adonisjs-transaction-decorator'
 
-export default class File extends compose(BaseModel, SoftDeletes) {
+export default class File extends compose(BaseModel, SoftDeletes, Transactional) {
   @column({ isPrimary: true })
   declare id: number
 

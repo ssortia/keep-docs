@@ -4,8 +4,10 @@ import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Dossier from '#models/dossier'
 import Version from '#models/version'
 import File from '#models/file'
+import { compose } from '@adonisjs/core/helpers'
+import { Transactional } from 'adonisjs-transaction-decorator'
 
-export default class Document extends BaseModel {
+export default class Document extends compose(BaseModel, Transactional) {
   @column({ isPrimary: true })
   declare id: number
 

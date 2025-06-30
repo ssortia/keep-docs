@@ -1,5 +1,4 @@
 import { inject } from '@adonisjs/core'
-import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import Document from '#models/document'
 import Version from '#models/version'
 import { VersionExistenceRule } from '#rules/version_existence_rule'
@@ -59,17 +58,16 @@ export class VersionService {
   async createOrFindVersion(
     document: Document,
     versionName?: string,
-    isNewVersion?: boolean,
-    trx?: TransactionClientContract
+    isNewVersion?: boolean
   ): Promise<Version> {
     if (isNewVersion) {
-      return await this.createNewVersion(document.id, versionName, trx)
+      return await this.createNewVersion(document.id, versionName)
     }
 
-    const currentVersion = await Version.find(document.currentVersionId || 0, { client: trx })
+    const currentVersion = await Version.find(document.currentVersionId || 0)
 
     if (!currentVersion) {
-      return await this.createNewVersion(document.id, versionName, trx)
+      return await this.createNewVersion(document.id, versionName)
     }
 
     return currentVersion
@@ -78,29 +76,17 @@ export class VersionService {
   /**
    * Создает новую версию
    */
-  async createNewVersion(
-    documentId: number,
-    versionName?: string,
-    trx?: TransactionClientContract
-  ): Promise<Version> {
+  async createNewVersion(documentId: number, versionName?: string): Promise<Version> {
     const name = versionName || this.generateVersionName()
-    return await Version.create({ name, documentId }, { client: trx })
+    return await Version.create({ name, documentId })
   }
 
   /**
    * Обновляет текущую версию документа
    */
-  async updateCurrentVersion(
-    document: Document,
-    versionId: number | null,
-    trx?: TransactionClientContract
-  ): Promise<void> {
+  async updateCurrentVersion(document: Document, versionId: number | null): Promise<void> {
     document.currentVersionId = versionId
-    if (trx) {
-      await document.useTransaction(trx).save()
-    } else {
-      await document.save()
-    }
+    await document.save()
   }
 
   /**

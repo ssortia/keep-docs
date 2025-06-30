@@ -9,6 +9,7 @@ import {
 import { VersionOwnershipRule } from '#rules/version_ownership_rule'
 import { DocumentService } from '#services/document_service'
 import { DossierService } from '#services/dossier_service'
+import { transaction } from 'adonisjs-transaction-decorator'
 
 @inject()
 export default class VersionController {
@@ -30,6 +31,7 @@ export default class VersionController {
    * @responseBody 201 - {"message": "Версия успешно создана", "version": {"id": 1, "name": "Название версии"}}
    * @responseBody 404 - {"message": "Документ не найден"}
    */
+  @transaction()
   async createVersion({ params, request, response }: HttpContext) {
     const { uuid, type, name } = await createVersionValidator.validate({
       ...params,
@@ -91,6 +93,7 @@ export default class VersionController {
    * @responseBody 200 - {"message": "Версия успешно удалена"}
    * @responseBody 404 - {"message": "Версия не найдена"}
    */
+  @transaction()
   async deleteVersion({ params, response }: HttpContext) {
     const { uuid, type, versionId } = await deleteVersionValidator.validate({
       ...params,

@@ -12,6 +12,7 @@ import {
 } from '#validators/document_validator'
 import { DocumentExistsRule } from '#rules/document_exists_rule'
 import { FileExtensionRule } from '#rules/file_extension_rule'
+import { transaction } from 'adonisjs-transaction-decorator'
 
 @inject()
 export default class DocumentController {
@@ -64,6 +65,7 @@ export default class DocumentController {
    * @responseBody 201 - {"data": {"document": {"id": 1, "code": "passport"}, "version": {"id": 1, "name": "Паспорт 01.01.2024"}, "filesProcessed": 2, "pagesAdded": 2}}
    * @responseBody 422 - {"message": "Validation failed", "errors": [{"message": "Documents are required", "rule": "required", "field": "documents"}]}
    */
+  @transaction()
   async upload({ params, request, response }: HttpContext) {
     const dossier = await this.dossierService.findOrCreateDossier(params.uuid)
     const { type, documents, name, isNewVersion } = await addPagesValidator.validate({

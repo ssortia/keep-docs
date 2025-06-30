@@ -1,7 +1,5 @@
 import { inject } from '@adonisjs/core'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
-import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
-import db from '@adonisjs/lucid/services/db'
 import Dossier from '#models/dossier'
 import Document from '#models/document'
 import Version from '#models/version'
@@ -42,16 +40,13 @@ export class DocumentService {
    * Обрабатывает загрузку документа с файлами
    */
   async processDocumentUpload(data: DocumentUploadData): Promise<DocumentUploadResult> {
-    const trx = await db.transaction()
-
     try {
       const dossierPath = this.dossierService.generateDossierPath(data.dossier)
-      const document = await this.findOrCreateDocument(data.dossier, data.documentType, trx)
+      const document = await this.findOrCreateDocument(data.dossier, data.documentType)
       const version = await this.versionService.createOrFindVersion(
         document,
         data.versionName,
-        data.isNewVersion,
-        trx
+        data.isNewVersion
       )
 
       const processedFiles = await this.fileProcessingService.processUploadedFiles(
@@ -59,22 +54,15 @@ export class DocumentService {
         dossierPath
       )
 
-      const startPageNumber = await this.getNextPageNumber(version.id, trx)
+      const startPageNumber = await this.getNextPageNumber(version.id)
       const filesWithPageNumbers = this.assignPageNumbers(processedFiles, startPageNumber)
 
-      const savedFiles = await this.saveFilesToDatabase(
-        filesWithPageNumbers,
-        document,
-        version,
-        trx
-      )
+      const savedFiles = await this.saveFilesToDatabase(filesWithPageNumbers, document, version)
 
       // Устанавливаем текущую версию если это первая версия или создается новая версия
       if (!document.currentVersionId || data.isNewVersion) {
-        await this.versionService.updateCurrentVersion(document, version.id, trx)
+        await this.versionService.updateCurrentVersion(document, version.id)
       }
-
-      await trx.commit()
 
       return {
         document,
@@ -83,7 +71,6 @@ export class DocumentService {
         pagesAdded: savedFiles.length,
       }
     } catch (error) {
-      await trx.rollback()
       throw new DocumentProcessingException(`Ошибка обработки загрузки: ${error.message}`)
     }
   }
@@ -134,24 +121,17 @@ export class DocumentService {
   /**
    * Находит или создает документ
    */
-  private async findOrCreateDocument(
-    dossier: Dossier,
-    documentType: string,
-    trx: TransactionClientContract
-  ): Promise<Document> {
-    let document = await Document.query({ client: trx })
+  private async findOrCreateDocument(dossier: Dossier, documentType: string): Promise<Document> {
+    let document = await Document.query()
       .where('dossierId', dossier.id)
       .where('code', documentType)
       .first()
 
     if (!document) {
-      document = await Document.create(
-        {
-          code: documentType,
-          dossierId: dossier.id,
-        },
-        { client: trx }
-      )
+      document = await Document.create({
+        code: documentType,
+        dossierId: dossier.id,
+      })
     }
 
     return document
@@ -163,26 +143,22 @@ export class DocumentService {
   private async saveFilesToDatabase(
     processedFiles: ProcessedFileWithPageNumber[],
     document: Document,
-    version: Version,
-    trx: TransactionClientContract
+    version: Version
   ): Promise<File[]> {
     const savedFiles: File[] = []
 
     for (const processedFile of processedFiles) {
-      const file = await File.create(
-        {
-          uuid: processedFile.uuid,
-          name: processedFile.originalName,
-          originalName: processedFile.originalName,
-          extension: processedFile.extension,
-          mimeType: processedFile.mimeType,
-          path: processedFile.path,
-          pageNumber: processedFile.pageNumber,
-          documentId: document.id,
-          versionId: version.id,
-        },
-        { client: trx }
-      )
+      const file = await File.create({
+        uuid: processedFile.uuid,
+        name: processedFile.originalName,
+        originalName: processedFile.originalName,
+        extension: processedFile.extension,
+        mimeType: processedFile.mimeType,
+        path: processedFile.path,
+        pageNumber: processedFile.pageNumber,
+        documentId: document.id,
+        versionId: version.id,
+      })
 
       savedFiles.push(file)
     }
@@ -208,11 +184,8 @@ export class DocumentService {
   /**
    * Получает следующий номер страницы для версии документа
    */
-  private async getNextPageNumber(
-    versionId: number,
-    trx: TransactionClientContract
-  ): Promise<number> {
-    const maxPageFile = await File.query({ client: trx })
+  private async getNextPageNumber(versionId: number): Promise<number> {
+    const maxPageFile = await File.query()
       .where('versionId', versionId)
       .whereNull('deletedAt')
       .orderBy('pageNumber', 'desc')
