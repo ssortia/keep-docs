@@ -23,11 +23,4 @@ export class FileExtensionRule {
       }
     }
   }
-
-  /**
-   * Получает список разрешенных расширений для схемы и типа документа
-   */
-  async getAllowedExtensions(schemaName: string, documentType: string): Promise<string[]> {
-    return await SchemaValidator.getAllowedExtensions(schemaName, documentType)
-  }
 }

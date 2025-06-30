@@ -10,7 +10,7 @@ import {
   addPagesValidator,
   getDocumentValidator,
 } from '#validators/document_validator'
-import { DocumentExistsRule } from '#rules/document_exists_rule'
+import { DocumentAccessValidator } from '#rules/document_access_validator'
 import { FileExtensionRule } from '#rules/file_extension_rule'
 import { transaction } from 'adonisjs-transaction-decorator'
 
@@ -22,7 +22,7 @@ export default class DocumentController {
     private documentStreamingService: DocumentStreamingService,
     private versionService: VersionService,
     private documentAdapter: DocumentAdapter,
-    private documentExistsRule: DocumentExistsRule,
+    private documentAccessValidator: DocumentAccessValidator,
     private fileExtensionRule: FileExtensionRule
   ) {}
 
@@ -43,11 +43,9 @@ export default class DocumentController {
       versionId: request.input('versionId'),
     })
 
-    const dossier = await this.dossierService.findDossierByUuid(uuid)
-    const document = await this.documentService.findDocument(dossier.id, type)
-    await this.documentExistsRule.validate(document)
+    const { document } = await this.documentAccessValidator.validateDocumentAccess(uuid, type)
 
-    await this.versionService.changeCurrentVersion(document!, versionId)
+    await this.versionService.changeCurrentVersion(document, versionId)
 
     return response.ok({ message: 'Текущая версия документа успешно изменена' })
   }
@@ -109,10 +107,12 @@ export default class DocumentController {
   async download({ params, response }: HttpContext) {
     const { uuid, type } = await getDocumentValidator.validate(params)
 
-    const dossier = await this.dossierService.findDossierByUuid(uuid)
-    const document = await this.documentService.findDocument(dossier.id, type)
-    await this.documentExistsRule.validateHasFiles(document)
+    const { document } = await this.documentAccessValidator.validateDocumentAccess(
+      uuid,
+      type,
+      true // requireFiles
+    )
 
-    return this.documentStreamingService.streamDocumentFiles(document!.files, type, response)
+    return this.documentStreamingService.streamDocumentFiles(document.files, type, response)
   }
 }

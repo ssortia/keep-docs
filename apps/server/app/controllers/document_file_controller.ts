@@ -2,19 +2,15 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { DocumentService } from '#services/document_service'
 import { DocumentStreamingService } from '#services/document_streaming_service'
-import { DossierService } from '#services/dossier_service'
 import { deletePageValidator, getPageValidator } from '#validators/document_validator'
-import { DocumentExistsRule } from '#rules/document_exists_rule'
-import { FileExistsRule } from '#rules/file_exists_rule'
+import { DocumentAccessValidator } from '#rules/document_access_validator'
 
 @inject()
 export default class DocumentFileController {
   constructor(
     private documentService: DocumentService,
     private documentStreamingService: DocumentStreamingService,
-    private dossierService: DossierService,
-    private documentExistsRule: DocumentExistsRule,
-    private fileExistsRule: FileExistsRule
+    private documentAccessValidator: DocumentAccessValidator
   ) {}
 
   /**
@@ -30,13 +26,12 @@ export default class DocumentFileController {
    */
   async getPage({ params, response }: HttpContext) {
     const { uuid, type, pageUuid } = await getPageValidator.validate(params)
-    // todo убрать дублирование и убрать бизнес-валидацию? (придумать как недопустить доступа к страницаи чужих документов/досье/схем)
-    const dossier = await this.dossierService.findDossierByUuid(uuid)
-    const document = await this.documentService.findDocument(dossier.id, type)
-    await this.documentExistsRule.validate(document)
 
-    const file = await this.documentService.findFileByUuid(pageUuid, document!)
-    await this.fileExistsRule.validate(file, pageUuid)
+    const { file } = await this.documentAccessValidator.validateDocumentFileAccess(
+      uuid,
+      type,
+      pageUuid
+    )
 
     return this.documentStreamingService.streamSingleFile(file, response)
   }
@@ -55,14 +50,13 @@ export default class DocumentFileController {
   async deletePage({ params, response }: HttpContext) {
     const { uuid, type, pageUuid } = await deletePageValidator.validate(params)
 
-    const dossier = await this.dossierService.findDossierByUuid(uuid)
-    const document = await this.documentService.findDocument(dossier.id, type)
-    await this.documentExistsRule.validate(document)
+    const { file } = await this.documentAccessValidator.validateDocumentFileAccess(
+      uuid,
+      type,
+      pageUuid
+    )
 
-    const file = await this.documentService.findFileByUuid(pageUuid, document!)
-    await this.fileExistsRule.validate(file, pageUuid)
-
-    await this.documentService.deleteFile(file!)
+    await this.documentService.deleteFile(file)
 
     return response.ok({ message: 'Страница успешно удалена' })
   }
