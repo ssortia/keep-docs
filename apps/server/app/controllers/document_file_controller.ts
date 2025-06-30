@@ -23,6 +23,7 @@ export default class DocumentFileController {
    * @paramPath pageUuid - UUID страницы - eg: 660e8400-e29b-41d4-a716-446655440001
    * @responseBody 200 - Файл страницы документа
    * @responseBody 404 - {"message": "Страница не найдена"}
+   * @responseBody 403 - {"message": "Нет доступа к странице"}
    */
   async getPage({ params, response }: HttpContext) {
     const { uuid, type, pageUuid } = await getPageValidator.validate(params)
@@ -40,12 +41,14 @@ export default class DocumentFileController {
    * @deletePage
    * @tag Document Files
    * @summary Удалить страницу
-   * @description Выполняет мягкое удаление страницы документа
+   * @description Выполняет мягкое удаление страницы документа. Страница помечается как удаленная
    * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
    * @paramPath pageUuid - UUID страницы - eg: 660e8400-e29b-41d4-a716-446655440001
    * @responseBody 200 - {"message": "Страница успешно удалена"}
    * @responseBody 404 - {"message": "Страница не найдена"}
+   * @responseBody 403 - {"message": "Нет доступа к странице"}
+   * @responseBody 409 - {"message": "Страница уже удалена"}
    */
   async deletePage({ params, response }: HttpContext) {
     const { uuid, type, pageUuid } = await deletePageValidator.validate(params)

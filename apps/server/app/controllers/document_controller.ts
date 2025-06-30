@@ -36,6 +36,7 @@ export default class DocumentController {
    * @requestBody {"versionId": 2}
    * @responseBody 200 - {"message": "Текущая версия документа успешно изменена"}
    * @responseBody 404 - {"message": "Версия не найдена или не принадлежит документу"}
+   * @responseBody 422 - {"message": "Validation failed", "errors": [{"message": "The versionId field must be a number", "rule": "number", "field": "versionId"}]}
    */
   async setVersion({ params, request, response }: HttpContext) {
     const { uuid, type, versionId } = await changeCurrentVersionValidator.validate({
@@ -54,14 +55,15 @@ export default class DocumentController {
    * @upload
    * @tag Documents
    * @summary Загрузить страницы документа
-   * @description Загружает файлы документа в досье
+   * @description Загружает файлы документа в досье. Поддерживает PDF, JPG, PNG файлы
    * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
    * @paramForm documents - Файлы документа (multipart/form-data)
-   * @paramForm name - Название версии документа - eg: Паспорт 01.01.2024
+   * @paramForm name - Название версии документа - eg: Паспорт обновленный
    * @paramForm isNewVersion - Создать новую версию (true/false) - eg: false
-   * @responseBody 201 - {"data": {"document": {"id": 1, "code": "passport"}, "version": {"id": 1, "name": "Паспорт 01.01.2024"}, "filesProcessed": 2, "pagesAdded": 2}}
+   * @responseBody 201 - {"data": {"document": {"id": 1, "code": "passport", "name": "Паспорт", "createdAt": "2024-01-01T00:00:00.000Z"}, "version": {"id": 1, "name": "Паспорт обновленный", "createdAt": "2024-01-01T12:00:00.000Z", "isCurrent": true}, "filesProcessed": 2, "pagesAdded": 2}}
    * @responseBody 422 - {"message": "Validation failed", "errors": [{"message": "Documents are required", "rule": "required", "field": "documents"}]}
+   * @responseBody 413 - {"message": "Файл слишком большой. Максимальный размер: 10MB"}
    */
   @transaction()
   async upload({ params, request, response }: HttpContext) {
@@ -98,11 +100,12 @@ export default class DocumentController {
    * @download
    * @tag Documents
    * @summary Скачать полный документ
-   * @description Скачивает документ как объединенный файл
+   * @description Скачивает документ как объединенный файл (если воможно - объединяет страницы в pdf, если нет - возвращает архив)
    * @paramPath uuid - UUID досье - eg: 550e8400-e29b-41d4-a716-446655440000
    * @paramPath type - Тип документа - eg: passport
    * @responseBody 200 - Файл документа в формате PDF или Excel
    * @responseBody 404 - {"message": "Документ не найден"}
+   * @responseBody 403 - {"message": "Нет доступа к документу"}
    */
   async download({ params, response }: HttpContext) {
     const { uuid, type } = await getDocumentValidator.validate(params)

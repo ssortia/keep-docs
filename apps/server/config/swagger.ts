@@ -76,8 +76,24 @@ export default {
       description: 'Управление разрешениями системы',
     },
     {
+      name: 'Dossiers',
+      description: 'Создание и просмотр досье с документами',
+    },
+    {
       name: 'Documents',
-      description: 'Управление документами и досье клиентов',
+      description: 'Загрузка, скачивание и управление документами',
+    },
+    {
+      name: 'Document Files',
+      description: 'Работа с отдельными страницами документов',
+    },
+    {
+      name: 'Versions',
+      description: 'Управление версиями документов',
+    },
+    {
+      name: 'Schemas',
+      description: 'Получение конфигурации схем документооборота',
     },
   ],
   authMiddlewares: ['auth'],
