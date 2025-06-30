@@ -49,7 +49,6 @@ export class DocumentAccessValidator {
     pageUuid: string
   ): Promise<DocumentFileAccessResult> {
     const { dossier, document } = await this.validateDocumentAccess(uuid, type)
-
     const file = await this.documentService.findFileByUuid(pageUuid, document)
     await this.fileExistsRule.validate(file, pageUuid)
 

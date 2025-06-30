@@ -61,7 +61,7 @@ export class DocumentService {
 
       // Устанавливаем текущую версию если это первая версия или создается новая версия
       if (!document.currentVersionId || data.isNewVersion) {
-        await this.versionService.changeCurrentVersion(document, version.id)
+        await this.changeCurrentVersion(document, version.id)
       }
 
       return {
@@ -116,6 +116,14 @@ export class DocumentService {
    */
   async deleteFile(file: File): Promise<void> {
     await file.delete()
+  }
+
+  /**
+   * Обновляет текущую версию документа
+   */
+  async changeCurrentVersion(document: Document, versionId: number | null): Promise<void> {
+    document.currentVersionId = versionId
+    await document.save()
   }
 
   /**

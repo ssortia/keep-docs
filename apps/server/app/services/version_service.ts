@@ -60,14 +60,6 @@ export class VersionService {
   }
 
   /**
-   * Обновляет текущую версию документа
-   */
-  async changeCurrentVersion(document: Document, versionId: number | null): Promise<void> {
-    document.currentVersionId = versionId
-    await document.save()
-  }
-
-  /**
    * Генерирует имя версии
    */
   generateVersionName(): string {

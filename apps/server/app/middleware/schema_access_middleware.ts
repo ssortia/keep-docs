@@ -5,6 +5,9 @@ import {
   InvalidSchemaTokenException,
   SchemaAccessDeniedException,
 } from '#exceptions/schema_exceptions'
+import { access } from 'node:fs/promises'
+import { constants } from 'node:fs'
+import { join } from 'node:path'
 
 export default class SchemaAccessMiddleware {
   async handle(ctx: HttpContext, next: NextFn, options: { schema?: string } = {}) {
@@ -29,6 +32,9 @@ export default class SchemaAccessMiddleware {
       throw new InvalidSchemaTokenException('Не удается определить схему для проверки доступа')
     }
 
+    // Проверяем существование файла схемы
+    await this.validateSchemaExists(schemaName)
+
     const hasSchemaAccess = this.checkSchemaAccess(token, schemaName)
 
     if (!hasSchemaAccess) {
@@ -47,6 +53,18 @@ export default class SchemaAccessMiddleware {
       return dossier.schema
     } catch (error) {
       throw new InvalidSchemaTokenException('Досье не найдено или недоступно')
+    }
+  }
+
+  /**
+   * Проверяет существование файла схемы
+   */
+  private async validateSchemaExists(schemaName: string): Promise<void> {
+    try {
+      const schemaPath = join(process.cwd(), 'app', 'scheme', `${schemaName}.ts`)
+      await access(schemaPath, constants.F_OK)
+    } catch (error) {
+      throw new InvalidSchemaTokenException('Схема не найдена или недоступна')
     }
   }
 

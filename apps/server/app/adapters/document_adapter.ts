@@ -41,13 +41,21 @@ export interface DossierResponse {
 }
 
 export interface DocumentUploadResponse {
-  document: {
-    code: string
-    version: string
+  data: {
+    document: {
+      id: number
+      code: string
+      createdAt: string
+    }
+    version: {
+      id: number
+      name: string
+      createdAt: string
+      isCurrent: boolean
+    }
     filesProcessed: number
     pagesAdded: number
   }
-  message: string
 }
 
 export interface PageResponse {
@@ -62,11 +70,13 @@ export interface PageResponse {
 
 export interface CreateDossierResponse {
   data: {
+    id: number
     uuid: string
     schema: string
+    documents: any[]
     createdAt: string
+    updatedAt: string
   }
-  message: string
 }
 
 export class DocumentAdapter {
@@ -140,24 +150,34 @@ export class DocumentAdapter {
     pagesAdded: number
   ): DocumentUploadResponse {
     return {
-      document: {
-        code: document.code,
-        version: version.name,
+      data: {
+        document: {
+          id: document.id,
+          code: document.code,
+          createdAt: document.createdAt.toISO() || '',
+        },
+        version: {
+          id: version.id,
+          name: version.name,
+          createdAt: version.createdAt.toISO() || '',
+          isCurrent: document.currentVersionId === version.id,
+        },
         filesProcessed,
         pagesAdded,
       },
-      message: 'Document pages uploaded successfully',
     }
   }
 
   formatCreateDossierResponse(dossier: Dossier): CreateDossierResponse {
     return {
       data: {
+        id: dossier.id,
         uuid: dossier.uuid,
         schema: dossier.schema,
-        createdAt: dossier.createdAt.toISO()!,
+        documents: (dossier.documents || []).map((doc) => this.formatDocumentResponse(doc)),
+        createdAt: dossier.createdAt.toISO() || '',
+        updatedAt: dossier.updatedAt.toISO() || '',
       },
-      message: 'Досье успешно создано',
     }
   }
 

@@ -1,10 +1,16 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import AuditLog from '#models/audit_log'
+import env from '#start/env'
 
 export default class AuditLogMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
     await next()
+
+    // Пропускаем логирование в тестовом окружении
+    if (env.get('NODE_ENV') === 'test') {
+      return
+    }
 
     try {
       await this.logRequest(ctx)

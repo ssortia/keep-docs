@@ -3,16 +3,16 @@ import { inject } from '@adonisjs/core'
 import { DocumentService } from '#services/document_service'
 import { DossierService } from '#services/dossier_service'
 import { DocumentStreamingService } from '#services/document_streaming_service'
-import { VersionService } from '#services/version_service'
 import { DocumentAdapter } from '#adapters/document_adapter'
 import {
-  changeCurrentVersionValidator,
   addPagesValidator,
+  changeCurrentVersionValidator,
   getDocumentValidator,
 } from '#validators/document_validator'
 import { DocumentAccessValidator } from '#rules/document_access_validator'
 import { FileExtensionRule } from '#rules/file_extension_rule'
 import { transaction } from 'adonisjs-transaction-decorator'
+import Version from '#models/version'
 
 @inject()
 export default class DocumentController {
@@ -20,7 +20,6 @@ export default class DocumentController {
     private documentService: DocumentService,
     private dossierService: DossierService,
     private documentStreamingService: DocumentStreamingService,
-    private versionService: VersionService,
     private documentAdapter: DocumentAdapter,
     private documentAccessValidator: DocumentAccessValidator,
     private fileExtensionRule: FileExtensionRule
@@ -45,8 +44,9 @@ export default class DocumentController {
     })
 
     const { document } = await this.documentAccessValidator.validateDocumentAccess(uuid, type)
+    const version = await Version.findOrFail(versionId)
 
-    await this.versionService.changeCurrentVersion(document, versionId)
+    await this.documentService.changeCurrentVersion(document, version.id)
 
     return response.ok({ message: 'Текущая версия документа успешно изменена' })
   }

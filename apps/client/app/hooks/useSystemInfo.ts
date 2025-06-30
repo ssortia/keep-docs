@@ -61,7 +61,6 @@ export const useSystemInfo = (autoRefresh = true) => {
     try {
       setError(null);
       const response = await api.get('/admin/system/info') as SystemInfo
-      console.log("success", response);
       setSystemInfo(response);
     } catch (err: any) {
       const errorMessage = (err as Error)?.message || 'Failed to fetch system info';
