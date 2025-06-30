@@ -10,24 +10,10 @@ export class VersionService {
   /**
    * Создает новую версию документа
    */
-  async createVersion(documentId: number, name: string): Promise<Version> {
-    const version = new Version()
-    version.name = name
-    version.documentId = documentId
-    await version.save()
+  async createVersion(documentId: number, name?: string): Promise<Version> {
+    name = name || this.generateVersionName()
 
-    return version
-  }
-
-  /**
-   * Изменяет текущую версию документа
-   */
-  async changeCurrentVersion(document: Document, versionId: number): Promise<void> {
-    const version = await Version.find(versionId)
-    await this.versionExistenceRule.validate(version)
-
-    document.currentVersionId = versionId
-    await document.save()
+    return await Version.create({ name, documentId })
   }
 
   /**
@@ -61,30 +47,22 @@ export class VersionService {
     isNewVersion?: boolean
   ): Promise<Version> {
     if (isNewVersion) {
-      return await this.createNewVersion(document.id, versionName)
+      return await this.createVersion(document.id, versionName)
     }
 
     const currentVersion = await Version.find(document.currentVersionId || 0)
 
     if (!currentVersion) {
-      return await this.createNewVersion(document.id, versionName)
+      return await this.createVersion(document.id, versionName)
     }
 
     return currentVersion
   }
 
   /**
-   * Создает новую версию
-   */
-  async createNewVersion(documentId: number, versionName?: string): Promise<Version> {
-    const name = versionName || this.generateVersionName()
-    return await Version.create({ name, documentId })
-  }
-
-  /**
    * Обновляет текущую версию документа
    */
-  async updateCurrentVersion(document: Document, versionId: number | null): Promise<void> {
+  async changeCurrentVersion(document: Document, versionId: number | null): Promise<void> {
     document.currentVersionId = versionId
     await document.save()
   }

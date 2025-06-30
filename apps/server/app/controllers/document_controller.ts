@@ -47,7 +47,7 @@ export default class DocumentController {
     const document = await this.documentService.findDocument(dossier.id, type)
     await this.documentExistsRule.validate(document)
 
-    await this.versionService.updateCurrentVersion(document!, versionId)
+    await this.versionService.changeCurrentVersion(document!, versionId)
 
     return response.ok({ message: 'Текущая версия документа успешно изменена' })
   }

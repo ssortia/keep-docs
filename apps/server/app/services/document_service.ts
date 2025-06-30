@@ -61,7 +61,7 @@ export class DocumentService {
 
       // Устанавливаем текущую версию если это первая версия или создается новая версия
       if (!document.currentVersionId || data.isNewVersion) {
-        await this.versionService.updateCurrentVersion(document, version.id)
+        await this.versionService.changeCurrentVersion(document, version.id)
       }
 
       return {
