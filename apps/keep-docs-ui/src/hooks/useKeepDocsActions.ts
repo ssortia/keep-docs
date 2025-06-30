@@ -24,7 +24,7 @@ export function useKeepDocsActions({
   const { uuid, documentManager } = useKeepDocsContext();
   const { getPageUrl } = useDocumentUrls();
   const { handleError } = useApiError();
-  // Получаем API функции из контекста
+
   const {
     uploadDocument,
     deletePage,
@@ -48,159 +48,113 @@ export function useKeepDocsActions({
     return null;
   }, [getDossier, uuid, updateDossier]);
 
+  const updateDocumentAfterOperation = useCallback(async () => {
+    const updatedDossier = await refreshDossier();
+    if (updatedDossier) {
+      const updatedDocument = updatedDossier.documents.find(
+        (doc: Document) => doc.code === activeTab,
+      );
+      if (updatedDocument) {
+        onUpdate?.(updatedDocument);
+      }
+    }
+  }, [refreshDossier, activeTab, onUpdate]);
+
+  const executeWithErrorHandling = useCallback(
+    async <T>(
+      operation: () => Promise<T>,
+      onSuccess?: () => Promise<void> | void,
+    ): Promise<T | null> => {
+      try {
+        const result = await operation();
+        if (result && onSuccess) {
+          await onSuccess();
+        }
+        return result;
+      } catch (err) {
+        handleError(err, onError);
+        return null;
+      }
+    },
+    [handleError, onError],
+  );
+
   const handleDirectUpload = useCallback(
     async (files: File[]) => {
       if (!activeTab || files.length === 0) return;
 
-      try {
-        const result = await uploadDocument(
-          uuid,
-          activeTab,
-          files,
-          undefined, // versionName
-          false, // isNewVersion - всегда загружаем в текущую версию
-        );
-
-        if (result) {
-          const updatedDossier = await refreshDossier();
-          if (updatedDossier) {
-            const updatedDocument = updatedDossier.documents.find(
-              (doc: Document) => doc.code === activeTab,
-            );
-            if (updatedDocument) {
-              onUpdate?.(updatedDocument);
-            }
-          }
-        }
-      } catch (err) {
-        handleError(err, onError);
-      }
+      await executeWithErrorHandling(
+        () => uploadDocument(uuid, activeTab, files, undefined, false),
+        updateDocumentAfterOperation,
+      );
     },
-    [activeTab, uploadDocument, uuid, refreshDossier, onUpdate, onError, handleError],
+    [activeTab, uploadDocument, uuid, executeWithErrorHandling, updateDocumentAfterOperation],
   );
 
   const handlePageDelete = useCallback(
     async (pageUuid: string) => {
       if (!activeTab) return;
 
-      try {
-        const success = await deletePage(uuid, activeTab, pageUuid);
-
-        if (success) {
+      await executeWithErrorHandling(
+        () => deletePage(uuid, activeTab, pageUuid),
+        async () => {
           await refreshDossier();
           onRemove?.(activeTab, pageUuid);
-        }
-      } catch (err) {
-        handleError(err, onError);
-      }
+        },
+      );
     },
-    [activeTab, deletePage, uuid, refreshDossier, onRemove, onError],
+    [activeTab, deletePage, uuid, executeWithErrorHandling, refreshDossier, onRemove],
   );
 
   const handleVersionChange = useCallback(
     async (versionId: number) => {
       if (!activeTab) return;
 
-      try {
-        const success = await changeCurrentVersion(uuid, activeTab, versionId);
-
-        if (success) {
-          const updatedDossier = await refreshDossier();
-          if (updatedDossier) {
-            const updatedDocument = updatedDossier.documents.find(
-              (doc: Document) => doc.code === activeTab,
-            );
-            if (updatedDocument) {
-              onUpdate?.(updatedDocument);
-            }
-          }
-        }
-      } catch (err) {
-        handleError(err, onError);
-      }
+      await executeWithErrorHandling(
+        () => changeCurrentVersion(uuid, activeTab, versionId),
+        updateDocumentAfterOperation,
+      );
     },
-    [activeTab, changeCurrentVersion, uuid, refreshDossier, onUpdate, onError],
+    [activeTab, changeCurrentVersion, uuid, executeWithErrorHandling, updateDocumentAfterOperation],
   );
 
   const handleVersionCreate = useCallback(
     async (name: string) => {
       if (!activeTab) return false;
 
-      try {
-        const success = await createVersion(uuid, activeTab, name);
-
-        if (success) {
-          const updatedDossier = await refreshDossier();
-          if (updatedDossier) {
-            const updatedDocument = updatedDossier.documents.find(
-              (doc: Document) => doc.code === activeTab,
-            );
-            if (updatedDocument) {
-              onUpdate?.(updatedDocument);
-            }
-          }
-          return true;
-        }
-      } catch (err) {
-        handleError(err, onError);
-      }
-      return false;
+      const result = await executeWithErrorHandling(
+        () => createVersion(uuid, activeTab, name),
+        updateDocumentAfterOperation,
+      );
+      return Boolean(result);
     },
-    [activeTab, createVersion, uuid, refreshDossier, onUpdate, onError],
+    [activeTab, createVersion, uuid, executeWithErrorHandling, updateDocumentAfterOperation],
   );
 
   const handleVersionNameUpdate = useCallback(
     async (versionId: number, newName: string) => {
       if (!activeTab) return false;
 
-      try {
-        const success = await updateVersionName(uuid, activeTab, versionId, newName);
-
-        if (success) {
-          const updatedDossier = await refreshDossier();
-          if (updatedDossier) {
-            const updatedDocument = updatedDossier.documents.find(
-              (doc: Document) => doc.code === activeTab,
-            );
-            if (updatedDocument) {
-              onUpdate?.(updatedDocument);
-            }
-          }
-          return true;
-        }
-      } catch (err) {
-        handleError(err, onError);
-      }
-      return false;
+      const result = await executeWithErrorHandling(
+        () => updateVersionName(uuid, activeTab, versionId, newName),
+        updateDocumentAfterOperation,
+      );
+      return Boolean(result);
     },
-    [activeTab, updateVersionName, uuid, refreshDossier, onUpdate, onError],
+    [activeTab, updateVersionName, uuid, executeWithErrorHandling, updateDocumentAfterOperation],
   );
 
   const handleVersionDelete = useCallback(
     async (versionId: number) => {
       if (!activeTab) return false;
 
-      try {
-        const success = await deleteVersion(uuid, activeTab, versionId);
-
-        if (success) {
-          const updatedDossier = await refreshDossier();
-          if (updatedDossier) {
-            const updatedDocument = updatedDossier.documents.find(
-              (doc: Document) => doc.code === activeTab,
-            );
-            if (updatedDocument) {
-              onUpdate?.(updatedDocument);
-            }
-          }
-          return true;
-        }
-      } catch (err) {
-        handleError(err, onError);
-      }
-      return false;
+      const result = await executeWithErrorHandling(
+        () => deleteVersion(uuid, activeTab, versionId),
+        updateDocumentAfterOperation,
+      );
+      return Boolean(result);
     },
-    [activeTab, deleteVersion, uuid, refreshDossier, onUpdate, onError],
+    [activeTab, deleteVersion, uuid, executeWithErrorHandling, updateDocumentAfterOperation],
   );
 
   const handlePageNavigation = useCallback(
