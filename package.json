@@ -1,6 +1,7 @@
 {
   "name": "adonisjs-nextjs-template",
   "version": "1.0.0",
+  "author": "ssortia",
   "main": "index.js",
   "scripts": {
     "dev": "turbo run dev",
@@ -36,7 +37,6 @@
     "typescript": "^5.3.3"
   },
   "keywords": [],
-  "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
