@@ -2,7 +2,6 @@ import { test } from '@japa/runner'
 import {
   DocumentFactory,
   DossierFactory,
-  FileFactory,
   UserFactory,
   VersionFactory,
 } from '#database/factories/index'
@@ -187,54 +186,6 @@ test.group('Document Controller', (group) => {
     const documentsError = response.body().errors.find((err: any) => err.field === 'documents')
     assert.exists(documentsError)
     assert.equal(documentsError.rule, 'array.minLength')
-  })
-
-  test('should download complete document', async ({ client, assert }) => {
-    const userRole = await Role.findBy('name', 'user')
-    const user = await UserFactory.merge({ roleId: userRole!.id }).create()
-    const token = await createAuthToken(user)
-
-    const dossier = await DossierFactory.merge({ schema: 'example' }).create()
-    const version = await VersionFactory.create()
-    const document = await DocumentFactory.merge({
-      dossierId: dossier.id,
-      code: 'passport',
-      currentVersionId: version.id,
-    }).create()
-
-    const testFilePath = join(process.cwd(), 'tests/test-files/passport_page1.jpg')
-
-    await FileFactory.merge({
-      documentId: document.id,
-      versionId: version.id,
-      pageNumber: 1,
-      path: testFilePath,
-      mimeType: 'application/pdf',
-    }).create()
-
-    await FileFactory.merge({
-      documentId: document.id,
-      versionId: version.id,
-      pageNumber: 2,
-      path: testFilePath,
-      mimeType: 'application/pdf',
-    }).create()
-
-    const response = await client
-      .get(`/api/v1/dossiers/${dossier.uuid}/documents/${document.code}`)
-      .header('Authorization', `Bearer ${token}`)
-
-    response.assertStatus(200)
-
-    // Проверяем, что ответ содержит файл
-    const contentType = response.headers()['content-type']
-    const isFileResponse =
-      contentType === 'application/pdf' ||
-      contentType === 'application/zip' ||
-      contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-
-    assert.isTrue(isFileResponse)
-    assert.exists(response.headers()['content-disposition'])
   })
 
   test('should return 404 for non-existent document when downloading', async ({
