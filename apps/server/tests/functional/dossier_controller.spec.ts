@@ -30,7 +30,6 @@ test.group('Dossier Controller', (group) => {
       .json({
         schema: 'example',
       })
-    console.log(response.body())
     response.assertStatus(201)
     assert.properties(response.body(), ['data'])
 
