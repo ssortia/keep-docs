@@ -5,7 +5,7 @@ import { KeepDocs } from '@keep-docs/ui';
 export default function KeepDocsDemo() {
   const config = {
     baseUrl: 'http://localhost:3333/api/proxy',
-    schema: 'strizh_offer',
+    schema: 'example',
   };
 
   const params = {
@@ -13,7 +13,7 @@ export default function KeepDocsDemo() {
     userType: 'INDIVIDUAL',
   };
 
-  const uuid = '550e8400-e29b-41d4-a716-446655440000';
+  const uuid = '550e8400-e29b-41d4-a716-446655440123';
 
   const documentGroups = {
     'Руководитель': ['head_passport', 'head_questionnaires', 'head_snils', 'head_other']

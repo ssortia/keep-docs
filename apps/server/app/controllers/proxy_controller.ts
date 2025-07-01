@@ -3,6 +3,7 @@ import axios from 'axios'
 import FormData from 'form-data'
 
 import { createReadStream } from 'node:fs'
+import env from '#start/env'
 
 export default class ProxyController {
   private readonly TARGET_BASE_URL = 'http://localhost:3333/api/v1'
@@ -13,7 +14,7 @@ export default class ProxyController {
       const targetUrl = `${this.TARGET_BASE_URL}/${targetPath.join('/')}`
 
       const headers: Record<string, string> = {
-        Authorization: `Bearer oat_OA.QkJXZzFxbDU5MFd4cXdEQ1FocHVlaC1RcE9JN183a0NENnJyRG45MTMzOTg3MDk0MjE`,
+        Authorization: `Bearer ${env.get('PROXY_BEARER')}`,
       }
 
       // Обрабатываем разные типы запросов

@@ -14,6 +14,14 @@ export default {
       },
     },
     {
+      type: 'inn',
+      name: 'ИНН',
+    },
+    {
+      type: 'snils',
+      name: 'СНИЛС',
+    },
+    {
       type: 'buyerQuestionnaire',
       name: 'Анкета',
       accept: [

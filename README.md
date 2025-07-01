@@ -1,60 +1,64 @@
-# AdonisJS + Next.js Template
+# Keep Docs
 
-A full-stack template featuring **AdonisJS** (backend) and **Next.js** (frontend) with authentication, role-based permissions, and user management. Built with TypeScript and managed as a monorepo using Turborepo.
+Полнофункциональное решение для управления документами, построенное на **AdonisJS** (backend) и **Next.js** (frontend). Система включает управление пользователями, ролевую модель доступа, загрузку документов с версионированием и API для интеграции с внешними системами.
 
 ## 🚀 Features
 
 ### Backend (AdonisJS)
-- **Authentication & Authorization**: JWT-based auth with email verification
-- **Role-Based Access Control (RBAC)**: Users, roles, and permissions system
-- **User Management**: Complete CRUD operations with role assignment
-- **Email Verification**: Email-based account verification workflow
-- **API Documentation**: Auto-generated Swagger/OpenAPI docs
-- **Database**: PostgreSQL with Lucid ORM migrations and seeders
-- **Validation**: Request validation using VineJS
-- **Testing**: Japa test framework with API client support
+- **Управление документами**: Загрузка, версионирование, группировка документов по типам
+- **Система досье**: Создание и управление досье с привязкой документов
+- **API для схем**: Доступ к документам через схемы с токенизированной авторизацией
+- **Proxy API**: Прокси-контроллер для интеграции с внешними системами
+- **Обработка файлов**: Поддержка изображений, PDF, архивов с автоматической обработкой
+- **Аудит логи**: Полное логирование всех действий в системе
+- **Authentication & Authorization**: JWT + OAuth (GitHub) с email верификацией
+- **RBAC**: Пользователи, роли и разрешения
+- **Database**: PostgreSQL с миграциями и сидерами
 
 ### Frontend (Next.js)
-- **React 19**: Latest React with modern features
-- **TypeScript**: Strict type safety throughout
-- **Ant Design**: Beautiful and comprehensive UI components
-- **Form Management**: React Hook Form with Zod validation
-- **Theme Support**: Dark/light theme with system preference detection
-- **Responsive Design**: Mobile-friendly UI components
-- **Authentication UI**: Login, register, and email verification pages
+- **Admin панель**: Управление пользователями, ролями, разрешениями
+- **Просмотр аудит логов**: Отслеживание всех действий в системе
+- **Мониторинг системы**: Dashboard с информацией о состоянии системы
+- **React 19 + TypeScript**: Современный стек с строгой типизацией
+- **Ant Design**: Компоненты UI с поддержкой темной/светлой темы
+- **Form Management**: React Hook Form с Zod валидацией
+- **Authentication UI**: Полный набор страниц авторизации
 
-### DevOps & Development
-- **Docker**: Multi-service development environment
-- **Turborepo**: Monorepo management with optimized builds
-- **ESLint + Prettier**: Code formatting and linting
-- **Hot Reload**: Development servers with HMR support
-- **PostgreSQL**: Containerized database with health checks
+### Дополнительные возможности
+- **Keep Docs UI**: React компонент для интеграции в другие приложения
+- **Schema API**: Гибкая система доступа к документам через схемы
+- **File Processing**: Автоматическая обработка изображений и PDF
+- **Docker**: Мульти-сервисная среда разработки
+- **Turborepo**: Управление монорепозиторием
+- **Testing**: Комплексное тестирование API и функциональности
 
 ## 📁 Project Structure
 
 ```
-adonisjs-nextjs-template/
+keep-docs/
 ├── apps/
-│   ├── client/          # Next.js frontend
-│   │   ├── app/         # App Router pages and components
-│   │   ├── components/  # Reusable UI components
-│   │   ├── hooks/       # Custom React hooks
-│   │   ├── schemas/     # Zod validation schemas
-│   │   ├── services/    # API service layer
-│   │   └── types/       # TypeScript type definitions
+│   ├── client/          # Next.js админ панель
+│   │   ├── app/         # App Router с админ интерфейсом
+│   │   ├── components/  # UI компоненты для управления
+│   │   ├── hooks/       # Хуки для работы с API
+│   │   └── services/    # Сервисы для API запросов
+│   ├── keep-docs-ui/    # React компонент библиотека
+│   │   ├── src/         # Исходный код компонентов
+│   │   ├── components/  # Компоненты для работы с документами
+│   │   ├── hooks/       # Хуки для управления состоянием
+│   │   └── styles/      # CSS стили
 │   └── server/          # AdonisJS backend
-│       ├── app/         # Application logic
-│       │   ├── controllers/  # HTTP request handlers
-│       │   ├── middleware/   # Request middleware
-│       │   ├── models/       # Database models
-│       │   ├── services/     # Business logic services
-│       │   └── validators/   # Request validation
-│       ├── config/      # Configuration files
-│       ├── database/    # Migrations and seeders
-│       └── start/       # Application bootstrap
-├── docker-compose.yaml  # Development environment
-├── turbo.json          # Turborepo configuration
-└── package.json        # Workspace dependencies
+│       ├── app/
+│       │   ├── controllers/  # API контроллеры
+│       │   ├── models/       # Модели БД (User, Document, Version)
+│       │   ├── services/     # Бизнес логика
+│       │   ├── middleware/   # Middleware для авторизации
+│       │   └── scheme/       # Схемы для API доступа
+│       ├── commands/    # CLI команды
+│       ├── database/    # Миграции и сидеры
+│       └── storage/     # Хранилище файлов
+├── docker-compose.yaml  # Среда разработки
+└── CLAUDE.md           # Инструкции для разработки
 ```
 
 ## 🛠️ Quick Start
@@ -64,45 +68,52 @@ adonisjs-nextjs-template/
 - Docker and Docker Compose
 - Git
 
-### 1. Clone the Repository
+### 1. Клонирование репозитория
 ```bash
-git clone adonisjs-nextjs-template>
-cd adonisjs-nextjs-template
+git clone <repository-url>
+cd keep-docs
 ```
 
-### 2. Environment Setup
-Create environment files for the server:
+### 2. Настройка окружения
+Создайте файлы окружения для сервера:
 
 ```bash
-# Copy example env file (you'll need to create this based on start/env.ts)
+# Скопируйте пример файла окружения
 cp apps/server/.env.example apps/server/.env
 ```
 
-Configure your environment variables.
+Настройте переменные окружения:
+- `DATABASE_URL` - подключение к PostgreSQL
+- `APP_KEY` - ключ приложения
 
-### 3. Development with Docker
+### 3. Запуск с Docker
 ```bash
-# Start all services (PostgreSQL, Server, Client, Swagger UI)
+# Запуск всех сервисов (PostgreSQL, Server, Client, Swagger UI)
 docker compose up
 
-# Or run in background
+# Или в фоновом режиме
 docker compose up -d
 ```
 
-Services will be available at:
-- **Frontend**: http://localhost:3030
+Сервисы будут доступны по адресам:
+- **Admin панель**: http://localhost:3030
 - **Backend API**: http://localhost:3333
-- **Swagger Documentation**: http://localhost:8080
+- **Swagger документация**: http://localhost:3333/docs
 - **PostgreSQL**: localhost:5440
 
-
-# Run migrations and seeders
+### 4. Инициализация БД
 ```bash
+# Запуск миграций и сидеров
 docker compose exec server node ace migration:run
 docker compose exec server node ace db:seed
 ```
 
-### 4. Local Development (Alternative)
+Сидеры создадут:
+- Роли и разрешения
+- Тестового администратора (test@mail.ru / 123123)
+- Пользователя для API схем с токеном в переменной PROXY_BEARER
+
+### 5. Локальная разработка (альтернатива)
 ```bash
 # Install dependencies
 npm install
@@ -120,9 +131,9 @@ node ace db:seed
 npm run dev
 ```
 
-### 5. Запуск тестов
+### 6. Запуск тестов
 ```bash
-docker compose -f docker-compose.yaml -f docker-compose.test.yaml up --exit-code-from server_test
+cd apps/server && node ace test # при запущенном сервере
 ```
 
 ## 📚 Available Scripts
@@ -171,27 +182,41 @@ npm run format       # Prettier format
 
 ## 🔧 API Endpoints
 
-Visit http://localhost:8080 for complete API documentation via Swagger UI.
+### Основные эндпоинты:
+- `/api/auth/*` - Авторизация и регистрация
+- `/api/users/*` - Управление пользователями
+- `/api/roles/*` - Управление ролями
+- `/api/permissions/*` - Управление разрешениями
+- `/api/dossiers/*` - Управление досье
+- `/api/documents/*` - Управление документами
+- `/api/proxy/*` - Proxy API для внешних систем
+- `/api/schema/*` - API для работы со схемами
 
-## 🔒 Authentication & Permissions
+Полная документация доступна по адресу: http://localhost:8080
 
-The template includes a complete RBAC system:
+## 🔒 Авторизация и права доступа
 
-### User Roles
-- **Admin**: Full system access
-- **User**: Basic user permissions
-- **Moderator**: Limited administrative access
+### Система ролей
+- **admin**: Полный доступ к системе
+- **manager**: Ограниченные административные права
+- **user**: Базовые права пользователя
 
-### Permissions
-- User management (create, read, update, delete)
-- Role management (create, read, update, delete)  
-- Permission management (create, read, update, delete)
+### Разрешения
+- Управление пользователями (просмотр, создание, редактирование, удаление)
+- Управление ролями и разрешениями
+- Доступ к админ панели
 
-### Middleware Protection
-- `auth`: Require authentication
-- `role`: Require specific role
-- `permission`: Require specific permission
-- `blocked_user`: Block access for disabled users
+### API токены для схем
+```bash
+# Генерация токена для доступа к схемам
+node ace generate:schema-token <email> <client-name> --schemas <schema1,schema2> --create-client
+```
+
+### Middleware защиты
+- `auth`: Требует авторизации
+- `role`: Требует определенную роль
+- `permission`: Требует определенное разрешение
+- `schema_access`: Проверяет доступ к схеме по токену
 
 ## 🧪 Testing
 
@@ -206,15 +231,49 @@ cd apps/server && npm run test
 cd apps/server && node ace test tests/functional/auth.spec.ts
 ```
 
-### Models
-- **User**: User accounts with authentication
-- **Role**: User roles for access control
-- **Permission**: Granular permissions system
-- **AccessToken**: JWT token management
+## 📊 Основные модели
+
+### Пользователи и права
+- **User**: Пользователи с авторизацией
+- **Role**: Роли для контроля доступа
+- **Permission**: Система разрешений
+- **AccessToken**: Управление JWT токенами
+- **ApiClient**: API клиенты для схем
+
+### Управление документами
+- **Dossier**: Досье (контейнеры для документов)
+- **Document**: Документы с типами и метаданными
+- **Version**: Версии документов
+- **File**: Файлы с обработкой и превью
+- **AuditLog**: Логи всех действий в системе
+
+## 🎯 Схемы и интеграция
+
+Система поддерживает работу со схемами для интеграции с внешними системами:
+
+1. **Создание схемы**: Определите структуру документов в `apps/server/app/scheme/`
+2. **API клиент**: Создайте API клиента с доступом к схемам
+3. **Токен доступа**: Получите токен для работы с API
+4. **Интеграция**: Используйте Keep Docs UI компонент в своем приложении
+
+### Пример использования Keep Docs UI:
+```jsx
+import { KeepDocs } from '@keep-docs/ui'
+
+const config = {
+  baseUrl: 'http://localhost:3333/api/proxydocs',
+  schema: 'example'
+};
+
+<KeepDocs
+    uuid={uuid}
+    config={config}
+/>
+```
 
 ## 📄 License
 
-This project is licensed under the ISC License.
+This project is licensed under the MIT License.
 
 ## 🆘 Support
 
@@ -225,4 +284,4 @@ For support and questions:
 
 ---
 
-**Built with ❤️ using AdonisJS, Next.js, and modern web technologies.**
+**Keep Docs - современное решение для управления документами с API интеграцией**

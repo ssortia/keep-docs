@@ -1,0 +1,91 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches: [main, master, develop]
+  push:
+    branches: [main, master, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: keep_docs_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup environment variables
+        run: |
+          cd apps/server
+          cp .env.example .env.test
+          echo "NODE_ENV=test" >> .env.test
+          echo "PORT=3333" >> .env.test
+          echo "HOST=localhost" >> .env.test
+          echo "LOG_LEVEL=info" >> .env.test
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env.test
+          echo "DB_HOST=localhost" >> .env.test
+          echo "DB_PORT=5432" >> .env.test
+          echo "DB_USER=postgres" >> .env.test
+          echo "DB_PASSWORD=postgres" >> .env.test
+          echo "DB_DATABASE=keep_docs_test" >> .env.test
+
+      - name: Run database migrations
+        working-directory: ./apps/server
+        run: |
+          npm run build
+          node ace migration:run --force
+
+      - name: Run database seeders
+        working-directory: ./apps/server
+        run: node ace db:seed --force
+
+      - name: Run linting
+        working-directory: ./apps/server
+        run: npm run lint
+
+      - name: Run type checking
+        working-directory: ./apps/server
+        run: npm run typecheck
+
+      - name: Run tests
+        working-directory: ./apps/server
+        run: npm run test
+        env:
+          NODE_ENV: test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            apps/server/coverage/
+            apps/server/test-results/
+          retention-days: 7
