@@ -44,13 +44,13 @@ jobs:
       - name: Setup environment variables for GitHub Actions
         run: |
           cd apps/server
-          sed -i 's/DB_HOST=localhost/DB_HOST=localhost/' .env.test
-          sed -i 's/DB_PORT=5440/DB_PORT=5432/' .env.test
-          sed -i 's/DB_USER=keep_docs/DB_USER=postgres/' .env.test
-          sed -i 's/DB_PASSWORD=keep_docs/DB_PASSWORD=postgres/' .env.test
-          sed -i 's/DB_DATABASE=keep_docs/DB_DATABASE=keep_docs_test/' .env.test
-          sed -i 's/PORT=3334/PORT=3333/' .env.test
-          sed -i 's/HOST=0.0.0.0/HOST=localhost/' .env.test
+          cp .env.test .env
+          sed -i 's/DB_PORT=5440/DB_PORT=5432/' .env
+          sed -i 's/DB_USER=keep_docs/DB_USER=postgres/' .env
+          sed -i 's/DB_PASSWORD=keep_docs/DB_PASSWORD=postgres/' .env
+          sed -i 's/DB_DATABASE=keep_docs/DB_DATABASE=keep_docs_test/' .env
+          sed -i 's/PORT=3334/PORT=3333/' .env
+          sed -i 's/HOST=0.0.0.0/HOST=localhost/' .env
 
       - name: Run database migrations
         working-directory: ./apps/server
