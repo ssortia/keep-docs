@@ -35,8 +35,8 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install ImageMagick
-        run: sudo apt-get update && sudo apt-get install -y imagemagick
+      - name: Install ImageMagick and PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y imagemagick postgresql-client
 
       - name: Install dependencies
         run: npm ci
@@ -70,11 +70,23 @@ jobs:
         working-directory: ./apps/server
         run: npm run typecheck
 
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
       - name: Run tests
         working-directory: ./apps/server
         run: npm run test
         env:
           NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_DATABASE: keep_docs_test
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
