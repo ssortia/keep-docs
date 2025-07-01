@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install ImageMagick
@@ -41,20 +41,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Setup environment variables
+      - name: Setup environment variables for GitHub Actions
         run: |
           cd apps/server
-          cp .env.example .env.test
-          echo "NODE_ENV=test" >> .env.test
-          echo "PORT=3333" >> .env.test
-          echo "HOST=localhost" >> .env.test
-          echo "LOG_LEVEL=info" >> .env.test
-          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env.test
-          echo "DB_HOST=localhost" >> .env.test
-          echo "DB_PORT=5432" >> .env.test
-          echo "DB_USER=postgres" >> .env.test
-          echo "DB_PASSWORD=postgres" >> .env.test
-          echo "DB_DATABASE=keep_docs_test" >> .env.test
+          sed -i 's/DB_HOST=localhost/DB_HOST=localhost/' .env.test
+          sed -i 's/DB_PORT=5440/DB_PORT=5432/' .env.test
+          sed -i 's/DB_USER=keep_docs/DB_USER=postgres/' .env.test
+          sed -i 's/DB_PASSWORD=keep_docs/DB_PASSWORD=postgres/' .env.test
+          sed -i 's/DB_DATABASE=keep_docs/DB_DATABASE=keep_docs_test/' .env.test
+          sed -i 's/PORT=3334/PORT=3333/' .env.test
+          sed -i 's/HOST=0.0.0.0/HOST=localhost/' .env.test
 
       - name: Run database migrations
         working-directory: ./apps/server
