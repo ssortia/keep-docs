@@ -56,11 +56,11 @@ jobs:
         working-directory: ./apps/server
         run: |
           npm run build
-          node ace migration:run --force
+          node ace migration:run
 
       - name: Run database seeders
         working-directory: ./apps/server
-        run: node ace db:seed --force
+        run: node ace db:seed
 
       - name: Run linting
         working-directory: ./apps/server
